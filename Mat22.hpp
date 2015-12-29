@@ -84,7 +84,7 @@ namespace math
             Mat22 m; m -= rhs; return m;
         }
 
-        inline const Mat22 operator*(const Mat22& rhs)
+        inline const Mat22 operator*(const Mat22& rhs) const
         {
             Mat22 m;
             m.buffer[0] = buffer[0] * rhs.buffer[0] + buffer[1] * rhs.buffer[2];
@@ -94,7 +94,7 @@ namespace math
             return m;
         }
 
-        inline const Mat22 operator/(const Mat22& rhs)
+        inline const Mat22 operator/(const Mat22& rhs) const
         {
             Mat22 m;
             m.buffer[0] = buffer[0] / rhs.buffer[0] + buffer[1] / rhs.buffer[2];
@@ -114,7 +114,7 @@ namespace math
             Mat22 m; m /= factor; return m;
         }
 
-        inline const Vec2<T> operator*(const Vec2<T>& rhs)
+        inline const Vec2<T> operator*(const Vec2<T>& rhs) const
         {
             Vec2<T> r;
             r.x = buffer[0] * rhs.x + buffer[1] * rhs.y;
@@ -122,7 +122,7 @@ namespace math
             return r;
         }
 
-        inline bool operator==(const Mat22& rhs)
+        inline bool operator==(const Mat22& rhs) const
         {
             return buffer[0] == rhs.buffer[0]
                 && buffer[1] == rhs.buffer[1]
@@ -130,7 +130,7 @@ namespace math
                 && buffer[3] == rhs.buffer[3];
         }
 
-        inline bool operator!=(const Mat22& rhs)
+        inline bool operator!=(const Mat22& rhs) const
         {
             return buffer[0] != rhs.buffer[0]
                 || buffer[1] != rhs.buffer[1]

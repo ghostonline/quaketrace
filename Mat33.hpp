@@ -109,7 +109,7 @@ namespace math
             Mat33 m; m -= rhs; return m;
         }
 
-        inline const Mat33 operator*(const Mat33& rhs)
+        inline const Mat33 operator*(const Mat33& rhs) const
         {
             Mat33 m;
             m.buffer[0] = buffer[0] * rhs.buffer[0] + buffer[1] * rhs.buffer[3] + buffer[2] * rhs.buffer[6];
@@ -124,7 +124,7 @@ namespace math
             return m;
         }
 
-        inline const Mat33 operator/(const Mat33& rhs)
+        inline const Mat33 operator/(const Mat33& rhs) const
         {
             Mat33 m;
             m.buffer[0] = buffer[0] / rhs.buffer[0] + buffer[1] / rhs.buffer[3] + buffer[2] / rhs.buffer[6];
@@ -149,7 +149,7 @@ namespace math
             Mat33 m; m /= factor; return m;
         }
 
-        inline const Vec3<T> operator*(const Vec3<T>& rhs)
+        inline const Vec3<T> operator*(const Vec3<T>& rhs) const
         {
             Vec3<T> r;
             r.x = buffer[0] * rhs.x + buffer[1] * rhs.y + buffer[2] * rhs.z;
@@ -158,7 +158,7 @@ namespace math
             return r;
         }
 
-        inline bool operator==(const Mat33& rhs)
+        inline bool operator==(const Mat33& rhs) const
         {
             return buffer[0] == rhs.buffer[0]
                 && buffer[1] == rhs.buffer[1]
@@ -171,7 +171,7 @@ namespace math
                 && buffer[8] == rhs.buffer[8];
         }
 
-        inline bool operator!=(const Mat33& rhs)
+        inline bool operator!=(const Mat33& rhs) const
         {
             return buffer[0] != rhs.buffer[0]
                 || buffer[1] != rhs.buffer[1]

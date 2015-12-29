@@ -144,9 +144,8 @@ namespace math
             Mat44 m; m -= rhs; return m;
         }
 
-        inline const Mat44 operator*(const Mat44& rhs)
+        inline const Mat44 operator*(const Mat44& rhs) const
         {
-            // TODO
             Mat44 m;
             m.buffer[0] = buffer[0] * rhs.buffer[0] + buffer[1] * rhs.buffer[4] + buffer[2] * rhs.buffer[8] + buffer[3] * rhs.buffer[12];
             m.buffer[1] = buffer[0] * rhs.buffer[1] + buffer[1] * rhs.buffer[5] + buffer[2] * rhs.buffer[9] + buffer[3] * rhs.buffer[13];
@@ -167,7 +166,7 @@ namespace math
             return m;
         }
 
-        inline const Mat44 operator/(const Mat44& rhs)
+        inline const Mat44 operator/(const Mat44& rhs) const
         {
             Mat44 m;
             m.buffer[0] = buffer[0] / rhs.buffer[0] + buffer[1] / rhs.buffer[4] + buffer[2] / rhs.buffer[8] + buffer[3] / rhs.buffer[12];
@@ -199,7 +198,7 @@ namespace math
             Mat44 m; m /= factor; return m;
         }
 
-        inline const Vec4<T> operator*(const Vec4<T>& rhs)
+        inline const Vec4<T> operator*(const Vec4<T>& rhs) const
         {
             Vec4<T> r;
             r.x = buffer[0] * rhs.x + buffer[1] * rhs.y + buffer[2] * rhs.z + buffer[3] * rhs.w;
@@ -209,7 +208,7 @@ namespace math
             return r;
         }
 
-        inline bool operator==(const Mat44& rhs)
+        inline bool operator==(const Mat44& rhs) const
         {
             return buffer[0] == rhs.buffer[0]
                 && buffer[1] == rhs.buffer[1]
@@ -230,7 +229,7 @@ namespace math
                 ;
         }
 
-        inline bool operator!=(const Mat44& rhs)
+        inline bool operator!=(const Mat44& rhs) const
         {
             return buffer[0] != rhs.buffer[0]
                 || buffer[1] != rhs.buffer[1]
