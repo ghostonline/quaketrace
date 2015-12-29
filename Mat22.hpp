@@ -8,18 +8,6 @@ namespace math
     {
         T buffer[4];
 
-        inline Mat22& operator=(const Mat22& rhs)
-        {
-            if (this != &rhs)
-            {
-                buffer[0] = rhs.buffer[0];
-                buffer[1] = rhs.buffer[1];
-                buffer[2] = rhs.buffer[2];
-                buffer[3] = rhs.buffer[3];
-            }
-            return *this;
-        }
-
         inline Mat22& operator+=(const Mat22& rhs)
         {
             buffer[0] += rhs.buffer[0];

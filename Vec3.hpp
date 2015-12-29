@@ -14,17 +14,6 @@ namespace math
         T y;
         T z;
 
-        inline Vec3& operator=(const Vec3& rhs)
-        {
-            if (this != &rhs)
-            {
-                this->x = rhs.x;
-                this->y = rhs.y;
-                this->z = rhs.z;
-            }
-            return *this;
-        }
-
         inline Vec3& operator+=(const Vec3& rhs)
         {
             this->x += rhs.x;
