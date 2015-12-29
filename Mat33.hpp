@@ -75,16 +75,6 @@ namespace math
             return *this;
         }
 
-        inline const Mat33 operator*(Mat33 rhs) const
-        {
-            Mat33 m; m *= rhs; return m;
-        }
-
-        inline const Mat33 operator/(Mat33 rhs) const
-        {
-            Mat33 m; m /= rhs; return m;
-        }
-
         inline Mat33& operator%=(int factor)
         {
             buffer[0] %= factor;

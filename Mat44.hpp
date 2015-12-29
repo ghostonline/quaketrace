@@ -103,16 +103,6 @@ namespace math
             return *this;
         }
 
-        inline const Mat44 operator*(Mat44 rhs) const
-        {
-            Mat44 m; m *= rhs; return m;
-        }
-
-        inline const Mat44 operator/(Mat44 rhs) const
-        {
-            Mat44 m; m /= rhs; return m;
-        }
-
         inline Mat44& operator%=(int factor)
         {
             buffer[0] %= factor;

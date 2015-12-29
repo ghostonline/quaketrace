@@ -55,16 +55,6 @@ namespace math
             return *this;
         }
 
-        inline const Mat22 operator*(Mat22 rhs) const
-        {
-            Mat22 m; m *= rhs; return m;
-        }
-
-        inline const Mat22 operator/(Mat22 rhs) const
-        {
-            Mat22 m; m /= rhs; return m;
-        }
-
         inline Mat22& operator%=(int factor)
         {
             buffer[0] %= factor;
