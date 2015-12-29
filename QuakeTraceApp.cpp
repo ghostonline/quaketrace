@@ -12,6 +12,7 @@
 #include "Geometry.hpp"
 #include "AssetHelper.hpp"
 #include "GraphicTool.hpp"
+#include "Scene.hpp"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -58,6 +59,8 @@ void QuakeTraceApp::runUntilFinished()
 
     auto fb = FrameBuffer::createFromWindow(window);
     auto font = Font::create();
+    Scene scene;
+    Scene::initDefault(&scene);
 
     bool finished = false;
     uint32_t lastTick = SDL_GetTicks();

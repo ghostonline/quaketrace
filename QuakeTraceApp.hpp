@@ -8,5 +8,7 @@ class QuakeTraceApp
 {
 public:
     static void runUntilFinished();
+
+private:
     static void setIconFromAsset(SDL_Window* window, AssetHelper::ID id);
 };

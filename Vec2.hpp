@@ -9,6 +9,9 @@ namespace math
     {
         T x, y;
 
+        Vec2() : x(0), y(0){}
+        Vec2(T x, T y) : x(x), y(y) {}
+
         inline Vec2& operator+=(const Vec2& rhs)
         {
             this->x += rhs.x;
@@ -65,6 +68,13 @@ namespace math
         inline bool operator!=(const Vec2& rhs)
         {
             return this->x != rhs.x || this->y != rhs.y;
+        }
+
+        inline Vec2& set(T x, T y)
+        {
+            this->x = x;
+            this->y = y;
+            return *this;
         }
 
         inline static const float length2(const Vec2& p)

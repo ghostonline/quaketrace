@@ -50,6 +50,10 @@ set (BASE_SOURCE_FILES
 	Geometry.hpp
 	AssetHelper.hpp
 	AssetHelper.cpp
+	Scene.cpp
+	Scene.hpp
+	Color.hpp
+	Assert.hpp
 )
 set (MATH_SOURCE_FILES
 	Math.cpp
