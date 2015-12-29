@@ -13,7 +13,7 @@ namespace math
 {
     const float PI = 3.1415f;
     const float PI2 = PI * 2;
-    const float DEG_TO_RAD = PI / 360.0f;
+    const float DEG_TO_RAD = PI2 / 360.0f;
 
     template<typename T>
     const float squared(T num) { return num * num; }
