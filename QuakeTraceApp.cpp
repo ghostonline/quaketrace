@@ -14,7 +14,7 @@
 #include "GraphicTool.hpp"
 #include "Scene.hpp"
 
-const int SCREEN_WIDTH = 640;
+const int SCREEN_WIDTH = 480;
 const int SCREEN_HEIGHT = 480;
 const int FRAME_RATE = 1000 / 60; // ticks per frame
 
@@ -62,9 +62,6 @@ void QuakeTraceApp::runUntilFinished()
     auto font = Font::create();
     Scene scene;
     Scene::initDefault(&scene);
-
-    // Compensate for aspect ratio
-    scene.camera.halfViewAngles.y = scene.camera.halfViewAngles.x / (SCREEN_WIDTH / static_cast<float>(SCREEN_HEIGHT));
 
     bool finished = false;
     uint32_t lastTick = SDL_GetTicks();
