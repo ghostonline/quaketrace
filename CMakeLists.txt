@@ -35,17 +35,12 @@ set(ASSETS
 )
 
 # Generate source files
-set (APP_SOURCE_FILES
+set (BASE_SOURCE_FILES
 	main.cpp
 	QuakeTraceApp.cpp
 	QuakeTraceApp.hpp
 	FrameBuffer.cpp
 	FrameBuffer.hpp
-	Math.cpp
-	Math.hpp
-	Vec2.hpp
-	Vec3.hpp
-	Mat22.hpp
 	Texture.cpp
 	Texture.hpp
 	Font.cpp
@@ -56,7 +51,20 @@ set (APP_SOURCE_FILES
 	AssetHelper.hpp
 	AssetHelper.cpp
 )
-source_group("Source" FILES ${APP_SOURCE_FILES})
+set (MATH_SOURCE_FILES
+	Math.cpp
+	Math.hpp
+	Vec2.hpp
+	Vec3.hpp
+	Mat22.hpp
+)
+source_group("Source" FILES ${BASE_SOURCE_FILES})
+source_group("Source\\Math" FILES ${MATH_SOURCE_FILES})
+
+set (APP_SOURCE_FILES
+	${BASE_SOURCE_FILES}
+	${MATH_SOURCE_FILES}
+)
 
 foreach(f IN ITEMS ${APP_SOURCE_FILES})
 	set(SOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${f}")
