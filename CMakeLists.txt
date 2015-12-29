@@ -44,6 +44,7 @@ set (APP_SOURCE_FILES
 	Math.cpp
 	Math.hpp
 	Vec2.hpp
+	Vec3.hpp
 	Mat22.hpp
 	Texture.cpp
 	Texture.hpp
