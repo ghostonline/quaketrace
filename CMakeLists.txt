@@ -43,6 +43,8 @@ set (APP_SOURCE_FILES
 	FrameBuffer.hpp
 	Math.cpp
 	Math.hpp
+	Vec2.hpp
+	Mat22.hpp
 	Texture.cpp
 	Texture.hpp
 	Font.cpp
