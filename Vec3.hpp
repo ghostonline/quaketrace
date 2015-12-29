@@ -2,17 +2,12 @@
 
 #include <cmath>
 
-#define Vec3f Vec3<float>
-#define Vec3i Vec3<int>
-
 namespace math
 {
     template<typename T>
     struct Vec3
     {
-        T x;
-        T y;
-        T z;
+        T x, y, z;
 
         inline Vec3& operator+=(const Vec3& rhs)
         {
@@ -95,19 +90,29 @@ namespace math
                 || this->y != rhs.y
                 || this->z != rhs.z;
         }
+
+        inline static const float length2(const Vec3& p)
+        {
+            return p.x * p.x + p.y * p.y + p.z * p.z;
+        }
+
+        inline static const float length(const Vec3& p)
+        {
+            return std::sqrt(length2(p));
+        }
+
+        inline static const float distance2(const Vec3& a, const Vec3& b)
+        {
+            return length2(b - a);
+        }
+
+        inline static const float distance(const Vec3& a, const Vec3& b)
+        {
+            return length(b - a);
+        }
+
     };
 
-    inline const float distance2(const Vec3f& a, const Vec3f& b);
-    inline const float distance(const Vec3f& a, const Vec3f& b);
-}
-
-const float math::distance2(const Vec3f& a, const Vec3f& b)
-{
-    auto rel = b - a;
-    return rel.x * rel.x + rel.y * rel.y + rel.z * rel.z;
-}
-
-const float math::distance(const Vec3f& a, const Vec3f& b)
-{
-    return std::sqrt(distance2(a, b));
+    typedef Vec3<float> Vec3f;
+    typedef Vec3<int> Vec3i;
 }

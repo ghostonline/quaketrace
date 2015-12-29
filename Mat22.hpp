@@ -1,5 +1,4 @@
-#define Mat22f Mat22<float>
-#define Mat22i Mat22<int>
+#pragma once
 
 namespace math
 {
@@ -139,4 +138,7 @@ namespace math
                 || buffer[3] != rhs.buffer[3];
         }
     };
+
+    typedef Mat22<float> Mat22f;
+    typedef Mat22<int> Mat22i;
 }
