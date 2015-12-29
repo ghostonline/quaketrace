@@ -16,13 +16,8 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 const int FRAME_RATE = 1000 / 60; // ticks per frame
-const float SHADE_FACTOR = 0.6f;
 
-const std::uint32_t COLOR_CEILING = 0xFF444444;
-const std::uint32_t COLOR_FLOOR = 0xFF666666;
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
-const std::uint32_t COLOR_SKY = 0xFF66A0FF;
-const std::uint32_t COLOR_GRASS = 0xFF35770E;
 
 using namespace std;
 using namespace math;
