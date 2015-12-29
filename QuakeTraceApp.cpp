@@ -19,6 +19,7 @@ const int SCREEN_HEIGHT = 480;
 const int FRAME_RATE = 1000 / 60; // ticks per frame
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
+const std::uint32_t COLOR_BACKGROUND = 0xFF222222;
 
 using namespace std;
 using namespace math;
@@ -112,6 +113,8 @@ void QuakeTraceApp::runUntilFinished()
             fb->flip();
         }
 
+        renderScene(scene, fb);
+
 #if SHOW_FPS
         // Render FPS
         {
@@ -127,4 +130,24 @@ void QuakeTraceApp::runUntilFinished()
     SDL_Quit();
 
     return;
+}
+
+void QuakeTraceApp::renderScene(const Scene& scene, FrameBuffer* fb)
+{
+    uint8_t* pixels = reinterpret_cast<uint8_t*>(fb->get());
+    // TODO: Parallelize
+    for (int x = fb->getWidth() - 1; x >= 0; --x)
+    {
+        for (int y = fb->getHeight() - 1; y >= 0; --y)
+        {
+            const int baseIdx = x * fb->getPixelSize() + y * fb->getPitch();
+            uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[baseIdx]);
+            *pixel = renderPixel(scene, x, y);
+        }
+    }
+}
+
+std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, int x, int y)
+{
+    return COLOR_BACKGROUND;
 }

@@ -7,6 +7,7 @@ class FrameBuffer
 {
 public:
     static FrameBuffer* createFromWindow(SDL_Window* window);
+    int getPixelSize() const { return 4; }
     int getWidth() const { return width; }
     int getHeight() const { return height; }
     int getPitch() const { return pitch; }
