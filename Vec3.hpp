@@ -122,6 +122,33 @@ namespace math
             return length(b - a);
         }
 
+        inline static void normalize(Vec3* v)
+        {
+            *v /= length(*v);
+        }
+
+        inline static float dot(const Vec3& a, const Vec3& b)
+        {
+            return a.x * b.x + a.y * b.y + a.z * b.z;
+        }
+
+        inline static void rotateAroundZ(Vec3* v, float angle)
+        {
+            v->x = std::cos(angle) * v->x - std::sin(angle) * v->y;
+            v->y = std::sin(angle) * v->x + std::cos(angle) * v->y;
+        }
+
+        inline static void rotateAroundY(Vec3* v, float angle)
+        {
+            v->z = std::cos(angle) * v->z - std::sin(angle) * v->x;
+            v->x = std::sin(angle) * v->z + std::cos(angle) * v->x;
+        }
+
+        inline static void rotateAroundX(Vec3* v, float angle)
+        {
+            v->y = std::cos(angle) * v->y - std::sin(angle) * v->z;
+            v->z = std::sin(angle) * v->y + std::cos(angle) * v->z;
+        }
     };
 
     typedef Vec3<float> Vec3f;

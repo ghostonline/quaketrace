@@ -60,7 +60,10 @@ set (MATH_SOURCE_FILES
 	Math.hpp
 	Vec2.hpp
 	Vec3.hpp
+	Vec4.hpp
 	Mat22.hpp
+	Mat33.hpp
+	Mat44.hpp
 )
 source_group("Source" FILES ${BASE_SOURCE_FILES})
 source_group("Source\\Math" FILES ${MATH_SOURCE_FILES})

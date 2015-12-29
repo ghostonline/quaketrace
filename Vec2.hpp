@@ -97,6 +97,21 @@ namespace math
             return length(b - a);
         }
 
+        inline static void normalize(Vec2& v)
+        {
+            *v /= length(v);
+        }
+
+        inline static float dot(const Vec2& a, const Vec2& b)
+        {
+            return a.x * b.x + a.y * b.y;
+        }
+
+        inline static float rotate(Vec2* v, float angle)
+        {
+            v->x = std::cos(angle) * v->x - std::sin(angle) * v->y;
+            v->y = std::sin(angle) * v->x + std::cos(angle) * v->y;
+        }
     };
 
     typedef Vec2<float> Vec2f;
