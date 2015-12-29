@@ -180,12 +180,12 @@ namespace math
 
         inline const Mat44 operator*(T factor) const
         {
-            Mat44 m; m *= factor; return m;
+            Mat44 m = *this; m *= factor; return m;
         }
 
         inline const Mat44 operator/(T factor) const
         {
-            Mat44 m; m /= factor; return m;
+            Mat44 m = *this; m /= factor; return m;
         }
 
         inline const Vec4<T> operator*(const Vec4<T>& rhs) const

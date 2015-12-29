@@ -91,12 +91,12 @@ namespace math
 
         inline const Mat33 operator+(const Mat33& rhs) const
         {
-            Mat33 m; m += rhs; return m;
+            Mat33 m = *this; m += rhs; return m;
         }
 
         inline const Mat33 operator-(const Mat33& rhs) const
         {
-            Mat33 m; m -= rhs; return m;
+            Mat33 m = *this; m -= rhs; return m;
         }
 
         inline const Mat33 operator*(const Mat33& rhs) const
@@ -131,12 +131,12 @@ namespace math
 
         inline const Mat33 operator*(T factor) const
         {
-            Mat33 m; m *= factor; return m;
+            Mat33 m = *this; m *= factor; return m;
         }
 
         inline const Mat33 operator/(T factor) const
         {
-            Mat33 m; m /= factor; return m;
+            Mat33 m = *this; m /= factor; return m;
         }
 
         inline const Vec3<T> operator*(const Vec3<T>& rhs) const
