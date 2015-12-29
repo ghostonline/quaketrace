@@ -24,7 +24,7 @@ struct Scene
         math::Vec2f halfViewAngles;
 
         float near;
-
+        float far;
     };
 
     Camera camera;

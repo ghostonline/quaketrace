@@ -161,14 +161,23 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     const Mat33f rotMatX = math::createRotationMatrix(rotAxisY, x * camera.halfViewAngles.x);
     const Vec3f dir = (rotMatX * rotMatY) * camera.direction;
 
+    float minDist = camera.far;
+    std::uint32_t minColor = COLOR_BACKGROUND;
     for (const Scene::Sphere& sphere : scene.spheres)
     {
         auto relativeOrigin = sphere.origin - camera.origin;
         float dot = Vec3f::dot(relativeOrigin, dir);
         auto projection = dir * dot;
         if (Vec3f::distance2(projection, relativeOrigin) > math::squared(sphere.radius)) { continue; }
-        return Color::asUint(sphere.color);
+        float distance = Vec3f::distance(projection, relativeOrigin);
+
+        float penetration = std::sqrt(math::squared(sphere.radius) - math::squared(distance));
+        float dist = dot - penetration;
+        if (minDist > dist)
+        {
+            minColor = Color::asUint(sphere.color);
+        }
     }
 
-    return COLOR_BACKGROUND;
+    return minColor;
 }
