@@ -159,7 +159,7 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     const Mat33f rotMatY = math::createRotationMatrix(camera.right, y * camera.halfViewAngles.y);
     const Vec3f rotAxisY = rotMatY * camera.up;
     const Mat33f rotMatX = math::createRotationMatrix(rotAxisY, x * camera.halfViewAngles.x);
-    const Vec3f dir = (rotMatX * rotMatY) * camera.direction;
+    const Vec3f dir = rotMatX * (rotMatY * camera.direction);
 
     float minDist = camera.far;
     std::uint32_t minColor = COLOR_BACKGROUND;
