@@ -47,9 +47,9 @@ set (APP_SOURCE_FILES
 	Texture.hpp
 	Font.cpp
 	Font.hpp
-    GraphicTool.cpp
-    GraphicTool.hpp
-    Geometry.hpp
+	GraphicTool.cpp
+	GraphicTool.hpp
+	Geometry.hpp
 	AssetHelper.hpp
 	AssetHelper.cpp
 )
@@ -76,9 +76,9 @@ set_property(TARGET ${EXEC_FILE} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 find_package(PythonInterp REQUIRED)
 add_custom_command(OUTPUT
-    ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/assets/bundle.py ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc
-    DEPENDS ${ASSETS}
+	${CMAKE_CURRENT_BINARY_DIR}/bundled.inc
+	COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/assets/bundle.py ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc
+	DEPENDS ${ASSETS}
 )
 add_custom_target(assets DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc)
 add_dependencies(${EXEC_FILE} assets)
