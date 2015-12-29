@@ -20,7 +20,8 @@ struct Scene
         math::Vec3f origin;
         math::Vec3f direction;
         math::Vec3f up;
-        math::Vec2f viewDimensions;
+        math::Vec3f right;
+        math::Vec2f halfViewAngles;
 
         float near;
 

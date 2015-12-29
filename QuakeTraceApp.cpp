@@ -63,6 +63,9 @@ void QuakeTraceApp::runUntilFinished()
     Scene scene;
     Scene::initDefault(&scene);
 
+    // Compensate for aspect ratio
+    scene.camera.halfViewAngles.y = scene.camera.halfViewAngles.x / (SCREEN_WIDTH / static_cast<float>(SCREEN_HEIGHT));
+
     bool finished = false;
     uint32_t lastTick = SDL_GetTicks();
 #if SHOW_FPS
@@ -142,12 +145,30 @@ void QuakeTraceApp::renderScene(const Scene& scene, FrameBuffer* fb)
         {
             const int baseIdx = x * fb->getPixelSize() + y * fb->getPitch();
             uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[baseIdx]);
-            *pixel = renderPixel(scene, x, y);
+            float normX = ((x / static_cast<float>(fb->getWidth())) - 0.5f) * 2.0f;
+            float normY = ((y / static_cast<float>(fb->getHeight())) - 0.5f) * 2.0f;
+            *pixel = renderPixel(scene, normX, normY);
         }
     }
 }
 
-std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, int x, int y)
+std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
 {
+    const Scene::Camera& camera = scene.camera;
+
+    const Mat33f rotMatY = math::createRotationMatrix(camera.right, y * camera.halfViewAngles.y);
+    const Vec3f rotAxisY = rotMatY * camera.up;
+    const Mat33f rotMatX = math::createRotationMatrix(rotAxisY, x * camera.halfViewAngles.x);
+    const Vec3f dir = (rotMatX * rotMatY) * camera.direction;
+
+    for (const Scene::Sphere& sphere : scene.spheres)
+    {
+        auto relativeOrigin = sphere.origin - camera.origin;
+        float dot = Vec3f::dot(relativeOrigin, dir);
+        auto projection = dir * dot;
+        if (Vec3f::distance2(projection, relativeOrigin) > math::squared(sphere.radius)) { continue; }
+        return Color::asUint(sphere.color);
+    }
+
     return COLOR_BACKGROUND;
 }
