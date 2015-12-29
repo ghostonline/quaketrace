@@ -1,0 +1,9 @@
+Wolfie TODO
+
+Nice ifs
+- Render floor tiles
+- Render doors and transparent tiles
+- Multithreaded rendering
+- Better collision detection
+- Zip assets to reduce space used
+- Decorate maze with additional items
