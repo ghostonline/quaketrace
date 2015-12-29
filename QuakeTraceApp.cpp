@@ -79,12 +79,10 @@ void QuakeTraceApp::runUntilFinished()
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
-            {
-                finished = true;
-            }
-
-            if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE)
+            const bool quitEvent =
+                (event.type == SDL_QUIT) || // Window close or ALT+F4
+                (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE); // Esc KEY
+            if (quitEvent)
             {
                 finished = true;
             }
