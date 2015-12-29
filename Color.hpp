@@ -10,6 +10,6 @@ struct Color
 
     inline static std::uint32_t asUint(const Color& c)
     {
-        return static_cast<std::uint32_t>(c.r * 0x00FF0000 + c.g * 0x0000FF00 + c.b * 0x000000FF + 0xFF000000);
+        return static_cast<std::uint32_t>(c.r * 0x00FF0000 + c.g * 0x0000FF00 + c.b * 0x000000FF) + 0xFF000000;
     }
 };
