@@ -149,6 +149,16 @@ namespace math
             v->y = std::cos(angle) * v->y - std::sin(angle) * v->z;
             v->z = std::sin(angle) * v->y + std::cos(angle) * v->z;
         }
+
+        inline static const Vec3 cross(const Vec3& a, const Vec3& b)
+        {
+            return
+            {
+                a.y * b.z - a.z * b.y,
+                a.z * b.x - a.x * b.z,
+                a.x * b.y - a.y * b.z,
+            };
+        }
     };
 
     typedef Vec3<float> Vec3f;
