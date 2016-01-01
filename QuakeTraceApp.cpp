@@ -143,7 +143,7 @@ void QuakeTraceApp::renderScene(const Scene& scene, FrameBuffer* fb)
             const int baseIdx = x * fb->getPixelSize() + y * fb->getPitch();
             uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[baseIdx]);
             float normX = ((x + 0.5f) / static_cast<float>(fb->getWidth()) - 0.5f) * 2.0f;
-            float normY = ((y + 0.5f) / static_cast<float>(fb->getHeight()) - 0.5f) * 2.0f;
+            float normY = ((y + 0.5f) / static_cast<float>(fb->getHeight()) - 0.5f) * -2.0f;
             *pixel = renderPixel(scene, normX, normY);
         }
     }
