@@ -17,7 +17,17 @@ namespace math
     inline const float deg2rad(float deg) { return (PI / 180.0f) * deg; }
 
     template<typename T>
-    const float squared(T num) { return num * num; }
+    inline const T squared(T num) { return num * num; }
+
+    template<typename T>
+    inline const T clamp(T num, T min, T max) { return math::max(min, math::min(num, max)); }
+    inline const float clamp01(float num) { return clamp(num, 0.0f, 1.0f); }
+
+    template<typename T>
+    inline const T min(T a, T b) { return a < b ? a : b; }
+
+    template<typename T>
+    inline const T max(T a, T b) { return a > b ? a : b; }
 
     const Mat22f createRotationMatrix(float angle);
     const Mat22f createCameraMatrix(float planeX, float planeY, float dirX, float dirY);

@@ -13,6 +13,7 @@
 #include "AssetHelper.hpp"
 #include "GraphicTool.hpp"
 #include "Scene.hpp"
+#include "Assert.hpp"
 
 const int SCREEN_WIDTH = 480;
 const int SCREEN_HEIGHT = 480;
@@ -159,7 +160,7 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     Vec3f::normalize(&dir);
 
     float minDist = camera.far;
-    std::uint32_t minColor = COLOR_BACKGROUND;
+    const Scene::Sphere* minSphere = nullptr;
     for (const Scene::Sphere& sphere : scene.spheres)
     {
         auto relativeOrigin = sphere.origin - camera.origin;
@@ -172,9 +173,23 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         float dist = dot - penetration;
         if (minDist > dist)
         {
-            minColor = Color::asUint(sphere.color);
+            minSphere = &sphere;
+            minDist = dist;
         }
     }
 
-    return minColor;
+    if (minSphere)
+    {
+        const Vec3f minHitOrigin = dir * minDist + camera.origin;
+        Vec3f hitNormal = minSphere->origin - minHitOrigin;
+        Vec3f::normalize(&hitNormal);
+        float shade = math::clamp01(Vec3f::dot(hitNormal, dir)) * 0.9f + 0.1f;
+        Color c = minSphere->color;
+        c.r *= shade;
+        c.g *= shade;
+        c.b *= shade;
+        return Color::asUint(c);
+    }
+
+    return COLOR_BACKGROUND;
 }
