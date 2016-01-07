@@ -65,13 +65,8 @@ void QuakeTraceApp::runUntilFinished()
     Scene::initDefault(&scene);
 
     bool finished = false;
-    uint32_t lastTick = SDL_GetTicks();
-
     while (!finished)
     {
-        // Calculate dT in seconds
-        uint32_t dTicks = SDL_GetTicks() - lastTick;
-
         // Process all events
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -85,24 +80,16 @@ void QuakeTraceApp::runUntilFinished()
             }
         }
 
-        while (dTicks >= FRAME_RATE)
-        {
-            lastTick += FRAME_RATE;
-            dTicks -= FRAME_RATE;
-
-            fb->flip();
-        }
-
-        uint32_t renderTime = SDL_GetTicks();
-        renderScene(scene, fb);
-
         // Display rendertime
         {
+            uint32_t renderTime = SDL_GetTicks();
+            renderScene(scene, fb);            
             char renderTimeStr[50];
             sprintf(renderTimeStr, "%d ms", SDL_GetTicks() - renderTime);
             font->blitString(fb, renderTimeStr, 0, 0);
         }
 
+        fb->flip();
     }
 
     SDL_DestroyWindow(window);
