@@ -66,19 +66,11 @@ void QuakeTraceApp::runUntilFinished()
 
     bool finished = false;
     uint32_t lastTick = SDL_GetTicks();
-#if SHOW_FPS
-    int frames = 0;
-    int frameTimeout = 0;
-    int framesPerSecond = 0;
-#endif
 
     while (!finished)
     {
         // Calculate dT in seconds
         uint32_t dTicks = SDL_GetTicks() - lastTick;
-#if SHOW_FPS
-        frames += 1;
-#endif
 
         // Process all events
         SDL_Event event;
@@ -98,32 +90,18 @@ void QuakeTraceApp::runUntilFinished()
             lastTick += FRAME_RATE;
             dTicks -= FRAME_RATE;
 
-#if SHOW_FPS
-            frameTimeout += FRAME_RATE;
-            if (frameTimeout > 1000)
-            {
-                framesPerSecond = frames;
-                frames = 0;
-                frameTimeout -= 1000;
-
-                if (framesPerSecond < 0) { framesPerSecond = 0; }
-                else if (framesPerSecond >= 10000) { framesPerSecond = 99999; }
-            }
-#endif
-
             fb->flip();
         }
 
+        uint32_t renderTime = SDL_GetTicks();
         renderScene(scene, fb);
 
-#if SHOW_FPS
-        // Render FPS
+        // Display rendertime
         {
-            char fpscounter[11];
-            sprintf(fpscounter, "fps: %d", framesPerSecond);
-            font->blitString(fb, fpscounter, 0, 0);
+            char renderTimeStr[50];
+            sprintf(renderTimeStr, "%d ms", SDL_GetTicks() - renderTime);
+            font->blitString(fb, renderTimeStr, 0, 0);
         }
-#endif
 
     }
 
