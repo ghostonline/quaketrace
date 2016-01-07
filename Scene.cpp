@@ -9,8 +9,10 @@ void Scene::initDefault(Scene* scene)
 
     scene->camera.origin.set(0, 0, -30);
     scene->camera.direction.set(0, 0, 1);
-    scene->camera.up.set(0, 1, 0);
+    scene->camera.up.set(0, 1, 0); // General up direction
+    ASSERT(scene->camera.up != scene->camera.direction);
     scene->camera.right = math::Vec3f::cross(scene->camera.direction, scene->camera.up);
+    scene->camera.up = math::Vec3f::cross(scene->camera.right, scene->camera.direction);
 
     scene->camera.near = 10.0f;
     scene->camera.far = 1000.0f;
