@@ -15,6 +15,13 @@ struct Scene
         Color color;
     };
 
+    struct Plane
+    {
+        math::Vec3f origin;
+        math::Vec3f normal;
+        Color color;
+    };
+
     struct Camera
     {
         math::Vec3f origin;
@@ -29,6 +36,7 @@ struct Scene
 
     Camera camera;
     std::vector<Sphere> spheres;
+    std::vector<Plane> planes;
 
     static void initDefault(Scene* scene);
 };
