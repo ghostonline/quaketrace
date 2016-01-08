@@ -143,6 +143,32 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         }
     }
 
+    const Scene::Plane* minPlane = nullptr;
+    for (const Scene::Plane& plane : scene.planes)
+    {
+        float denom = Vec3f::dot(dir, plane.normal);
+        // Only render plane if point moves toward front of the plane
+        if (denom > math::APPROXIMATE_ZERO) { continue; }
+
+        // Determine intersection time
+        auto relativeOrigin = plane.origin - camera.origin;
+        float t = Vec3f::dot(relativeOrigin, plane.normal) / denom;
+
+        // Calculate intersection point relative to the camera
+        auto intersection = dir * t;
+        float dist = Vec3f::length(intersection);
+        if (minDist > dist)
+        {
+            minDist = dist;
+            minPlane = &plane;
+        }
+    }
+
+    if (minPlane)
+    {
+        return Color::asUint(minPlane->color);
+    }
+
     if (minSphere)
     {
         const Vec3f minHitOrigin = dir * minDist + camera.origin;

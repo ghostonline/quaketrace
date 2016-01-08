@@ -13,6 +13,7 @@ namespace math
 {
     const float PI = 3.1415f;
     const float PI2 = PI * 2;
+    const float APPROXIMATE_ZERO = 0.00001f;
 
     inline const float deg2rad(float deg) { return (PI / 180.0f) * deg; }
 
