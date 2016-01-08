@@ -12,6 +12,14 @@ namespace math
         Vec2() : x(0), y(0){}
         Vec2(T x, T y) : x(x), y(y) {}
 
+        inline Vec2 operator-() const
+        {
+            return{
+                -x,
+                -y,
+            };
+        }
+
         inline Vec2& operator+=(const Vec2& rhs)
         {
             this->x += rhs.x;

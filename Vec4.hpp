@@ -13,6 +13,16 @@ namespace math
         Vec4(T x, T y, T z) : x(x), y(y), z(z), w(1) {}
         Vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
 
+        inline Vec4 operator-() const
+        {
+            return{
+                -x,
+                -y,
+                -z,
+                -w,
+            };
+        }
+
         inline Vec4& operator+=(const Vec4& rhs)
         {
             this->x += rhs.x;

@@ -12,6 +12,15 @@ namespace math
         Vec3() : x(0), y(0), z(0) {}
         Vec3(T x, T y, T z) : x(x), y(y), z(z) {}
 
+        inline Vec3 operator-() const
+        {
+            return{
+                -x,
+                -y,
+                -z,
+            };
+        }
+
         inline Vec3& operator+=(const Vec3& rhs)
         {
             this->x += rhs.x;
