@@ -83,7 +83,7 @@ void QuakeTraceApp::runUntilFinished()
         // Display rendertime
         {
             uint32_t renderTime = SDL_GetTicks();
-            renderScene(scene, fb);            
+            renderScene(scene, fb);
             char renderTimeStr[50];
             sprintf(renderTimeStr, "%d ms", SDL_GetTicks() - renderTime);
             font->blitString(fb, renderTimeStr, 0, 0);
