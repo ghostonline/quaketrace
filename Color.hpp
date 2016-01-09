@@ -20,9 +20,9 @@ struct Color
 
     inline Color& operator+=(const Color& rhs)
     {
-        this->r = math::clamp01(this->r + rhs.r);
-        this->g = math::clamp01(this->g + rhs.g);
-        this->b = math::clamp01(this->b + rhs.b);
+        this->r += rhs.r;
+        this->g += rhs.g;
+        this->b += rhs.b;
         return *this;
     }
 
@@ -35,9 +35,9 @@ struct Color
 
     inline Color& operator-=(const Color& rhs)
     {
-        this->r = math::clamp01(this->r - rhs.r);
-        this->g = math::clamp01(this->g - rhs.g);
-        this->b = math::clamp01(this->b - rhs.b);
+        this->r = rhs.r;
+        this->g = rhs.g;
+        this->b = rhs.b;
         return *this;
     }
 
