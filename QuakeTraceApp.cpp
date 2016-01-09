@@ -166,7 +166,13 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
 
     if (minPlane)
     {
-        return Color::asUint(minPlane->color);
+        float dot = Vec3f::dot(dir, -minPlane->normal);
+        float shade = math::clamp01(dot) * 0.9f + 0.1f;
+        Color c = minPlane->color;
+        c.r *= shade;
+        c.g *= shade;
+        c.b *= shade;
+        return Color::asUint(c);
     }
 
     if (minSphere)
