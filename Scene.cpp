@@ -7,8 +7,8 @@ void Scene::initDefault(Scene* scene)
 {
     ASSERT(scene != nullptr);
 
-    scene->camera.origin.set(0, 0, -30);
-    scene->camera.direction.set(0, 0, 1);
+    scene->camera.origin.set(0, 0, 30);
+    scene->camera.direction.set(0, 0, -1);
     scene->camera.up.set(0, 1, 0); // General up direction
     ASSERT(scene->camera.up != scene->camera.direction);
     scene->camera.right = math::Vec3f::cross(scene->camera.direction, scene->camera.up);
@@ -24,8 +24,8 @@ void Scene::initDefault(Scene* scene)
     );
 
     // Spheres
-    scene->spheres.push_back({ math::Vec3f(15.0f, 15.0f, 20.0f), 8.0, Color(1.0f, 0.0f, 0.0f) });
-    scene->spheres.push_back({ math::Vec3f(15.0f, 5.0f, 5.0f), 6.0, Color(0.0f, 1.0f, 0.0f) });
+    scene->spheres.push_back({ math::Vec3f(15.0f, 15.0f, -20.0f), 8.0, Color(1.0f, 0.0f, 0.0f) });
+    scene->spheres.push_back({ math::Vec3f(15.0f, 5.0f, -5.0f), 6.0, Color(0.0f, 1.0f, 0.0f) });
 
     // Ground plane
     scene->planes.push_back({ math::Vec3f(0, -10, 0), math::Vec3f(0, 1, 0), Color(0.0f, 0.0f, 1.0f) });
