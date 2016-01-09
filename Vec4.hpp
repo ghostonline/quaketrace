@@ -151,6 +151,13 @@ namespace math
             *v /= length(*v);
         }
 
+        inline static const Vec4 normalized(const Vec4& v)
+        {
+            Vec4 vec = v;
+            normalize(&vec);
+            return vec;
+        }
+
         inline static float dot(const Vec4& a, const Vec4& b)
         {
             return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
