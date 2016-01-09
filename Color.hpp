@@ -48,6 +48,36 @@ struct Color
         return c;
     }
 
+    inline Color& operator*=(float factor)
+    {
+        this->r *= factor;
+        this->g *= factor;
+        this->b *= factor;
+        return *this;
+    }
+
+    inline const Color operator*(float factor) const
+    {
+        Color c = *this;
+        c *= factor;
+        return c;
+    }
+
+    inline Color& operator/=(float factor)
+    {
+        this->r /= factor;
+        this->g /= factor;
+        this->b /= factor;
+        return *this;
+    }
+
+    inline const Color operator/(float factor) const
+    {
+        Color c = *this;
+        c /= factor;
+        return c;
+    }
+
     inline static const Color blendLinear(const Color& a, const Color& b, float factor)
     {
         return

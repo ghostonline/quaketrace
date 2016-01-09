@@ -168,11 +168,7 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     {
         float dot = Vec3f::dot(dir, -minPlane->normal);
         float shade = math::clamp01(dot) * 0.9f + 0.1f;
-        Color c = minPlane->color;
-        c.r *= shade;
-        c.g *= shade;
-        c.b *= shade;
-        return Color::asUint(c);
+        return Color::asUint(minPlane->color * shade);
     }
 
     if (minSphere)
@@ -181,11 +177,7 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         Vec3f hitNormal = minSphere->origin - minHitOrigin;
         Vec3f::normalize(&hitNormal);
         float shade = math::clamp01(Vec3f::dot(hitNormal, dir)) * 0.9f + 0.1f;
-        Color c = minSphere->color;
-        c.r *= shade;
-        c.g *= shade;
-        c.b *= shade;
-        return Color::asUint(c);
+        return Color::asUint(minSphere->color * shade);
     }
 
     return COLOR_BACKGROUND;
