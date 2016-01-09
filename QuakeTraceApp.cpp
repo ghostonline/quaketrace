@@ -164,6 +164,54 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         }
     }
 
+    const Scene::Triangle* minTriangle = nullptr;
+    for (const Scene::Triangle& triangle : scene.triangles)
+    {
+        // TODO: Precalculate this?
+        Vec3f edgeAB = triangle.b - triangle.a;
+        Vec3f edgeAC = triangle.c - triangle.a;
+        Vec3f triangleNormal = Vec3f::cross(edgeAB, edgeAC);
+
+        // Find intersection point with plane
+        float denom = Vec3f::dot(dir, triangleNormal);
+        if (denom > math::APPROXIMATE_ZERO) { continue; }
+        auto relativeOrigin = triangle.a - camera.origin;
+        float t = Vec3f::dot(relativeOrigin, triangleNormal) / denom;
+        auto intersection = dir * t;
+
+        float dist = Vec3f::length(intersection);
+        if (minDist < dist) { continue; }
+
+        // Small optimization
+#if 0
+        auto relativeIntersection = intersection + camera.origin - triangle.a;
+#else
+        auto relativeIntersection = intersection - relativeOrigin;
+#endif
+
+        // Check ray intersects in triangle boundaries (source: http://geomalgorithms.com/a04-_planes.html#Barycentric-Coordinate-Compute)
+        const Vec3f& u = edgeAB;
+        const Vec3f& v = edgeAC;
+        const Vec3f& w = relativeIntersection;
+        float uv = Vec3f::dot(u, v);
+        float wv = Vec3f::dot(w, v);
+        float vv = Vec3f::dot(v, v);
+        float wu = Vec3f::dot(w, u);
+        float uu = Vec3f::dot(u, u);
+        float denom2 = math::squared(uv) - uu * vv;
+        float sI = (uv*wv - vv*wu) / denom2;
+        float tI = (uv*wu - uu*wv) / denom2;
+        if (sI < 0.0f || tI < 0.0f || (sI + tI) > 1.0f) { continue; }
+
+        minDist = dist;
+        minTriangle = &triangle;
+    }
+
+    if (minTriangle)
+    {
+        return Color::asUint(minTriangle->color);
+    }
+
     if (minPlane)
     {
         float dot = Vec3f::dot(dir, -minPlane->normal);

@@ -29,4 +29,7 @@ void Scene::initDefault(Scene* scene)
 
     // Ground plane
     scene->planes.push_back({ math::Vec3f(0, -10, 0), math::Vec3f(0, 1, 0), Color(0.0f, 0.0f, 1.0f) });
+
+    // Random triangle
+    scene->triangles.push_back({ math::Vec3f(-5, 0, 0), math::Vec3f(5, 0, 0), math::Vec3f(0, 5, 0), Color(0.5f, 0.5f, 1.0f) });
 }
