@@ -6,6 +6,7 @@
 struct SDL_Window;
 struct Scene;
 class FrameBuffer;
+struct Ray;
 
 class QuakeTraceApp
 {
