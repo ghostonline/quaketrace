@@ -146,7 +146,7 @@ namespace math
     template<typename T>
     inline static const Vec3<T> normalized(const Vec3<T>& v)
     {
-        Vec3 vec = v;
+        Vec3<T> vec = v;
         normalize(&vec);
         return vec;
     }
