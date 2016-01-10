@@ -84,50 +84,58 @@ namespace math
             this->y = y;
             return *this;
         }
-
-        inline static const float length2(const Vec2& p)
-        {
-            return p.x * p.x + p.y * p.y;
-        }
-
-        inline static const float length(const Vec2& p)
-        {
-            return std::sqrt(length2(p));
-        }
-
-        inline static const float distance2(const Vec2& a, const Vec2& b)
-        {
-            return length2(b - a);
-        }
-
-        inline static const float distance(const Vec2& a, const Vec2& b)
-        {
-            return length(b - a);
-        }
-
-        inline static void normalize(Vec2& v)
-        {
-            *v /= length(v);
-        }
-
-        inline static const Vec2 normalized(const Vec2& v)
-        {
-            Vec2 vec = v;
-            normalize(&vec);
-            return vec;
-        }
-
-        inline static float dot(const Vec2& a, const Vec2& b)
-        {
-            return a.x * b.x + a.y * b.y;
-        }
-
-        inline static float rotate(Vec2* v, float angle)
-        {
-            v->x = std::cos(angle) * v->x - std::sin(angle) * v->y;
-            v->y = std::sin(angle) * v->x + std::cos(angle) * v->y;
-        }
     };
+
+    template<typename T>
+    inline static const float length2(const Vec2<T>& p)
+    {
+        return p.x * p.x + p.y * p.y;
+    }
+
+    template<typename T>
+    inline static const float length(const Vec2<T>& p)
+    {
+        return std::sqrt(length2(p));
+    }
+
+    template<typename T>
+    inline static const float distance2(const Vec2<T>& a, const Vec2<T>& b)
+    {
+        return length2(b - a);
+    }
+
+    template<typename T>
+    inline static const float distance(const Vec2<T>& a, const Vec2<T>& b)
+    {
+        return length(b - a);
+    }
+
+    template<typename T>
+    inline static void normalize(Vec2<T>& v)
+    {
+        *v /= length(v);
+    }
+
+    template<typename T>
+    inline static const Vec2<T> normalized(const Vec2<T>& v)
+    {
+        Vec2<T> vec = v;
+        normalize(&vec);
+        return vec;
+    }
+
+    template<typename T>
+    inline static float dot(const Vec2<T>& a, const Vec2<T>& b)
+    {
+        return a.x * b.x + a.y * b.y;
+    }
+
+    template<typename T>
+    inline static void rotate(Vec2<T>* v, float angle)
+    {
+        v->x = std::cos(angle) * v->x - std::sin(angle) * v->y;
+        v->y = std::sin(angle) * v->x + std::cos(angle) * v->y;
+    }
 
     typedef Vec2<float> Vec2f;
     typedef Vec2<int> Vec2i;

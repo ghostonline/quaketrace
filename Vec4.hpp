@@ -126,43 +126,51 @@ namespace math
             return *this;
         }
 
-        inline static const float length2(const Vec4& p)
-        {
-            return p.x * p.x + p.y * p.y + p.z * p.z + p.w * p.w;
-        }
-
-        inline static const float length(const Vec4& p)
-        {
-            return std::sqrt(length2(p));
-        }
-
-        inline static const float distance2(const Vec4& a, const Vec4& b)
-        {
-            return length2(b - a);
-        }
-
-        inline static const float distance(const Vec4& a, const Vec4& b)
-        {
-            return length(b - a);
-        }
-
-        inline static void normalize(Vec4* v)
-        {
-            *v /= length(*v);
-        }
-
-        inline static const Vec4 normalized(const Vec4& v)
-        {
-            Vec4 vec = v;
-            normalize(&vec);
-            return vec;
-        }
-
-        inline static float dot(const Vec4& a, const Vec4& b)
-        {
-            return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-        }
     };
+
+    template<typename T>
+    inline static const float length2(const Vec4<T>& p)
+    {
+        return p.x * p.x + p.y * p.y + p.z * p.z + p.w * p.w;
+    }
+
+    template<typename T>
+    inline static const float length(const Vec4<T>& p)
+    {
+        return std::sqrt(length2(p));
+    }
+
+    template<typename T>
+    inline static const float distance2(const Vec4<T>& a, const Vec4<T>& b)
+    {
+        return length2(b - a);
+    }
+
+    template<typename T>
+    inline static const float distance(const Vec4<T>& a, const Vec4<T>& b)
+    {
+        return length(b - a);
+    }
+
+    template<typename T>
+    inline static void normalize(Vec4<T>* v)
+    {
+        *v /= length(*v);
+    }
+
+    template<typename T>
+    inline static const Vec4<T> normalized(const Vec4<T>& v)
+    {
+        Vec4<T> vec = v;
+        normalize(&vec);
+        return vec;
+    }
+
+    template<typename T>
+    inline static float dot(const Vec4<T>& a, const Vec4<T>& b)
+    {
+        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+    }
 
     typedef Vec4<float> Vec4f;
     typedef Vec4<int> Vec4i;

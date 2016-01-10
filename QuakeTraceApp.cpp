@@ -23,7 +23,6 @@ const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
 const std::uint32_t COLOR_BACKGROUND = 0xFF222222;
 
 using namespace std;
-using namespace math;
 
 #define SHOW_FPS _DEBUG
 
@@ -119,20 +118,20 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
 {
     const Scene::Camera& camera = scene.camera;
 
-    Vec3f dir = camera.direction;
+    math::Vec3f dir = camera.direction;
     dir += camera.right * (x * camera.halfViewAngles.x);
     dir += camera.up * (y * camera.halfViewAngles.y);
-    Vec3f::normalize(&dir);
+    math::normalize(&dir);
 
     float minDist = camera.far;
     const Scene::Sphere* minSphere = nullptr;
     for (const Scene::Sphere& sphere : scene.spheres)
     {
         auto relativeOrigin = sphere.origin - camera.origin;
-        float dot = Vec3f::dot(relativeOrigin, dir);
+        float dot = math::dot(relativeOrigin, dir);
         auto projection = dir * dot;
-        if (Vec3f::distance2(projection, relativeOrigin) > math::squared(sphere.radius)) { continue; }
-        float distance = Vec3f::distance(projection, relativeOrigin);
+        if (math::distance2(projection, relativeOrigin) > math::squared(sphere.radius)) { continue; }
+        float distance = math::distance(projection, relativeOrigin);
 
         float penetration = std::sqrt(math::squared(sphere.radius) - math::squared(distance));
         float dist = dot - penetration;
@@ -146,17 +145,17 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     const Scene::Plane* minPlane = nullptr;
     for (const Scene::Plane& plane : scene.planes)
     {
-        float denom = Vec3f::dot(dir, plane.normal);
+        float denom = math::dot(dir, plane.normal);
         // Only render plane if point moves toward front of the plane
         if (denom > math::APPROXIMATE_ZERO) { continue; }
 
         // Determine intersection time
         auto relativeOrigin = plane.origin - camera.origin;
-        float t = Vec3f::dot(relativeOrigin, plane.normal) / denom;
+        float t = math::dot(relativeOrigin, plane.normal) / denom;
 
         // Calculate intersection point relative to the camera
         auto intersection = dir * t;
-        float dist = Vec3f::length(intersection);
+        float dist = math::length(intersection);
         if (minDist > dist)
         {
             minDist = dist;
@@ -168,18 +167,18 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     for (const Scene::Triangle& triangle : scene.triangles)
     {
         // TODO: Precalculate this?
-        Vec3f edgeAB = triangle.b - triangle.a;
-        Vec3f edgeAC = triangle.c - triangle.a;
-        Vec3f triangleNormal = Vec3f::cross(edgeAB, edgeAC);
+        math::Vec3f edgeAB = triangle.b - triangle.a;
+        math::Vec3f edgeAC = triangle.c - triangle.a;
+        math::Vec3f triangleNormal = math::cross(edgeAB, edgeAC);
 
         // Find intersection point with plane
-        float denom = Vec3f::dot(dir, triangleNormal);
+        float denom = math::dot(dir, triangleNormal);
         if (denom > math::APPROXIMATE_ZERO) { continue; }
         auto relativeOrigin = triangle.a - camera.origin;
-        float t = Vec3f::dot(relativeOrigin, triangleNormal) / denom;
+        float t = math::dot(relativeOrigin, triangleNormal) / denom;
         auto intersection = dir * t;
 
-        float dist = Vec3f::length(intersection);
+        float dist = math::length(intersection);
         if (minDist < dist) { continue; }
 
         // Small optimization
@@ -190,14 +189,14 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
 #endif
 
         // Check ray intersects in triangle boundaries (source: http://geomalgorithms.com/a04-_planes.html#Barycentric-Coordinate-Compute)
-        const Vec3f& u = edgeAB;
-        const Vec3f& v = edgeAC;
-        const Vec3f& w = relativeIntersection;
-        float uv = Vec3f::dot(u, v);
-        float wv = Vec3f::dot(w, v);
-        float vv = Vec3f::dot(v, v);
-        float wu = Vec3f::dot(w, u);
-        float uu = Vec3f::dot(u, u);
+        const math::Vec3f& u = edgeAB;
+        const math::Vec3f& v = edgeAC;
+        const math::Vec3f& w = relativeIntersection;
+        float uv = math::dot(u, v);
+        float wv = math::dot(w, v);
+        float vv = math::dot(v, v);
+        float wu = math::dot(w, u);
+        float uu = math::dot(u, u);
         float denom2 = math::squared(uv) - uu * vv;
         float sI = (uv*wv - vv*wu) / denom2;
         float tI = (uv*wu - uu*wv) / denom2;
@@ -214,17 +213,17 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
 
     if (minPlane)
     {
-        float dot = Vec3f::dot(dir, -minPlane->normal);
+        float dot = math::dot(dir, -minPlane->normal);
         float shade = math::clamp01(dot) * 0.9f + 0.1f;
         return Color::asUint(minPlane->color * shade);
     }
 
     if (minSphere)
     {
-        const Vec3f minHitOrigin = dir * minDist + camera.origin;
-        Vec3f hitNormal = minSphere->origin - minHitOrigin;
-        Vec3f::normalize(&hitNormal);
-        float shade = math::clamp01(Vec3f::dot(hitNormal, dir)) * 0.9f + 0.1f;
+        const math::Vec3f minHitOrigin = dir * minDist + camera.origin;
+        math::Vec3f hitNormal = minSphere->origin - minHitOrigin;
+        math::normalize(&hitNormal);
+        float shade = math::clamp01(math::dot(hitNormal, dir)) * 0.9f + 0.1f;
         return Color::asUint(minSphere->color * shade);
     }
 
