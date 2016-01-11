@@ -19,7 +19,6 @@
 
 const int SCREEN_WIDTH = 480;
 const int SCREEN_HEIGHT = 480;
-const int FRAME_RATE = 1000 / 60; // ticks per frame
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
 const std::uint32_t COLOR_BACKGROUND = 0xFF222222;
