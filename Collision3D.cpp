@@ -107,6 +107,7 @@ int collision3d::raycastTriangles(const Ray& ray, float maxDist, const std::vect
 #endif
 
         // Check ray intersects in triangle boundaries (source: http://geomalgorithms.com/a04-_planes.html#Barycentric-Coordinate-Compute)
+        // NOTE: slightly more complicated than 3 extra dot products to determine which side of each edge plane the point lies
         const math::Vec3f& u = edgeAB;
         const math::Vec3f& v = edgeAC;
         const math::Vec3f& w = relativeIntersection;
