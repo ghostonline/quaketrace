@@ -11,12 +11,17 @@ int collision3d::raycastSpheres(const Ray& ray, float maxDist, const std::vector
     {
         const Scene::Sphere& sphere = spheres[ii];
         auto relativeOrigin = sphere.origin - ray.origin;
+
+        // Figure out when ray passes the sphere center
         float dot = math::dot(relativeOrigin, ray.dir);
         auto projection = ray.dir * dot;
-        if (math::distance2(projection, relativeOrigin) > math::squared(sphere.radius)) { continue; }
-        float distance = math::distance(projection, relativeOrigin);
 
-        float penetration = std::sqrt(math::squared(sphere.radius) - math::squared(distance));
+        // If the ray passes the sphere center at a point beyond the radius, the sphere will not be hit
+        const float distance2 = math::distance2(projection, relativeOrigin);
+        const float radius2 = math::squared(sphere.radius);
+        if (distance2 > radius2) { continue; }
+
+        float penetration = std::sqrt(radius2 - distance2);
         float dist = dot - penetration;
         if (minDist > dist)
         {
