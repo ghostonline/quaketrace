@@ -5,7 +5,7 @@
 
 struct Color
 {
-    Color(float v) : r(v), g(v), b(v) {}
+    explicit Color(float v) : r(v), g(v), b(v) {}
     Color(float r, float g, float b) : r(r), g(g), b(b) {}
 
     float r, g, b;
@@ -35,9 +35,9 @@ struct Color
 
     inline Color& operator-=(const Color& rhs)
     {
-        this->r = rhs.r;
-        this->g = rhs.g;
-        this->b = rhs.b;
+        this->r -= rhs.r;
+        this->g -= rhs.g;
+        this->b -= rhs.b;
         return *this;
     }
 
