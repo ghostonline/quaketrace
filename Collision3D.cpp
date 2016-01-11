@@ -28,7 +28,7 @@ int collision3d::raycastSpheres(const Ray& ray, float maxDist, const std::vector
     if (minIndex > -1 && hitResult)
     {
         hitResult->pos = ray.dir * minDist + ray.origin;
-        hitResult->normal = math::normalized(spheres[minIndex].origin - hitResult->pos);
+        hitResult->normal = math::normalized(hitResult->pos - spheres[minIndex].origin);
         hitResult->t = minDist;
     }
 
