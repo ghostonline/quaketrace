@@ -1,18 +1,13 @@
 #include "Collision3D.hpp"
 #include "Ray.hpp"
+#include "Util.hpp"
 #include <limits>
-
-template<typename T>
-inline int lastIndex(const std::vector<T>& vec)
-{
-    return static_cast<int>(vec.size() - 1);
-}
 
 int collision3d::raycastSpheres(const Ray& ray, float maxDist, const std::vector<Scene::Sphere>& spheres, Hit* hitResult)
 {
     float minDist = maxDist;
     int minIndex = -1;
-    for (int ii = lastIndex(spheres); ii >= 0; --ii)
+    for (int ii = util::lastIndex(spheres); ii >= 0; --ii)
     {
         const Scene::Sphere& sphere = spheres[ii];
         auto relativeOrigin = sphere.origin - ray.origin;
@@ -45,7 +40,7 @@ int collision3d::raycastPlanes(const Ray& ray, float maxDist, const std::vector<
     float minDist = maxDist;
     int minIndex = -1;
     math::Vec3f minIntersection;
-    for (int ii = lastIndex(planes); ii >= 0; --ii)
+    for (int ii = util::lastIndex(planes); ii >= 0; --ii)
     {
         const Scene::Plane& plane = planes[ii];
 
@@ -85,7 +80,7 @@ int collision3d::raycastTriangles(const Ray& ray, float maxDist, const std::vect
     int minIndex = -1;
     math::Vec3f minIntersection;
     math::Vec3f minNormal;
-    for (int ii = lastIndex(triangles); ii >= 0; --ii)
+    for (int ii = util::lastIndex(triangles); ii >= 0; --ii)
     {
         const Scene::Triangle& triangle = triangles[ii];
 

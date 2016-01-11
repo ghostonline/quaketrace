@@ -57,6 +57,7 @@ set (BASE_SOURCE_FILES
 	Ray.hpp
 	Collision3D.cpp
 	Collision3D.hpp
+    Util.hpp
 )
 set (MATH_SOURCE_FILES
 	Math.cpp
