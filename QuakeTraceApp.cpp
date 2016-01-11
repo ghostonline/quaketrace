@@ -145,16 +145,12 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
 
     if (planeHitIdx > -1)
     {
-        const Scene::Plane* minPlane = &scene.planes[planeHitIdx];
-        float dot = math::dot(pixelRay.dir, -minPlane->normal);
-        float shade = math::clamp01(dot) * 0.9f + 0.1f;
-        return Color::asUint(minPlane->color * shade);
+        return Color::asUint(scene.planes[planeHitIdx].color);
     }
 
     if (sphereHitIdx > -1)
     {
-        float shade = math::clamp01(math::dot(infoSphere.normal, pixelRay.dir)) * 0.9f + 0.1f;
-        return Color::asUint(scene.spheres[sphereHitIdx].color * shade);
+        return Color::asUint(scene.spheres[sphereHitIdx].color);
     }
 
     return COLOR_BACKGROUND;
