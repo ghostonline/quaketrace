@@ -87,11 +87,11 @@ int collision3d::raycastTriangles(const Ray& ray, float maxDist, const std::vect
         // TODO: Precalculate this?
         math::Vec3f edgeAB = triangle.b - triangle.a;
         math::Vec3f edgeAC = triangle.c - triangle.a;
-        math::Vec3f triangleNormal = math::cross(edgeAB, edgeAC);
+        math::Vec3f triangleNormal = math::normalized(math::cross(edgeAB, edgeAC));
 
         // Find intersection point with plane
         float denom = math::dot(ray.dir, triangleNormal);
-        if (denom > math::APPROXIMATE_ZERO) { continue; }
+        if (denom > -math::APPROXIMATE_ZERO) { continue; }
         auto relativeOrigin = triangle.a - ray.origin;
         float t = math::dot(relativeOrigin, triangleNormal) / denom;
         auto intersection = ray.dir * t;
