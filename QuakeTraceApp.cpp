@@ -23,6 +23,9 @@ const int SCREEN_HEIGHT = 480;
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
 const std::uint32_t COLOR_BACKGROUND = 0xFF222222;
 
+int QuakeTraceApp::breakX = -1;
+int QuakeTraceApp::breakY = -1;
+
 using namespace std;
 
 #define SHOW_FPS _DEBUG
@@ -65,6 +68,7 @@ void QuakeTraceApp::runUntilFinished()
     Scene::initDefault(&scene);
 
     bool finished = false;
+    int mouseX = 0, mouseY = 0;
     while (!finished)
     {
         // Process all events
@@ -78,6 +82,18 @@ void QuakeTraceApp::runUntilFinished()
             {
                 finished = true;
             }
+
+            if (event.type == SDL_MOUSEMOTION)
+            {
+                mouseX = event.motion.x;
+                mouseY = event.motion.y;
+            }
+
+            if (event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                breakX = mouseX;
+                breakY = mouseY;
+            }
         }
 
         uint32_t renderStart = SDL_GetTicks();
@@ -90,6 +106,14 @@ void QuakeTraceApp::runUntilFinished()
             sprintf(renderTimeStr, "%d ms", renderTime);
             font->blitString(fb, renderTimeStr, 0, 0);
         }
+
+        // Display mouse x, y
+        {
+            char renderMouseStr[50];
+            sprintf(renderMouseStr, "%d, %d", mouseX, mouseY);
+            font->blitString(fb, renderMouseStr, 0, 10);
+        }
+
 
         fb->flip();
     }
@@ -108,6 +132,11 @@ void QuakeTraceApp::renderScene(const Scene& scene, FrameBuffer* fb)
     {
         for (int y = fb->getHeight() - 1; y >= 0; --y)
         {
+            if (breakX == x && breakY == y)
+            {
+                breakX = breakY = -1;
+                SDL_TriggerBreakpoint();
+            }
             const int baseIdx = x * fb->getPixelSize() + y * fb->getPitch();
             uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[baseIdx]);
             float normX = ((x + 0.5f) / static_cast<float>(fb->getWidth()) - 0.5f) * 2.0f;
