@@ -80,12 +80,14 @@ void QuakeTraceApp::runUntilFinished()
             }
         }
 
+        uint32_t renderStart = SDL_GetTicks();
+        renderScene(scene, fb);
+        uint32_t renderTime = SDL_GetTicks() - renderStart;
+
         // Display rendertime
         {
-            uint32_t renderTime = SDL_GetTicks();
-            renderScene(scene, fb);
             char renderTimeStr[50];
-            sprintf(renderTimeStr, "%d ms", SDL_GetTicks() - renderTime);
+            sprintf(renderTimeStr, "%d ms", renderTime);
             font->blitString(fb, renderTimeStr, 0, 0);
         }
 
