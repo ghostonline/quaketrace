@@ -10,7 +10,7 @@ struct Color
 
     float r, g, b;
 
-    inline static std::uint32_t asUint(const Color& c)
+    inline static std::uint32_t asARGB(const Color& c)
     {
         return float2byte(c.r, 16)
             + float2byte(c.g, 8)

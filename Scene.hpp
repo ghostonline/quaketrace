@@ -31,6 +31,12 @@ struct Scene
         Color color;
     };
 
+    struct Light
+    {
+        math::Vec3f origin;
+        float strength;
+    };
+
     struct Camera
     {
         math::Vec3f origin;
@@ -47,6 +53,7 @@ struct Scene
     std::vector<Sphere> spheres;
     std::vector<Plane> planes;
     std::vector<Triangle> triangles;
+    std::vector<Light> lights;
 
     static void initDefault(Scene* scene);
 };

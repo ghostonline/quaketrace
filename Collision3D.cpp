@@ -14,6 +14,9 @@ int collision3d::raycastSpheres(const Ray& ray, float maxDist, const std::vector
 
         // Figure out when ray passes the sphere center
         float dot = math::dot(relativeOrigin, ray.dir);
+        // When light starts beyond sphere center, just ignore it
+        // NOTE: this is not correct when ray starts within radius!
+        if (dot < 0) { continue; }
         auto projection = ray.dir * dot;
 
         // If the ray passes the sphere center at a point beyond the radius, the sphere will not be hit

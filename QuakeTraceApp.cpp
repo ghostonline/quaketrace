@@ -16,12 +16,13 @@
 #include "Assert.hpp"
 #include "Collision3D.hpp"
 #include "Ray.hpp"
+#include "Util.hpp"
 
 const int SCREEN_WIDTH = 480;
 const int SCREEN_HEIGHT = 480;
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
-const std::uint32_t COLOR_BACKGROUND = 0xFF222222;
+const Color COLOR_BACKGROUND {0x22/255.0f, 0x22/255.0f, 0x22/255.0f};
 
 int QuakeTraceApp::breakX = -1;
 int QuakeTraceApp::breakY = -1;
@@ -168,20 +169,41 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     int planeHitIdx = collision3d::raycastPlanes(pixelRay, infoSphere.t, scene.planes, &infoPlane);
     int triangleHitIdx = collision3d::raycastTriangles(pixelRay, infoPlane.t, scene.triangles, &infoTriangle);
 
+    Color color = COLOR_BACKGROUND;
+    collision3d::Hit hitInfo;
     if (triangleHitIdx > -1)
     {
-        return Color::asUint(scene.triangles[triangleHitIdx].color);
+        color = scene.triangles[triangleHitIdx].color;
+        hitInfo = infoTriangle;
     }
-
-    if (planeHitIdx > -1)
+    else if (planeHitIdx > -1)
     {
-        return Color::asUint(scene.planes[planeHitIdx].color);
+        color = scene.planes[planeHitIdx].color;
+        hitInfo = infoPlane;
     }
-
-    if (sphereHitIdx > -1)
+    else if (sphereHitIdx > -1)
     {
-        return Color::asUint(scene.spheres[sphereHitIdx].color);
+        color = scene.spheres[sphereHitIdx].color;
+        hitInfo = infoSphere;
     }
 
-    return COLOR_BACKGROUND;
+    float lightLevel = 0.0f;
+    for (int ii = util::lastIndex(scene.lights); ii >= 0; --ii)
+    {
+        const Scene::Light& light = scene.lights[ii];
+        const auto hitpos = hitInfo.pos;// + hitInfo.normal;
+        Ray lightRay{ hitpos, light.origin - hitpos };
+        float rayLength = math::length(lightRay.dir);
+        lightRay.dir /= rayLength;
+        bool hit = false
+            || collision3d::raycastSpheres(lightRay, rayLength, scene.spheres) > -1
+            || collision3d::raycastPlanes(lightRay, rayLength, scene.planes) > -1
+            || collision3d::raycastTriangles(lightRay, rayLength, scene.triangles) > -1
+        ;
+
+        lightLevel = hit ? 0.0f : 1.0f;
+    }
+
+    float colorScale = 0.7f * math::clamp01(lightLevel) + 0.3f;
+    return Color::asARGB(color * colorScale);
 }
