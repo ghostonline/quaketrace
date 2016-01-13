@@ -33,6 +33,9 @@ void Scene::initDefault(Scene* scene)
     // Random triangle
     scene->triangles.push_back({ math::Vec3f(-5, 0, 0), math::Vec3f(5, 0, 0), math::Vec3f(0, 5, 0), Color(0.5f, 0.5f, 1.0f) });
 
+    // Directional lights
+    scene->directionalLights.push_back({ math::Vec3f(0, -1, 0), 1.0f});
+
     // Point lights
     scene->lights.push_back({ math::Vec3f(0, 30, -5), 1000});
 

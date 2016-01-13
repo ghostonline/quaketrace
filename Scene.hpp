@@ -8,6 +8,8 @@ class FrameBuffer;
 
 struct Scene
 {
+    static const int DIRECTIONAL_RAY_LENGTH = 1000;
+
     struct Sphere
     {
         math::Vec3f origin;
@@ -29,6 +31,12 @@ struct Scene
         math::Vec3f c;
 
         Color color;
+    };
+
+    struct DirectionalLight
+    {
+        math::Vec3f normal;
+        float intensity;
     };
 
     struct Light
@@ -53,6 +61,7 @@ struct Scene
     std::vector<Sphere> spheres;
     std::vector<Plane> planes;
     std::vector<Triangle> triangles;
+    std::vector<DirectionalLight> directionalLights;
     std::vector<Light> lights;
 
     float ambientLightFactor;
