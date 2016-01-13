@@ -203,6 +203,6 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         lightLevel = hit ? 0.0f : math::dot(lightRay.dir, hitInfo.normal);
     }
 
-    float colorScale = 0.7f * math::clamp01(lightLevel) + 0.3f;
+    float colorScale = math::clamp01(lightLevel + scene.ambientLightFactor);
     return Color::asARGB(color * colorScale);
 }

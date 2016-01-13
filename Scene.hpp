@@ -55,5 +55,7 @@ struct Scene
     std::vector<Triangle> triangles;
     std::vector<Light> lights;
 
+    float ambientLightFactor;
+
     static void initDefault(Scene* scene);
 };
