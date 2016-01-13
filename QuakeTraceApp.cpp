@@ -201,7 +201,7 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
             || collision3d::raycastTriangles(lightRay, rayLength, scene.triangles) > -1
         ;
 
-        lightLevel = hit ? 0.0f : 1.0f;
+        lightLevel = hit ? 0.0f : math::dot(lightRay.dir, hitInfo.normal);
     }
 
     float colorScale = 0.7f * math::clamp01(lightLevel) + 0.3f;
