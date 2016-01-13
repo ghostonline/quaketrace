@@ -191,8 +191,7 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     for (int ii = util::lastIndex(scene.lights); ii >= 0; --ii)
     {
         const Scene::Light& light = scene.lights[ii];
-        const auto hitpos = hitInfo.pos;// + hitInfo.normal;
-        Ray lightRay{ hitpos, light.origin - hitpos };
+        Ray lightRay{ hitInfo.pos, light.origin - hitInfo.pos };
         float rayLength = math::length(lightRay.dir);
         lightRay.dir /= rayLength;
         bool hit = false
