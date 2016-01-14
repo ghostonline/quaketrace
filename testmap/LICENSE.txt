@@ -1,0 +1,4 @@
+qbsp, light and vis are the the official tools distributed by id Software.
+Source code is released under GPL and available at https://github.com/id-Software/Quake-Tools
+
+These particular version of the tools are from the TyrUtils collection, available at http://disenchant.net/utils/
