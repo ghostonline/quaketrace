@@ -70,6 +70,7 @@ void QuakeTraceApp::runUntilFinished()
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;
+    bool doRenderScene = false;
     while (!finished)
     {
         // Process all events
@@ -95,10 +96,30 @@ void QuakeTraceApp::runUntilFinished()
                 breakX = mouseX;
                 breakY = mouseY;
             }
+
+            if (event.type == SDL_WINDOWEVENT)
+            {
+                if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+                {
+                    doRenderScene = false;
+                }
+                else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+                {
+                    doRenderScene = true;
+                }
+            }
+
         }
 
         uint32_t renderStart = SDL_GetTicks();
-        renderScene(scene, fb);
+        if (doRenderScene)
+        {
+            renderScene(scene, fb);
+        }
+        else
+        {
+            SDL_Delay(500);
+        }
         uint32_t renderTime = SDL_GetTicks() - renderStart;
 
         // Display rendertime
