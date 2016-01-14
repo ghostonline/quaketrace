@@ -5,6 +5,7 @@
 
 struct Color
 {
+    Color() {}
     explicit Color(float v) : r(v), g(v), b(v) {}
     Color(float r, float g, float b) : r(r), g(g), b(b) {}
 

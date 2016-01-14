@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AssetHelper.hpp"
-#include <cstdint>
+#include "Color.hpp"
 
 struct SDL_Window;
 struct Scene;
@@ -15,8 +15,8 @@ public:
 
 private:
     static void setIconFromAsset(SDL_Window* window, AssetHelper::ID id);
-    static void renderScene(const Scene& scene, FrameBuffer* fb);
-    static std::uint32_t renderPixel(const Scene& scene, float x, float y);
+    static void renderScene(const Scene& scene, const int detailLevel, FrameBuffer* fb);
+    static const Color renderPixel(const Scene& scene, float x, float y);
 
     static int breakX, breakY;
 };

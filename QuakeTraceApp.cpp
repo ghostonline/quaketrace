@@ -20,6 +20,7 @@
 
 const int SCREEN_WIDTH = 480;
 const int SCREEN_HEIGHT = 480;
+const int DETAIL_LEVEL = 1;
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
 const Color COLOR_BACKGROUND {0x22/255.0f, 0x22/255.0f, 0x22/255.0f};
@@ -114,7 +115,7 @@ void QuakeTraceApp::runUntilFinished()
         uint32_t renderStart = SDL_GetTicks();
         if (doRenderScene)
         {
-            renderScene(scene, fb);
+            renderScene(scene, DETAIL_LEVEL, fb);
         }
         else
         {
@@ -146,8 +147,26 @@ void QuakeTraceApp::runUntilFinished()
     return;
 }
 
-void QuakeTraceApp::renderScene(const Scene& scene, FrameBuffer* fb)
+void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, FrameBuffer* fb)
 {
+    const float sampleWidth = 1.0f / detailLevel;
+    const float sampleHeight = 1.0f / detailLevel;
+    const float halfSampleWidth = sampleWidth / 2.0f;
+    const float halfSampleHeight = sampleHeight / 2.0f;
+    std::vector<math::Vec2f> sampleOffsets;
+    for (int dx = detailLevel - 1; dx >= 0; --dx)
+    {
+        for (int dy = detailLevel - 1; dy >= 0; --dy)
+        {
+            math::Vec2f offset = {
+                sampleWidth * dx + halfSampleWidth,
+                sampleHeight * dy + halfSampleHeight,
+            };
+            sampleOffsets.push_back(offset);
+        }
+    }
+    const math::Vec2f fbSize(fb->getWidth(), fb->getHeight());
+
     uint8_t* pixels = reinterpret_cast<uint8_t*>(fb->get());
     // TODO: Parallelize
     for (int x = fb->getWidth() - 1; x >= 0; --x)
@@ -161,14 +180,24 @@ void QuakeTraceApp::renderScene(const Scene& scene, FrameBuffer* fb)
             }
             const int baseIdx = x * fb->getPixelSize() + y * fb->getPitch();
             uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[baseIdx]);
-            float normX = ((x + 0.5f) / static_cast<float>(fb->getWidth()) - 0.5f) * 2.0f;
-            float normY = ((y + 0.5f) / static_cast<float>(fb->getHeight()) - 0.5f) * -2.0f;
-            *pixel = renderPixel(scene, normX, normY);
+            Color aggregate(0.0f);
+
+            for (int ii = util::lastIndex(sampleOffsets); ii >= 0; --ii)
+            {
+                const float sampleX = x + sampleOffsets[ii].x;
+                const float sampleY = y + sampleOffsets[ii].y;
+                const float normX = (sampleX / static_cast<float>(fb->getWidth()) - 0.5f) * 2.0f;
+                const float normY = (sampleY / static_cast<float>(fb->getHeight()) - 0.5f) * -2.0f;
+                Color color = renderPixel(scene, normX, normY);
+                aggregate += color / sampleOffsets.size();
+            }
+
+            *pixel = Color::asARGB(aggregate);
         }
     }
 }
 
-std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
+const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
 {
     Ray pixelRay;
     {
@@ -235,5 +264,5 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     }
 
     float colorScale = math::clamp01(lightLevel + scene.ambientLightFactor);
-    return Color::asARGB(color * colorScale);
+    return color * colorScale;
 }
