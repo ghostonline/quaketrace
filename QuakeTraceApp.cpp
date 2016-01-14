@@ -208,7 +208,8 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
         {
             float factor = math::max(0.0f, math::dot(lightRay.dir, hitInfo.normal));
-            lightLevel += factor;
+            float intensity = light.strength / (4 * math::PI * math::squared(rayLength));
+            lightLevel += factor * intensity;
         }
     }
 
