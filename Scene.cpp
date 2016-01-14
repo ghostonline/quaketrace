@@ -15,7 +15,7 @@ void Scene::initDefault(Scene* scene)
     scene->camera.up = math::cross(scene->camera.right, scene->camera.direction);
 
     scene->camera.near = 10.0f;
-    scene->camera.far = 1000.0f;
+    scene->camera.far = 10000.0f;
 
     const float fov = 60;
     scene->camera.halfViewAngles.set(
