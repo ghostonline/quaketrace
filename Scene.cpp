@@ -39,5 +39,5 @@ void Scene::initDefault(Scene* scene)
     // Point lights
     scene->lights.push_back({ math::Vec3f(0, 30, -5), 3000});
 
-    scene->ambientLightFactor = 0.1f;
+    scene->ambientLightFactor = 0.3f;
 }
