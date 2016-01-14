@@ -192,17 +192,23 @@ std::uint32_t QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     {
         const Scene::DirectionalLight& light = scene.directionalLights[ii];
         Ray lightRay{ hitInfo.pos, -light.normal };
-        float rayLength = Scene::DIRECTIONAL_RAY_LENGTH;
-        bool hit = false
-            || collision3d::raycastSpheres(lightRay, rayLength, scene.spheres) > -1
-            || collision3d::raycastPlanes(lightRay, rayLength, scene.planes) > -1
-            || collision3d::raycastTriangles(lightRay, rayLength, scene.triangles) > -1
-        ;
-
-        if (!hit)
+        if (!collision3d::raySceneCollision(lightRay, Scene::DIRECTIONAL_RAY_LENGTH, scene))
         {
             float factor = math::max(0.0f, math::dot(lightRay.dir, hitInfo.normal));
             lightLevel += factor * light.intensity;
+        }
+    }
+
+    for (int ii = util::lastIndex(scene.lights); ii >= 0; --ii)
+    {
+        const Scene::Light& light = scene.lights[ii];
+        Ray lightRay{ hitInfo.pos, light.origin - hitInfo.pos };
+        float rayLength = math::length(lightRay.dir);
+        lightRay.dir /= rayLength;
+        if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
+        {
+            float factor = math::max(0.0f, math::dot(lightRay.dir, hitInfo.normal));
+            lightLevel += factor;
         }
     }
 
