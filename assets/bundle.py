@@ -1,10 +1,11 @@
+#!/usr/bin/python
 import os, textwrap, sys
 
 script_src = os.path.dirname(os.path.abspath(__file__))
 output = sys.argv[1]
 
 assets = []
-files = sorted(f for f in os.listdir(script_src) if f.endswith(".bmp"))
+files = sorted(f for f in os.listdir(script_src) if f.endswith(".bmp") or f.endswith(".bsp"))
 for file_ in files:
 	full_path = os.path.join(script_src, file_)
 	varname = "ASSET_%s" % os.path.splitext(file_)[0].upper()
