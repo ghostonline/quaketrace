@@ -1,14 +1,8 @@
-// This map has been written by QuArK - Quake Army Knife, QuArK 6.6
-// It is a map for the game Quake 1.
-// For more information see QuArK's Home Page: http://quark.sourceforge.net/
-
-// Entity 0
-// worldspawn
+// Sample completable map with intermission camera
 {
  "classname" "worldspawn"
- "wad" "testmap/testmap.wad"
-// Brush 0
-// Map structure:g[2] -> poly:p[1]
+ "wad" "testmap.wad"
+// Wall 1
  {
   ( 256 192 -96 ) ( 256 192 96 ) ( 256 -192 96 ) bricka2_2 0 16 0 -1 1
   ( 272 -192 -96 ) ( 272 -192 96 ) ( 272 192 96 ) bricka2_2 0 16 0 1 1
@@ -17,8 +11,7 @@
   ( 272 -192 -96 ) ( 272 192 -96 ) ( 256 192 -96 ) bricka2_2 16 0 0 1 -1
   ( 256 -192 96 ) ( 256 192 96 ) ( 272 192 96 ) bricka2_2 16 0 0 1 1
  }
-// Brush 1
-// Map structure:g[2] -> poly:p[2]
+// Wall 2
  {
   ( -272 192 -96 ) ( -272 192 96 ) ( -272 -192 96 ) bricka2_2 0 16 0 -1 1
   ( -256 -192 -96 ) ( -256 -192 96 ) ( -256 192 96 ) bricka2_2 0 16 0 1 1
@@ -27,8 +20,7 @@
   ( -256 -192 -96 ) ( -256 192 -96 ) ( -272 192 -96 ) bricka2_2 16 0 0 1 -1
   ( -272 -192 96 ) ( -272 192 96 ) ( -256 192 96 ) bricka2_2 16 0 0 1 1
  }
-// Brush 2
-// Map structure:g[2] -> poly:p[3]
+// Wall 3
  {
   ( -256 208 -96 ) ( -256 208 96 ) ( -256 192 96 ) bricka2_2 0 16 0 -1 1
   ( 256 192 -96 ) ( 256 192 96 ) ( 256 208 96 ) bricka2_2 0 16 0 1 1
@@ -37,8 +29,7 @@
   ( 256 192 -96 ) ( 256 208 -96 ) ( -256 208 -96 ) bricka2_2 16 0 0 1 -1
   ( -256 192 96 ) ( -256 208 96 ) ( 256 208 96 ) bricka2_2 16 0 0 1 1
  }
-// Brush 3
-// Map structure:g[2] -> poly:p[4]
+// Wall 4
  {
   ( -256 -192 -96 ) ( -256 -192 96 ) ( -256 -208 96 ) bricka2_2 0 16 0 -1 1
   ( 256 -208 -96 ) ( 256 -208 96 ) ( 256 -192 96 ) bricka2_2 0 16 0 1 1
@@ -47,8 +38,7 @@
   ( 256 -208 -96 ) ( 256 -192 -96 ) ( -256 -192 -96 ) bricka2_2 16 0 0 1 -1
   ( -256 -208 96 ) ( -256 -192 96 ) ( 256 -192 96 ) bricka2_2 16 0 0 1 1
  }
-// Brush 4
-// Map structure:g[2] -> poly:p[5]
+// Ceiling (skybox)
  {
   ( -256 192 96 ) ( -256 192 112 ) ( -256 -192 112 ) sky1 0 16 0 -1 1
   ( 256 -192 96 ) ( 256 -192 112 ) ( 256 192 112 ) sky1 0 16 0 1 1
@@ -57,8 +47,7 @@
   ( 256 -192 96 ) ( 256 192 96 ) ( -256 192 96 ) sky1 80 0 0 1 -1
   ( -256 -192 112 ) ( -256 192 112 ) ( 256 192 112 ) sky1 80 0 0 1 1
  }
-// Brush 5
-// Map structure:g[2] -> poly:p[6]
+// Floor
  {
   ( -256 192 -112 ) ( -256 192 -96 ) ( -256 -192 -96 ) woodflr1_5 0 16 0 -1 1
   ( 256 -192 -112 ) ( 256 -192 -96 ) ( 256 192 -96 ) woodflr1_5 0 16 0 1 1
@@ -67,8 +56,7 @@
   ( 256 -192 -112 ) ( 256 192 -112 ) ( -256 192 -112 ) woodflr1_5 16 0 0 1 -1
   ( -256 -192 -96 ) ( -256 192 -96 ) ( 256 192 -96 ) woodflr1_5 16 0 0 1 1
  }
-// Brush 6
-// Map structure:g[2] -> poly:p[7]
+// Exit plate with animated texture
  {
   ( 256 -32 -88 ) ( 256 -32 -96 ) ( 192 -32 -96 ) cop1_2 48 32 0 1 1
   ( 192 32 -88 ) ( 192 32 -96 ) ( 256 32 -96 ) cop1_2 16 32 0 -1 1
@@ -77,8 +65,7 @@
   ( 256 -32 -88 ) ( 192 -32 -88 ) ( 192 32 -88 ) +0butn 32 0 -90 1 1
   ( 256 32 -96 ) ( 192 32 -96 ) ( 192 -32 -96 ) cop1_2 32 0 -90 1 -1
  }
-// Brush 7
-// Map structure:g[2] -> new cube:p[8]
+// Exit sign with bright red light texture
  {
   ( 248 -16 -40 ) ( 256 -16 -40 ) ( 256 16 -40 ) tlight08 0 0 0 1 -1
   ( 248 16 -8 ) ( 256 16 -8 ) ( 256 -16 -8 ) tlight08 8 112 0 1 1
@@ -87,8 +74,7 @@
   ( 248 -16 -40 ) ( 248 16 -40 ) ( 248 16 -8 ) z_exit 16 24 0 -1 1
   ( 256 -16 -8 ) ( 256 16 -8 ) ( 256 16 -40 ) tlight08 0 0 0 1 1
  }
-// Brush 8
-// new cube:p[3]
+// Dummy brush forcing the compiler to include the animated texture frames
  {
   ( -448 -64 -64 ) ( -320 -64 -64 ) ( -320 64 -64 ) +3butn 0 0 0 1 -1
   ( -448 64 64 ) ( -320 64 64 ) ( -320 -64 64 ) +3butn 0 0 0 1 1
@@ -98,35 +84,26 @@
   ( -320 -64 64 ) ( -320 64 64 ) ( -320 64 -64 ) +0butn 0 0 0 1 1
  }
 }
-// Entity 1
-// Entities:g[1] -> info_player_start:e[1]
 {
  "classname" "info_player_start"
  "origin" "-144 0 -72"
  "angle" "360"
 }
-// Entity 2
-// Entities:g[1] -> info_intermission:e[2]
 {
  "classname" "info_intermission"
  "origin" "-224 160 48"
  "mangle" "17.98 -21.20 0"
 }
-// Entity 3
-// Entities:g[1] -> light:e[3]
 {
  "classname" "light"
  "light" "300"
  "angle" "360"
  "origin" "224 0 -24"
 }
-// Entity 4
-// Entities:g[1] -> trigger_changelevel:b[4]
 {
  "classname" "trigger_changelevel"
  "map" "start"
-// Brush 0
-// Entities:g[1] -> trigger_changelevel:b[4] -> poly:p[1]
+// Trigger brush
  {
   ( 256 16 -48 ) ( 256 16 -80 ) ( 256 -16 -80 ) trigger 0 48 0 1 1
   ( 224 -16 -48 ) ( 224 -16 -80 ) ( 224 16 -80 ) trigger 0 48 0 1 1
