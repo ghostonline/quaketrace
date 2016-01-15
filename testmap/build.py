@@ -2,6 +2,7 @@
 import os, subprocess, sys, shutil
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 
 mapname = "testmap"
 input_file = mapname + ".map"

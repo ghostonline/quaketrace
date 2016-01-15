@@ -104,3 +104,11 @@ add_custom_command(OUTPUT
 )
 add_custom_target(assets DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc)
 add_dependencies(${EXEC_FILE} assets)
+
+add_custom_command(OUTPUT
+	${CMAKE_CURRENT_SOURCE_DIR}/assets/testmap.bsp
+	COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testmap/build.py testmap
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testmap/testmap.map
+)
+add_custom_target(testmap DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/testmap.bsp)
+add_dependencies(assets testmap)
