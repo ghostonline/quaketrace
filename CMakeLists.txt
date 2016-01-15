@@ -33,9 +33,6 @@ include_directories (${CMAKE_CURRENT_BINARY_DIR})
 set(ASSETS
 	assets/font.bmp
 	assets/icon.bmp
-# The map below is built by a separate process
-# (somehow add_dependencies do not pick up project dependencies)
-	assets/testmap.bsp
 )
 
 # Generate source files
@@ -109,10 +106,21 @@ add_custom_command(OUTPUT
 add_custom_target(assets DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc)
 add_dependencies(${EXEC_FILE} assets)
 
-add_custom_command(OUTPUT
-	${CMAKE_CURRENT_SOURCE_DIR}/assets/testmap.bsp
-	COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testmap/build.py testmap
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testmap/testmap.map
+set (MAPS
+	testmap/testmap.map
+	testmap/testmap2.map
 )
-add_custom_target(testmap DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/testmap.bsp)
+
+set (MAPS_OUTPUT
+	assets/testmap.bsp
+	assets/testmap2.bsp
+)
+
+add_custom_command(
+	OUTPUT ${MAPS_OUTPUT}
+	COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testmap/build.py
+	DEPENDS ${MAPS}
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testmap
+)
+add_custom_target(testmap DEPENDS ${MAPS_OUTPUT})
 add_dependencies(assets testmap)
