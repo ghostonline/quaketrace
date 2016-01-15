@@ -17,6 +17,7 @@
 #include "Collision3D.hpp"
 #include "Ray.hpp"
 #include "Util.hpp"
+#include "BspLoader.hpp"
 
 const int SCREEN_WIDTH = 480;
 const int SCREEN_HEIGHT = 480;
@@ -66,8 +67,9 @@ void QuakeTraceApp::runUntilFinished()
 
     auto fb = FrameBuffer::createFromWindow(window);
     auto font = Font::create();
-    Scene scene;
-    Scene::initDefault(&scene);
+    int mapDataSize = 0;
+    const void* mapData = AssetHelper::getRaw(AssetHelper::TESTMAP2, &mapDataSize);
+    Scene scene = BspLoader::createSceneFromBsp(mapData, mapDataSize);
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;

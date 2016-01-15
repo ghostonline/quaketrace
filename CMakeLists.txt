@@ -59,6 +59,8 @@ set (BASE_SOURCE_FILES
 	Collision3D.cpp
 	Collision3D.hpp
     Util.hpp
+    BspLoader.cpp
+    BspLoader.hpp
 )
 set (MATH_SOURCE_FILES
 	Math.cpp
