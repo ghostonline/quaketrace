@@ -32,6 +32,10 @@ include_directories (${CMAKE_CURRENT_BINARY_DIR})
 # Assets to be bundled in the executable
 set(ASSETS
 	assets/font.bmp
+	assets/icon.bmp
+# The map below is built by a separate process
+# (somehow add_dependencies do not pick up project dependencies)
+	assets/testmap.bsp
 )
 
 # Generate source files
