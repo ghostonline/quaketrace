@@ -61,6 +61,7 @@ set (BASE_SOURCE_FILES
     Util.hpp
     BspLoader.cpp
     BspLoader.hpp
+    Logger.hpp
 )
 set (MATH_SOURCE_FILES
 	Math.cpp

@@ -14,6 +14,8 @@ const void* AssetHelper::getRaw(AssetHelper::ID id, int* size)
     {
         ASSET(FONT),
         ASSET(ICON),
+        ASSET(TESTMAP),
+        ASSET(TESTMAP2),
     };
 #undef ASSET
 
