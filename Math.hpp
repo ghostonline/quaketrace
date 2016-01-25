@@ -35,4 +35,7 @@ namespace math
     const Mat22f invertMatrix(const Mat22f& m);
 
     const Mat33f createRotationMatrix(const Vec3f& unit, float angle);
+
+    inline int sign(int v) { return v > 0 ? 1 : -1; }
+    inline float sign(float v) { return v > 0 ? 1.0f : -1.0f; }
 }
