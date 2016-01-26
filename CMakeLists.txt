@@ -106,7 +106,7 @@ add_custom_command(OUTPUT
 	COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/assets/bundle.py ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc
 	DEPENDS ${ASSETS}
 )
-add_custom_target(assets DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc)
+add_custom_target(assets DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/bundled.inc ${ASSETS})
 add_dependencies(${EXEC_FILE} assets)
 
 set (MAPS
