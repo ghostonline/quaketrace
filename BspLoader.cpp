@@ -153,14 +153,14 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     Scene scene;
     //Scene::initDefault(&scene);
 
-    const Header& header = *util::castFromMemory<Header>(data);
+    auto& header = *util::castFromMemory<Header>(data);
     //const char* entities = &grab<char>(data, header.lumps[LUMP_ENTITIES].offset);
-    const Lump<Face> faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
-    const Lump<Vertex> vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
-    const Lump<Edge> edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
-    const Lump<Model> models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
-    const Lump<int32_t> edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
-    const Lump<uint16_t> faceIndices = Lump<uint16_t>::fromEntry(data, header.lumps[LUMP_MARKSURFACES]);
+    auto faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
+    auto vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
+    auto edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
+    auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
+    auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
+    auto faceIndices = Lump<uint16_t>::fromEntry(data, header.lumps[LUMP_MARKSURFACES]);
 
     const Model& base = models[0];
     for (int ii = 0; ii < base.face_num; ++ii)
