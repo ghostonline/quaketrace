@@ -27,176 +27,74 @@ namespace {
         LUMP_MODELS,
         NUM_LUMPS,
     };
-    /* FIXME - put this typedef elsewhere */
-    typedef uint8_t byte;
 
-#define BSPVERSION     29
-#define BSP2RMQVERSION (('B' << 24) | ('S' << 16) | ('P' << 8) | '2')
-#define BSP2VERSION    ('B' | ('S' << 8) | ('P' << 16) | ('2' << 24))
+    struct Entry
+    {
+        int32_t offset;
+        int32_t size;
+    };
 
-    typedef struct {
-        int32_t fileofs;
-        int32_t filelen;
-    } lump_t;
-
-    typedef struct {
-        float mins[3], maxs[3];
-        float origin[3];
-        int32_t headnode[4];	/* 4 for backward compat, only 3 hulls exist */
-        int32_t visleafs;		/* not including the solid leaf 0 */
-        int32_t firstface, numfaces;
-    } dmodel_t;
-
-    typedef struct {
+    struct Header
+    {
         int32_t version;
-        lump_t lumps[NUM_LUMPS];
-    } dheader_t;
+        Entry lumps[NUM_LUMPS];
+    };
 
-    typedef struct {
-        int32_t nummiptex;
-        int32_t dataofs[];		/* [nummiptex] */
-    } dmiptexlump_t;
+    typedef float scalar_t;
 
-    typedef char miptex_t[16];
+    struct Vec
+    {
+        scalar_t x;
+        scalar_t y;
+        scalar_t z;
+    };
 
-    typedef struct {
-        float point[3];
-    } dvertex_t;
+    struct BoundingBox
+    {
+        Vec min;
+        Vec max;
+    };
 
-    typedef struct {
-        float normal[3];
-        float dist;
+    struct Model
+    {
+        BoundingBox bound;
+        Vec origin;
+        int32_t node_bsp_id;
+        int32_t node_clip_first;
+        int32_t node_clip_second;
+        int32_t node_unused;
+        int32_t numleafs;   // number of BSP leaves
+        int32_t face_id;    // index of Faces
+        int32_t face_num;   // number of Faces
+    };
+
+    struct Face
+    {
+        int16_t plane_id;   // The plane in which the face lies
+        int16_t side;       // 0 if in front of the plane, 1 if behind the plane
+        int32_t ledge_id;    // first edge in the List of edges
+        int16_t ledge_num;  // number of edges in the List of edges
+        int16_t texinfo_id; // index of the Texture info the face is part of
+        uint8_t typelight;   // type of lighting, for the face
+        uint8_t baselight;   // from 0xFF (dark) to 0 (bright)
+        uint8_t light[2];    // two additional light models
+        int32_t lightmap;    // Pointer inside the general light map, or -1
+    };
+
+    struct Plane
+    {
+        Vec normal;
+        scalar_t dist; // Offset to plane, along the normal vector.
         int32_t type;
-    } dplane_t;
+    };
 
-    typedef struct {
-        int32_t planenum;
-        int16_t children[2];	/* negative numbers are -(leafs+1), not nodes */
-        int16_t mins[3];		/* for sphere culling */
-        int16_t maxs[3];
-        uint16_t firstface;
-        uint16_t numfaces;		/* counting both sides */
-    } bsp29_dnode_t;
+    struct Edge
+    {
+        uint16_t vertex_idx_start;
+        uint16_t vertex_idx_end;
+    };
 
-    typedef struct {
-        int32_t planenum;
-        int32_t children[2];	/* negative numbers are -(leafs+1), not nodes */
-        int16_t mins[3];		/* for sphere culling */
-        int16_t maxs[3];
-        uint32_t firstface;
-        uint32_t numfaces;		/* counting both sides */
-    } bsp2rmq_dnode_t;
-
-    typedef struct {
-        int32_t planenum;
-        int32_t children[2];	/* negative numbers are -(leafs+1), not nodes */
-        float mins[3];		/* for sphere culling */
-        float maxs[3];
-        uint32_t firstface;
-        uint32_t numfaces;		/* counting both sides */
-    } bsp2_dnode_t;
-
-    /*
-     * Note that children are interpreted as unsigned values now, so that we can
-     * handle > 32k clipnodes. Values > 0xFFF0 can be assumed to be CONTENTS
-     * values and can be read as the signed value to be compatible with the above
-     * (i.e. simply subtract 65536).
-     */
-    typedef struct {
-        int32_t planenum;
-        uint16_t children[2];	/* "negative" numbers are contents */
-    } bsp29_dclipnode_t;
-
-    typedef struct {
-        int32_t planenum;
-        int32_t children[2];	/* negative numbers are contents */
-    } bsp2_dclipnode_t;
-
-    typedef struct texinfo_s {
-        float vecs[2][4];		/* [s/t][xyz offset] */
-        int32_t miptex;
-        int32_t flags;
-    } texinfo_t;
-
-    /*
-     * Note that edge 0 is never used, because negative edge nums are used for
-     * counterclockwise use of the edge in a face.
-     */
-    typedef struct {
-        uint16_t v[2];		/* vertex numbers */
-    } bsp29_dedge_t;
-
-    typedef struct {
-        uint32_t v[2];		/* vertex numbers */
-    } bsp2_dedge_t;
-
-#define MAXLIGHTMAPS 4
-    typedef struct {
-        int16_t planenum;
-        int16_t side;
-
-        int32_t firstedge;		/* we must support > 64k edges */
-        int16_t numedges;
-        int16_t texinfo;
-
-        /* lighting info */
-        uint8_t styles[MAXLIGHTMAPS];
-        int32_t lightofs;		/* start of [numstyles*surfsize] samples */
-    } bsp29_dface_t;
-
-    typedef struct {
-        int32_t planenum;
-        int32_t side;
-
-        int32_t firstedge;		/* we must support > 64k edges */
-        int32_t numedges;
-        int32_t texinfo;
-
-        /* lighting info */
-        uint8_t styles[MAXLIGHTMAPS];
-        int32_t lightofs;		/* start of [numstyles*surfsize] samples */
-    } bsp2_dface_t;
-
-    /* Ambient sounds */
-#define AMBIENT_WATER   0
-#define AMBIENT_SKY     1
-#define AMBIENT_SLIME   2
-#define AMBIENT_LAVA    3
-#define NUM_AMBIENTS    4
-
-    /*
-     * leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid areas
-     * all other leafs need visibility info
-     */
-    typedef struct {
-        int32_t contents;
-        int32_t visofs;		/* -1 = no visibility info */
-        int16_t mins[3];		/* for frustum culling */
-        int16_t maxs[3];
-        uint16_t firstmarksurface;
-        uint16_t nummarksurfaces;
-        uint8_t ambient_level[NUM_AMBIENTS];
-    } bsp29_dleaf_t;
-    
-    typedef struct {
-        int32_t contents;
-        int32_t visofs;		/* -1 = no visibility info */
-        int16_t mins[3];		/* for frustum culling */
-        int16_t maxs[3];
-        uint32_t firstmarksurface;
-        uint32_t nummarksurfaces;
-        uint8_t ambient_level[NUM_AMBIENTS];
-    } bsp2rmq_dleaf_t;
-    
-    typedef struct {
-        int32_t contents;
-        int32_t visofs;		/* -1 = no visibility info */
-        float mins[3];		/* for frustum culling */
-        float maxs[3];
-        uint32_t firstmarksurface;
-        uint32_t nummarksurfaces;
-        uint8_t ambient_level[NUM_AMBIENTS];
-    } bsp2_dleaf_t;
+    typedef Vec Vertex;
 
     template<typename T>
     struct Lump
@@ -210,12 +108,12 @@ namespace {
             return array[idx];
         }
 
-        static inline const Lump fromEntry(const void* data, const lump_t& entry)
+        static inline const Lump fromEntry(const void* data, const Entry& entry)
         {
             Lump l;
-            l.size = entry.filelen / sizeof(T);
+            l.size = entry.size / sizeof(T);
             ASSERT(l.size > 0);
-            l.array = util::castFromMemory<T>(data, entry.fileofs);
+            l.array = util::castFromMemory<T>(data, entry.offset);
             return l;
         }
     };
@@ -255,32 +153,29 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     Scene scene;
     //Scene::initDefault(&scene);
 
-    auto& header = *util::castFromMemory<dheader_t>(data);
+    const Header& header = *util::castFromMemory<Header>(data);
     //const char* entities = &grab<char>(data, header.lumps[LUMP_ENTITIES].offset);
-    auto faces = Lump<bsp29_dface_t>::fromEntry(data, header.lumps[LUMP_FACES]);
-    auto vertices = Lump<dvertex_t>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
-    auto edges = Lump<bsp29_dedge_t>::fromEntry(data, header.lumps[LUMP_EDGES]);
-    auto models = Lump<dmodel_t>::fromEntry(data, header.lumps[LUMP_MODELS]);
-    auto edgeIndices = Lump<int16_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
-    auto faceIndices = Lump<uint16_t>::fromEntry(data, header.lumps[LUMP_MARKSURFACES]);
+    const Lump<Face> faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
+    const Lump<Vertex> vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
+    const Lump<Edge> edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
+    const Lump<Model> models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
+    const Lump<int16_t> edgeIndices = Lump<int16_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
+    const Lump<uint16_t> faceIndices = Lump<uint16_t>::fromEntry(data, header.lumps[LUMP_MARKSURFACES]);
 
-    auto& base = models[0];
-    for (int ii = 0; ii < base.numfaces; ++ii)
+    const Model& base = models[0];
+    for (int ii = 0; ii < base.face_num; ++ii)
     {
-        const int flIdx = base.firstface + ii;
-        const int faceLookup = faceIndices[flIdx];
-        auto& f = faces[faceLookup];
+        const int faceLookup = faceIndices[base.face_id + ii];
+        const Face& f = faces[faceLookup];
         printf("face: %d\n", faceLookup);
-        for (int jj = 0; jj < f.numedges; ++jj)
+        for (int jj = 0; jj < f.ledge_num; ++jj)
         {
-            const int elIdx = f.firstedge + jj;
-            const int edgeLookup = std::abs(edgeIndices[elIdx]);
-            ASSERT(edgeLookup != 0);
-            auto& e = edges[edgeLookup];
+            const int edgeLookup = std::abs(edgeIndices[f.ledge_id + jj]);
+            const Edge& e = edges[edgeLookup];
 
-            auto& a = vertices[e.v[0]];
-            auto& b = vertices[e.v[1]];
-            printf("%d -> %d\n", e.v[0], e.v[1]);
+            const Vertex& a = vertices[e.vertex_idx_start];
+            const Vertex& b = vertices[e.vertex_idx_end];
+            printf("%d -> %d\n", e.vertex_idx_start, e.vertex_idx_end);
             //printf("(%f, %f, %f) -> (%f, %f, %f)\n", a.x, a.y, a.z, b.x, b.y, b.z);
         }
         /*
