@@ -171,6 +171,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         for (int jj = 0; jj < f.ledge_num; ++jj)
         {
             const int edgeLookup = std::abs(edgeIndices[f.ledge_id + jj]);
+            ASSERT(edgeLookup != 0);
             const Edge& e = edges[edgeLookup];
 
             const Vertex& a = vertices[e.vertex_idx_start];
