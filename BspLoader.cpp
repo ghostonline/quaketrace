@@ -159,7 +159,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     const Lump<Vertex> vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
     const Lump<Edge> edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
     const Lump<Model> models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
-    const Lump<int16_t> edgeIndices = Lump<int16_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
+    const Lump<int32_t> edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
     const Lump<uint16_t> faceIndices = Lump<uint16_t>::fromEntry(data, header.lumps[LUMP_MARKSURFACES]);
 
     const Model& base = models[0];
