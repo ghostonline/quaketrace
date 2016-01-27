@@ -20,7 +20,7 @@ namespace {
         LUMP_FACES,
         LUMP_LIGHTING,
         LUMP_CLIPNODES,
-        LUMP_LEAFS,
+        LUMP_LEAVES,
         LUMP_MARKSURFACES,
         LUMP_EDGES,
         LUMP_SURFEDGES,
@@ -53,6 +53,12 @@ namespace {
     {
         Vec min;
         Vec max;
+    };
+
+    struct BoundingBoxCompressed // Bounds rounded to the nearest 16 units
+    {
+        int16_t min[3];
+        int16_t max[3];
     };
 
     struct Model
@@ -95,6 +101,25 @@ namespace {
     };
 
     typedef Vec Vertex;
+
+    struct BspNode
+    {
+        int32_t plane_id;
+        uint16_t children[2]; // bit15==1 for leaves (rendering), bit15==0 for nodes (collision)
+                              // id-1 to obtain the index
+        BoundingBoxCompressed bounds;
+        uint16_t face_id;
+        uint16_t face_num;
+    };
+
+    struct BspLeaf {
+        int32_t type;               // -2 for solid leaf (always idx == 0)
+        int32_t vis_id;             // -1 for no vis info
+        BoundingBoxCompressed bounds;
+        uint16_t lface_id;
+        uint16_t lface_num;
+        uint8_t ambient_level[4]; // ambient sfx
+    };
 
     template<typename T>
     struct Lump
@@ -161,22 +186,32 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
     auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
     auto faceIndices = Lump<uint16_t>::fromEntry(data, header.lumps[LUMP_MARKSURFACES]);
+    auto bspNodes = Lump<BspNode>::fromEntry(data, header.lumps[LUMP_NODES]);
+    auto bspLeaves = Lump<BspLeaf>::fromEntry(data, header.lumps[LUMP_LEAVES]);
 
     const Model& base = models[0];
-    for (int ii = 0; ii < base.face_num; ++ii)
+    const BspNode& node = bspNodes[base.node_bsp_id];
+    for (int ii = 0; ii < node.face_num; ++ii)
     {
-        const int faceLookup = faceIndices[base.face_id + ii];
-        const Face& f = faces[faceLookup];
-        printf("face: %d\n", faceLookup);
+        const int faceIdx = node.face_id + ii;
+        const Face& f = faces[faceIdx];
+        printf("face: %d\n", faceIdx);
         for (int jj = 0; jj < f.ledge_num; ++jj)
         {
-            const int edgeLookup = std::abs(edgeIndices[f.ledge_id + jj]);
+            const int edgeLookup = edgeIndices[f.ledge_id + jj];
             ASSERT(edgeLookup != 0);
-            const Edge& e = edges[edgeLookup];
+            const Edge& e = edges[std::abs(edgeLookup)];
 
             const Vertex& a = vertices[e.vertex_idx_start];
             const Vertex& b = vertices[e.vertex_idx_end];
-            printf("%d -> %d\n", e.vertex_idx_start, e.vertex_idx_end);
+            if (edgeLookup > 0)
+            {
+                printf("%d -> %d\n", e.vertex_idx_start, e.vertex_idx_end);
+            }
+            else
+            {
+                printf("%d -> %d\n", e.vertex_idx_end, e.vertex_idx_start);
+            }
             //printf("(%f, %f, %f) -> (%f, %f, %f)\n", a.x, a.y, a.z, b.x, b.y, b.z);
         }
         /*
