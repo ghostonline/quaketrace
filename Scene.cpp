@@ -19,6 +19,16 @@ void Scene::initDefault(Scene* scene)
     // Random triangle
     scene->triangles.push_back({ math::Vec3f(-5, 0, 0), math::Vec3f(5, 0, 0), math::Vec3f(0, 5, 0), Color(0.5f, 0.5f, 1.0f) });
 
+    // Polygon
+    ConvexPolygon polygon;
+    polygon.color = Color(1.0f, 0.5f, 0.5f);
+    polygon.vertices.push_back(math::Vec3f( 0.0f,-5.0f,-1.0f));
+    polygon.vertices.push_back(math::Vec3f(-3.0f,-2.5f,-1.0f));
+    polygon.vertices.push_back(math::Vec3f( 3.0f,-2.5f,-1.0f));
+    polygon.vertices.push_back(math::Vec3f(-2.0f, 3.0f,-1.0f));
+    polygon.vertices.push_back(math::Vec3f( 2.0f, 3.0f,-1.0f));
+    scene->polygons.push_back(polygon);
+
     // Directional lights
     scene->directionalLights.push_back({ math::Vec3f(0, -1, 0), 0.3f});
 

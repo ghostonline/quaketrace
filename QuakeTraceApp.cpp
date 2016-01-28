@@ -214,12 +214,13 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         pixelRay.dir = dir;
     }
 
-    collision3d::Hit infoSphere, infoPlane, infoTriangle;
+    collision3d::Hit infoSphere, infoPlane, infoTriangle, infoPolygon;
     infoSphere.t = scene.camera.far;
     int sphereHitIdx = collision3d::raycastSpheres(pixelRay, infoSphere.t, scene.spheres, &infoSphere);
     infoPlane.t = infoSphere.t;
     int planeHitIdx = collision3d::raycastPlanes(pixelRay, infoSphere.t, scene.planes, &infoPlane);
     int triangleHitIdx = collision3d::raycastTriangles(pixelRay, infoPlane.t, scene.triangles, &infoTriangle);
+    int polygonHitIdx = collision3d::raycastConvexPolygons(pixelRay, infoPlane.t, scene.polygons, &infoPolygon);
 
     Color color = COLOR_BACKGROUND;
     collision3d::Hit hitInfo;
@@ -237,6 +238,11 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     {
         color = scene.spheres[sphereHitIdx].color;
         hitInfo = infoSphere;
+    }
+    else if (polygonHitIdx > -1)
+    {
+        color = scene.polygons[polygonHitIdx].color;
+        hitInfo = infoPolygon;
     }
 
     float lightLevel = 0.0f;

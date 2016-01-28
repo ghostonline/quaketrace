@@ -144,3 +144,31 @@ int collision3d::raycastTriangles(const Ray& ray, float maxDist, const std::vect
 
     return minIndex;
 }
+
+int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std::vector<Scene::ConvexPolygon>& polygons, Hit* hitResult)
+{
+    float minDist = maxDist;
+    int minIndex = -1;
+    math::Vec3f minIntersection;
+    math::Vec3f minNormal;
+    for (int ii = util::lastIndex(polygons); ii >= 0; --ii)
+    {
+        const Scene::ConvexPolygon& poly = polygons[ii];
+
+        // TODO: Precalculate this
+        // Create edges
+        // Create polygon normal
+        // Create edge/poly normals
+
+        // Perform plane intersection
+        // Test if dist < minDist
+
+        // For each edge:
+        // Test dot point in front of edge/poly normal
+        // Bail if behind plane
+
+        // Update hit variables
+    }
+
+    return minIndex;
+}

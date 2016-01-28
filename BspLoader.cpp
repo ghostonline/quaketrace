@@ -176,7 +176,6 @@ namespace {
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 {
     Scene scene;
-    //Scene::initDefault(&scene);
 
     auto& header = *util::castFromMemory<Header>(data);
     auto faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
@@ -227,5 +226,6 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     Scene::pointCamera(&scene.camera, {-144, 0, -72}, {0, 1, 0}, {0, 0, 1});
     scene.ambientLightFactor = 1.0f;
 
+    Scene::initDefault(&scene);
     return scene;
 }

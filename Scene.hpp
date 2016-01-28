@@ -33,6 +33,13 @@ struct Scene
         Color color;
     };
 
+    struct ConvexPolygon
+    {
+        std::vector<math::Vec3f> vertices;
+
+        Color color;
+    };
+
     struct DirectionalLight
     {
         math::Vec3f normal;
@@ -61,6 +68,7 @@ struct Scene
     std::vector<Sphere> spheres;
     std::vector<Plane> planes;
     std::vector<Triangle> triangles;
+    std::vector<ConvexPolygon> polygons;
     std::vector<DirectionalLight> directionalLights;
     std::vector<Light> lights;
 
