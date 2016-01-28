@@ -105,8 +105,8 @@ namespace {
     struct BspNode
     {
         int32_t plane_id;
-        uint16_t children[2]; // bit15==1 for leaves (rendering), bit15==0 for nodes (collision)
-                              // id-1 to obtain the index
+        int16_t children[2]; // bit15==1 for leaves (rendering), bit15==0 for nodes (collision)
+                              // id-1 to obtain the leaf index
         BoundingBoxCompressed bounds;
         uint16_t face_id;
         uint16_t face_num;
@@ -179,46 +179,35 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     //Scene::initDefault(&scene);
 
     auto& header = *util::castFromMemory<Header>(data);
-    //const char* entities = &grab<char>(data, header.lumps[LUMP_ENTITIES].offset);
     auto faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
     auto vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
     auto edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
     auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
     auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
-    auto faceIndices = Lump<uint16_t>::fromEntry(data, header.lumps[LUMP_MARKSURFACES]);
-    auto bspNodes = Lump<BspNode>::fromEntry(data, header.lumps[LUMP_NODES]);
-    auto bspLeaves = Lump<BspLeaf>::fromEntry(data, header.lumps[LUMP_LEAVES]);
 
     const Model& base = models[0];
-    const BspNode& node = bspNodes[base.node_bsp_id];
-    for (int ii = 0; ii < node.face_num; ++ii)
+
+    for (int ii = 0; ii < vertices.size; ++ii)
     {
-        const int faceIdx = node.face_id + ii;
+        const Vertex& a = vertices[ii];
+        printf("v %.01f %.03f %.01f\n", a.x, a.z, a.y);
+    }
+
+    for (int ii = 0; ii < base.face_num; ++ii)
+    {
+        const int faceIdx = base.face_id + ii;
         const Face& f = faces[faceIdx];
-        printf("face: %d\n", faceIdx);
+        printf("f");
         for (int jj = 0; jj < f.ledge_num; ++jj)
         {
             const int edgeLookup = edgeIndices[f.ledge_id + jj];
             ASSERT(edgeLookup != 0);
             const Edge& e = edges[std::abs(edgeLookup)];
 
-            const Vertex& a = vertices[e.vertex_idx_start];
-            const Vertex& b = vertices[e.vertex_idx_end];
-            if (edgeLookup > 0)
-            {
-                printf("%d -> %d\n", e.vertex_idx_start, e.vertex_idx_end);
-            }
-            else
-            {
-                printf("%d -> %d\n", e.vertex_idx_end, e.vertex_idx_start);
-            }
-            //printf("(%f, %f, %f) -> (%f, %f, %f)\n", a.x, a.y, a.z, b.x, b.y, b.z);
+            int idxStart = edgeLookup > 0 ? e.vertex_idx_start : e.vertex_idx_end;
+            printf(" %d", idxStart + 1);
         }
-        /*
-        const auto& vertex = vertices[ii];
-        const Color& color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
-        scene.spheres.push_back({math::Vec3f(vertex.x, vertex.y, vertex.z), 10.0f, color});
-         */
+        printf("\n");
     }
 
     auto& cam = scene.camera;
