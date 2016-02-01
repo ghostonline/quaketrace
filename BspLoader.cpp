@@ -171,12 +171,17 @@ namespace {
         {0xA6/255.0f, 0x9A/255.0f, 0x4E/255.0f},
     };
     static const int DISTINCT_COLOR_COUNT = UTIL_ARRAY_SIZE(DISTINCT_COLORS);
+
+    inline math::Vec3f vert2vec3(const Vertex& vert)
+    {
+        return { vert.x, vert.y, vert.z };
+    }
 }
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 {
     printBspAsObj(data, size);
-    
+
     Scene scene;
 
     auto& header = *util::castFromMemory<Header>(data);
@@ -187,6 +192,24 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
 
     const Model& base = models[0];
+
+    for (int ii = 0; ii < base.face_num; ++ii)
+    {
+        const int faceIdx = base.face_id + ii;
+        const Face& f = faces[faceIdx];
+        Scene::ConvexPolygon poly;
+        poly.color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
+        for (int jj = 0; jj < f.ledge_num; ++jj)
+        {
+            const int edgeLookup = edgeIndices[f.ledge_id + jj];
+            ASSERT(edgeLookup != 0);
+            const Edge& e = edges[std::abs(edgeLookup)];
+
+            int idxStart = edgeLookup > 0 ? e.vertex_idx_start : e.vertex_idx_end;
+            poly.vertices.push_back(vert2vec3(vertices[idxStart]));
+        }
+        scene.polygons.push_back(poly);
+    }
 
     auto& cam = scene.camera;
     cam.origin = {-144, 0, -72};
