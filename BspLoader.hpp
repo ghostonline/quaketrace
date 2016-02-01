@@ -5,4 +5,5 @@
 struct BspLoader
 {
     static const Scene createSceneFromBsp(const void* data, int size);
+    static void printBspAsObj(const void* data, int size);
 };

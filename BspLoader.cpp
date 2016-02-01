@@ -175,8 +175,41 @@ namespace {
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 {
+    printBspAsObj(data, size);
+    
     Scene scene;
 
+    auto& header = *util::castFromMemory<Header>(data);
+    auto faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
+    auto vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
+    auto edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
+    auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
+    auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
+
+    const Model& base = models[0];
+
+    auto& cam = scene.camera;
+    cam.origin = {-144, 0, -72};
+    cam.near = 0.0f;
+    cam.far = 100000.0f;
+    cam.direction = {0, 1, 0};
+    cam.right = {1, 0, 0};
+    cam.up = {0, 0, 1};
+
+    const float fov = 60;
+    cam.halfViewAngles.set(
+         std::tan(math::deg2rad(fov)) / 2.0f,
+         std::tan(math::deg2rad(fov)) / 2.0f
+    );
+
+    Scene::pointCamera(&scene.camera, {-144, 0, -72}, {0, 1, 0}, {0, 0, 1});
+    scene.ambientLightFactor = 1.0f;
+
+    return scene;
+}
+
+void BspLoader::printBspAsObj(const void* data, int size)
+{
     auto& header = *util::castFromMemory<Header>(data);
     auto faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
     auto vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
@@ -208,24 +241,4 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         }
         printf("\n");
     }
-
-    auto& cam = scene.camera;
-    cam.origin = {-144, 0, -72};
-    cam.near = 0.0f;
-    cam.far = 100000.0f;
-    cam.direction = {0, 1, 0};
-    cam.right = {1, 0, 0};
-    cam.up = {0, 0, 1};
-
-    const float fov = 60;
-    cam.halfViewAngles.set(
-         std::tan(math::deg2rad(fov)) / 2.0f,
-         std::tan(math::deg2rad(fov)) / 2.0f
-    );
-
-    Scene::pointCamera(&scene.camera, {-144, 0, -72}, {0, 1, 0}, {0, 0, 1});
-    scene.ambientLightFactor = 1.0f;
-
-    Scene::initDefault(&scene);
-    return scene;
 }
