@@ -22,11 +22,11 @@ void Scene::initDefault(Scene* scene)
     // Polygon
     ConvexPolygon polygon;
     polygon.color = Color(1.0f, 0.5f, 0.5f);
-    polygon.vertices.push_back(math::Vec3f( 0.0f,-5.0f,-1.0f));
-    polygon.vertices.push_back(math::Vec3f(-3.0f,-2.5f,-1.0f));
-    polygon.vertices.push_back(math::Vec3f( 3.0f,-2.5f,-1.0f));
-    polygon.vertices.push_back(math::Vec3f(-2.0f, 3.0f,-1.0f));
-    polygon.vertices.push_back(math::Vec3f( 2.0f, 3.0f,-1.0f));
+    polygon.vertices.push_back(math::Vec3f(-3, 7, -1));
+    polygon.vertices.push_back(math::Vec3f(0, 5, -1));
+    polygon.vertices.push_back(math::Vec3f(3, 7, -1));
+    polygon.vertices.push_back(math::Vec3f(2, 10, -1));
+    polygon.vertices.push_back(math::Vec3f(-2, 10, -1));
     scene->polygons.push_back(polygon);
 
     // Directional lights

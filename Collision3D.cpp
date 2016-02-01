@@ -1,7 +1,18 @@
 #include "Collision3D.hpp"
 #include "Ray.hpp"
 #include "Util.hpp"
+#include "Assert.hpp"
 #include <limits>
+
+inline bool rayPlaneIntersection(const Ray& ray, const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, float* t)
+{
+    ASSERT(t);
+    float denom = math::dot(ray.dir, planeNormal);
+    if (denom > -math::APPROXIMATE_ZERO) { return false; }
+    auto relativeOrigin = planeOrigin - ray.origin;
+    *t = math::dot(relativeOrigin, planeNormal) / denom;
+    return true;
+}
 
 int collision3d::raycastSpheres(const Ray& ray, float maxDist, const std::vector<Scene::Sphere>& spheres, Hit* hitResult)
 {
@@ -86,7 +97,6 @@ int collision3d::raycastTriangles(const Ray& ray, float maxDist, const std::vect
 
     float minDist = maxDist;
     int minIndex = -1;
-    math::Vec3f minIntersection;
     math::Vec3f minNormal;
     for (int ii = util::lastIndex(triangles); ii >= 0; --ii)
     {
@@ -98,21 +108,11 @@ int collision3d::raycastTriangles(const Ray& ray, float maxDist, const std::vect
         math::Vec3f triangleNormal = math::normalized(math::cross(edgeAB, edgeAC));
 
         // Find intersection point with plane
-        float denom = math::dot(ray.dir, triangleNormal);
-        if (denom > -math::APPROXIMATE_ZERO) { continue; }
-        auto relativeOrigin = triangle.a - ray.origin;
-        float t = math::dot(relativeOrigin, triangleNormal) / denom;
-        auto intersection = ray.dir * t;
+        float dist = 0.0f;
+        bool intersects = rayPlaneIntersection(ray, triangle.a, triangleNormal, &dist);
+        if (!intersects || minDist < dist) { continue; }
 
-        float dist = math::length(intersection);
-        if (minDist < dist) { continue; }
-
-        // Small optimization
-#if 0
-        auto relativeIntersection = intersection + camera.origin - triangle.a;
-#else
-        auto relativeIntersection = intersection - relativeOrigin;
-#endif
+        auto relativeIntersection = (ray.dir * dist) + (ray.origin - triangle.a);
 
         // Check ray intersects in triangle boundaries (source: http://geomalgorithms.com/a04-_planes.html#Barycentric-Coordinate-Compute)
         // NOTE: slightly more complicated than 3 extra dot products to determine which side of each edge plane the point lies
@@ -131,13 +131,12 @@ int collision3d::raycastTriangles(const Ray& ray, float maxDist, const std::vect
 
         minDist = dist;
         minIndex = ii;
-        minIntersection = intersection;
         minNormal = triangleNormal;
     }
 
     if (minIndex > -1 && hitResult)
     {
-        hitResult->pos = minIntersection + ray.origin;
+        hitResult->pos = ray.dir * minDist + ray.origin;
         hitResult->normal = minNormal;
         hitResult->t = minDist;
     }
@@ -149,25 +148,72 @@ int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std:
 {
     float minDist = maxDist;
     int minIndex = -1;
-    math::Vec3f minIntersection;
     math::Vec3f minNormal;
     for (int ii = util::lastIndex(polygons); ii >= 0; --ii)
     {
         const Scene::ConvexPolygon& poly = polygons[ii];
+        ASSERT(poly.vertices.size() > 2);
 
         // TODO: Precalculate this
-        // Create edges
-        // Create polygon normal
-        // Create edge/poly normals
+        // Create edge normals
+        std::vector<math::Vec3f> normals(poly.vertices.size());
+        for (int ii = util::lastIndex(normals) - 1; ii >= 0; --ii)
+        {
+            normals[ii] = poly.vertices[ii + 1] - poly.vertices[ii];
+            math::normalize(&normals[ii]);
+        }
+        // Special case: last normal wraps around
+        normals.back() = poly.vertices.front() - poly.vertices.back();
+        math::normalize(&normals.back());
+
+        // Create polygon normal (this is not safe when both edges are the same)
+        const math::Vec3f polyNormal = math::normalized(math::cross(normals[0], normals[1]));
+
+        // Create edge/poly planes
+        struct Plane { math::Vec3f normal; math::Vec3f origin; };
+        std::vector<Plane> edgePolyPlanes(normals.size());
+        for (int ii = util::lastIndex(normals); ii >= 0; --ii)
+        {
+            const math::Vec3f& edgeNormal = normals[ii];
+            edgePolyPlanes[ii].normal = math::normalized(math::cross(polyNormal, edgeNormal));
+            edgePolyPlanes[ii].origin = poly.vertices[ii];
+        }
+
+        // Actual collision algorithm
 
         // Perform plane intersection
-        // Test if dist < minDist
+        float dist = 0.0f;
+        bool intersects = rayPlaneIntersection(ray, poly.vertices[0], polyNormal, &dist);
+        if (!intersects || dist > minDist) { continue; }
 
-        // For each edge:
-        // Test dot point in front of edge/poly normal
-        // Bail if behind plane
+        math::Vec3f intersection = ray.dir * dist + ray.origin;
 
-        // Update hit variables
+        // Detect whether intersection point lies in front of each edge plane
+        bool insidePolygon = true;
+        for (int ii = util::lastIndex(edgePolyPlanes); ii >= 0; --ii)
+        {
+            const auto& plane = edgePolyPlanes[ii];
+            auto relative = intersection - plane.origin;
+            if (math::dot(relative, plane.normal) < 0)
+            {
+                // behind plane
+                insidePolygon = false;
+                break;
+            }
+        }
+
+        if (!insidePolygon) { continue; }
+
+        minDist = dist;
+        minIndex = ii;
+        minNormal = polyNormal;
+    }
+
+    if (minIndex > -1 && hitResult)
+    {
+        hitResult->pos = ray.origin + ray.dir * minDist;
+        hitResult->normal = minNormal;
+        hitResult->t = minDist;
     }
 
     return minIndex;
