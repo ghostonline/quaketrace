@@ -5,8 +5,8 @@
 
 struct SDL_Window;
 struct Scene;
-class FrameBuffer;
 struct Ray;
+struct ARGBCanvas;
 
 class QuakeTraceApp
 {
@@ -15,7 +15,7 @@ public:
 
 private:
     static void setIconFromAsset(SDL_Window* window, AssetHelper::ID id);
-    static void renderScene(const Scene& scene, const int detailLevel, FrameBuffer* fb);
+    static void renderScene(const Scene& scene, const int detailLevel, ARGBCanvas* fb);
     static const Color renderPixel(const Scene& scene, float x, float y);
 
     static int breakX, breakY;

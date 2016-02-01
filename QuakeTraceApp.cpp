@@ -33,6 +33,16 @@ using namespace std;
 
 #define SHOW_FPS _DEBUG
 
+struct ARGBCanvas
+{
+    ARGBCanvas(int width, int height) : width(width), height(height), pixels(width * height * PIXEL_SIZE) {}
+
+    static const int PIXEL_SIZE = 4;
+    int width;
+    int height;
+    std::vector<uint8_t> pixels;
+};
+
 void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
 {
     auto iconSrc = AssetHelper::loadSurface(id);
@@ -66,6 +76,8 @@ void QuakeTraceApp::runUntilFinished()
     setIconFromAsset(window, AssetHelper::ICON);
 
     auto fb = FrameBuffer::createFromWindow(window);
+    ARGBCanvas canvas(fb->getWidth(), fb->getHeight());
+
     auto font = Font::create();
     int mapDataSize = 0;
     const void* mapData = AssetHelper::getRaw(AssetHelper::TESTMAP2, &mapDataSize);
@@ -73,7 +85,10 @@ void QuakeTraceApp::runUntilFinished()
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;
-    bool doRenderScene = false;
+    bool refreshCanvas = true;
+    bool updateMouse = true;
+    bool updateScene = false;
+    uint32_t renderTime = 0;
     while (!finished)
     {
         // Process all events
@@ -92,51 +107,59 @@ void QuakeTraceApp::runUntilFinished()
             {
                 mouseX = event.motion.x;
                 mouseY = event.motion.y;
+                updateMouse = true;
             }
 
             if (event.type == SDL_MOUSEBUTTONDOWN)
             {
                 breakX = mouseX;
                 breakY = mouseY;
+                refreshCanvas = true;
             }
-
-            if (event.type == SDL_WINDOWEVENT)
-            {
-                if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
-                {
-                    doRenderScene = false;
-                }
-                else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
-                {
-                    doRenderScene = true;
-                }
-            }
-
         }
 
-        uint32_t renderStart = SDL_GetTicks();
-        if (doRenderScene)
+        if (refreshCanvas)
         {
-            renderScene(scene, DETAIL_LEVEL, fb);
+            uint32_t renderStart = SDL_GetTicks();
+            renderScene(scene, DETAIL_LEVEL, &canvas);
+            renderTime = SDL_GetTicks() - renderStart;
+            refreshCanvas = false;
+            updateScene = true;
         }
         else
         {
-            SDL_Delay(500);
-        }
-        uint32_t renderTime = SDL_GetTicks() - renderStart;
-
-        // Display rendertime
-        {
-            char renderTimeStr[50];
-            sprintf(renderTimeStr, "%d ms", renderTime);
-            font->blitString(fb, renderTimeStr, 0, 0);
+            SDL_Delay(250);
         }
 
-        // Display mouse x, y
+        if (updateMouse || updateScene)
         {
-            char renderMouseStr[50];
-            sprintf(renderMouseStr, "%d, %d", mouseX, mouseY);
-            font->blitString(fb, renderMouseStr, 0, 10);
+            {
+                uint8_t* fbPixels = static_cast<uint8_t*>(fb->get());
+                const int rowLength = canvas.width * ARGBCanvas::PIXEL_SIZE;
+
+                for (int ii = 0; ii < canvas.height; ++ii)
+                {
+                    uint8_t* fbRow = fbPixels + (ii * fb->getPitch());
+                    uint8_t* canvasRow = canvas.pixels.data() + (ii * canvas.width);
+                    memcpy(fbRow, canvasRow, rowLength);
+                }
+                updateScene = false;
+            }
+
+            // Display rendertime
+            {
+                char renderTimeStr[50];
+                sprintf(renderTimeStr, "%d ms", renderTime);
+                font->blitString(fb, renderTimeStr, 0, 0);
+            }
+
+            // Display mouse x, y
+            {
+                char renderMouseStr[50];
+                sprintf(renderMouseStr, "%d, %d", mouseX, mouseY);
+                font->blitString(fb, renderMouseStr, 0, 10);
+                updateMouse = false;
+            }
         }
 
 
@@ -149,7 +172,7 @@ void QuakeTraceApp::runUntilFinished()
     return;
 }
 
-void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, FrameBuffer* fb)
+void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBCanvas* canvas)
 {
     const float sampleWidth = 1.0f / detailLevel;
     const float sampleHeight = 1.0f / detailLevel;
@@ -167,20 +190,20 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, Frame
             sampleOffsets.push_back(offset);
         }
     }
-    const math::Vec2f fbSize(fb->getWidth(), fb->getHeight());
+    const math::Vec2f fbSize(canvas->width, canvas->height);
 
-    uint8_t* pixels = reinterpret_cast<uint8_t*>(fb->get());
+    uint8_t* pixels = canvas->pixels.data();
     // TODO: Parallelize
-    for (int x = fb->getWidth() - 1; x >= 0; --x)
+    for (int x = canvas->width - 1; x >= 0; --x)
     {
-        for (int y = fb->getHeight() - 1; y >= 0; --y)
+        for (int y = canvas->height - 1; y >= 0; --y)
         {
             if (breakX == x && breakY == y)
             {
                 breakX = breakY = -1;
                 SDL_TriggerBreakpoint();
             }
-            const int baseIdx = x * fb->getPixelSize() + y * fb->getPitch();
+            const int baseIdx = x * ARGBCanvas::PIXEL_SIZE + y * canvas->width;
             uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[baseIdx]);
             Color aggregate(0.0f);
 
@@ -188,8 +211,8 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, Frame
             {
                 const float sampleX = x + sampleOffsets[ii].x;
                 const float sampleY = y + sampleOffsets[ii].y;
-                const float normX = (sampleX / static_cast<float>(fb->getWidth()) - 0.5f) * 2.0f;
-                const float normY = (sampleY / static_cast<float>(fb->getHeight()) - 0.5f) * -2.0f;
+                const float normX = (sampleX / static_cast<float>(canvas->width) - 0.5f) * 2.0f;
+                const float normY = (sampleY / static_cast<float>(canvas->height) - 0.5f) * -2.0f;
                 Color color = renderPixel(scene, normX, normY);
                 aggregate += color / sampleOffsets.size();
             }
