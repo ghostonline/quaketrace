@@ -137,11 +137,19 @@ void QuakeTraceApp::runUntilFinished()
                 uint8_t* fbPixels = static_cast<uint8_t*>(fb->get());
                 const int rowLength = canvas.width * ARGBCanvas::PIXEL_SIZE;
 
-                for (int ii = 0; ii < canvas.height; ++ii)
+                if (fb->getPitch() == rowLength)
                 {
-                    uint8_t* fbRow = fbPixels + (ii * fb->getPitch());
-                    uint8_t* canvasRow = canvas.pixels.data() + (ii * canvas.width);
-                    memcpy(fbRow, canvasRow, rowLength);
+                    // Just copy over the full buffer in one go
+                    memcpy(fbPixels, canvas.pixels.data(), canvas.pixels.size());
+                }
+                else
+                {
+                    for (int ii = 0; ii < canvas.height; ++ii)
+                    {
+                        uint8_t* fbRow = fbPixels + (ii * fb->getPitch());
+                        uint8_t* canvasRow = canvas.pixels.data() + (ii * canvas.width);
+                        memcpy(fbRow, canvasRow, rowLength);
+                    }
                 }
                 updateScene = false;
             }
