@@ -232,7 +232,6 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     Scene::pointCamera(&scene.camera, {-144, 0, -72}, {0, 1, 0}, {0, 0, 1});
     scene.ambientLightFactor = 1.0f;
 
-    Scene::initDefault(&scene);
     return scene;
 }
 
