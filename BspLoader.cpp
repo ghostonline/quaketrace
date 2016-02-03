@@ -209,27 +209,19 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             polyVertices[jj] = vert2vec3(vertices[idxStart]);
         }
         const Plane& plane = planes[f.plane_id];
-        const auto normal = vert2vec3(plane.normal) * (1 + f.side * -2);
+        const auto normal = vert2vec3(plane.normal) * (-1 + f.side * 2);
         const Color& color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
         const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, color);
         scene.polygons.push_back(poly);
     }
 
-    auto& cam = scene.camera;
-    cam.origin = {-144, 0, -72};
-    cam.near = 0.0f;
-    cam.far = 100000.0f;
-    cam.direction = {0, 1, 0};
-    cam.right = {1, 0, 0};
-    cam.up = {0, 0, 1};
-
-    const float fov = 60;
-    cam.halfViewAngles.set(
-         std::tan(math::deg2rad(fov)) / 2.0f,
-         std::tan(math::deg2rad(fov)) / 2.0f
-    );
-
     Scene::pointCamera(&scene.camera, {-144, 0, -72}, {0, 1, 0}, {0, 0, 1});
+    const float fov = 80;
+    scene.camera.halfViewAngles.set(
+                                     std::tan(math::deg2rad(fov)) / 2.0f,
+                                     std::tan(math::deg2rad(fov)) / 2.0f
+                                     );
+
     scene.ambientLightFactor = 1.0f;
 
     return scene;
