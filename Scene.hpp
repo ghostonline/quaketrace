@@ -35,7 +35,7 @@ struct Scene
 
     struct ConvexPolygon
     {
-        static const ConvexPolygon create(const std::vector<math::Vec3f>& vertices, const Color& color);
+        static const ConvexPolygon create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Color& color);
 
         std::vector<math::Vec3f> vertices;
 

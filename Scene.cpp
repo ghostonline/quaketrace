@@ -21,14 +21,20 @@ void Scene::initDefault(Scene* scene)
     scene->triangles.push_back({ math::Vec3f(-5, 0, 0), math::Vec3f(5, 0, 0), math::Vec3f(0, 5, 0), Color(0.5f, 0.5f, 1.0f) });
 
     // Polygon
-    std::vector<math::Vec3f> polyVerts;
-    polyVerts.push_back(math::Vec3f(-3, 7, -1));
-    polyVerts.push_back(math::Vec3f(0, 5, -1));
-    polyVerts.push_back(math::Vec3f(3, 7, -1));
-    polyVerts.push_back(math::Vec3f(2, 10, -1));
-    polyVerts.push_back(math::Vec3f(-2, 10, -1));
-    ConvexPolygon polygon = ConvexPolygon::create(polyVerts, Color(1.0f, 0.5f, 0.5f));
-    scene->polygons.push_back(polygon);
+    {
+        std::vector<math::Vec3f> polyVerts;
+        polyVerts.push_back(math::Vec3f(-3, 7, -1));
+        polyVerts.push_back(math::Vec3f(0, 5, -1));
+        polyVerts.push_back(math::Vec3f(3, 7, -1));
+        polyVerts.push_back(math::Vec3f(2, 10, -1));
+        polyVerts.push_back(math::Vec3f(-2, 10, -1));
+        auto edgeA = polyVerts[1] - polyVerts[0];
+        auto edgeB = polyVerts.back() - polyVerts[0];
+        auto normal = math::normalized(math::cross(edgeA, edgeB));
+        normal.set(0, 0, 1);
+        auto polygon = ConvexPolygon::create(polyVerts, normal, Color(1.0f, 0.5f, 0.5f));
+        scene->polygons.push_back(polygon);
+    }
 
     // Directional lights
     scene->directionalLights.push_back({ math::Vec3f(0, -1, 0), 0.3f});
@@ -62,12 +68,14 @@ void Scene::pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3
                                );
 }
 
-const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const Color& color)
+const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Color& color)
 {
     ASSERT(vertices.size() > 2);
     
     ConvexPolygon poly;
     poly.color = color;
+    poly.plane.normal = normal;
+    poly.plane.origin = vertices[0];
 
     // Create edge normals
     poly.edgeNormals.resize(vertices.size());
@@ -79,10 +87,6 @@ const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::
     // Special case: last normal wraps around
     poly.edgeNormals.back() = vertices.front() - vertices.back();
     math::normalize(&poly.edgeNormals.back());
-
-    // Create polygon normal (this is not safe when both edges are the same)
-    poly.plane.normal = math::normalized(math::cross(poly.edgeNormals[0], poly.edgeNormals[1]));
-    poly.plane.origin = vertices[0];
 
     // Create edge/poly planes
     poly.edgePlanes.resize(poly.edgeNormals.size());

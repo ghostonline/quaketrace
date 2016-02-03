@@ -185,6 +185,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     Scene scene;
 
     auto& header = *util::castFromMemory<Header>(data);
+    auto planes = Lump<Plane>::fromEntry(data, header.lumps[LUMP_PLANES]);
     auto faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
     auto vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
     auto edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
@@ -207,8 +208,10 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             int idxStart = edgeLookup > 0 ? e.vertex_idx_start : e.vertex_idx_end;
             polyVertices[jj] = vert2vec3(vertices[idxStart]);
         }
+        const Plane& plane = planes[f.plane_id];
+        const auto normal = vert2vec3(plane.normal) * (1 + f.side * -2);
         const Color& color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
-        const auto poly = Scene::ConvexPolygon::create(polyVertices, color);
+        const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, color);
         scene.polygons.push_back(poly);
     }
 
@@ -229,6 +232,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     Scene::pointCamera(&scene.camera, {-144, 0, -72}, {0, 1, 0}, {0, 0, 1});
     scene.ambientLightFactor = 1.0f;
 
+    Scene::initDefault(&scene);
     return scene;
 }
 
