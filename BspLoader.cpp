@@ -197,8 +197,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     {
         const int faceIdx = base.face_id + ii;
         const Face& f = faces[faceIdx];
-        Scene::ConvexPolygon poly;
-        poly.color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
+        std::vector<math::Vec3f> polyVertices(f.ledge_num);
         for (int jj = 0; jj < f.ledge_num; ++jj)
         {
             const int edgeLookup = edgeIndices[f.ledge_id + jj];
@@ -206,8 +205,10 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             const Edge& e = edges[std::abs(edgeLookup)];
 
             int idxStart = edgeLookup > 0 ? e.vertex_idx_start : e.vertex_idx_end;
-            poly.vertices.push_back(vert2vec3(vertices[idxStart]));
+            polyVertices[jj] = vert2vec3(vertices[idxStart]);
         }
+        const Color& color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
+        const auto poly = Scene::ConvexPolygon::create(polyVertices, color);
         scene.polygons.push_back(poly);
     }
 

@@ -2,6 +2,7 @@
 #include "Assert.hpp"
 #include <cmath>
 #include "Math.hpp"
+#include "Util.hpp"
 
 void Scene::initDefault(Scene* scene)
 {
@@ -20,13 +21,13 @@ void Scene::initDefault(Scene* scene)
     scene->triangles.push_back({ math::Vec3f(-5, 0, 0), math::Vec3f(5, 0, 0), math::Vec3f(0, 5, 0), Color(0.5f, 0.5f, 1.0f) });
 
     // Polygon
-    ConvexPolygon polygon;
-    polygon.color = Color(1.0f, 0.5f, 0.5f);
-    polygon.vertices.push_back(math::Vec3f(-3, 7, -1));
-    polygon.vertices.push_back(math::Vec3f(0, 5, -1));
-    polygon.vertices.push_back(math::Vec3f(3, 7, -1));
-    polygon.vertices.push_back(math::Vec3f(2, 10, -1));
-    polygon.vertices.push_back(math::Vec3f(-2, 10, -1));
+    std::vector<math::Vec3f> polyVerts;
+    polyVerts.push_back(math::Vec3f(-3, 7, -1));
+    polyVerts.push_back(math::Vec3f(0, 5, -1));
+    polyVerts.push_back(math::Vec3f(3, 7, -1));
+    polyVerts.push_back(math::Vec3f(2, 10, -1));
+    polyVerts.push_back(math::Vec3f(-2, 10, -1));
+    ConvexPolygon polygon = ConvexPolygon::create(polyVerts, Color(1.0f, 0.5f, 0.5f));
     scene->polygons.push_back(polygon);
 
     // Directional lights
@@ -59,4 +60,38 @@ void Scene::pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3
                                std::tan(math::deg2rad(fov)) / 2.0f,
                                std::tan(math::deg2rad(fov)) / 2.0f
                                );
+}
+
+const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const Color& color)
+{
+    ASSERT(vertices.size() > 2);
+    
+    ConvexPolygon poly;
+    poly.color = color;
+
+    // Create edge normals
+    poly.edgeNormals.resize(vertices.size());
+    for (int ii = util::lastIndex(poly.edgeNormals) - 1; ii >= 0; --ii)
+    {
+        poly.edgeNormals[ii] = vertices[ii + 1] - vertices[ii];
+        math::normalize(&poly.edgeNormals[ii]);
+    }
+    // Special case: last normal wraps around
+    poly.edgeNormals.back() = vertices.front() - vertices.back();
+    math::normalize(&poly.edgeNormals.back());
+
+    // Create polygon normal (this is not safe when both edges are the same)
+    poly.plane.normal = math::normalized(math::cross(poly.edgeNormals[0], poly.edgeNormals[1]));
+    poly.plane.origin = vertices[0];
+
+    // Create edge/poly planes
+    poly.edgePlanes.resize(poly.edgeNormals.size());
+    for (int ii = util::lastIndex(poly.edgeNormals); ii >= 0; --ii)
+    {
+        const math::Vec3f& edgeNormal = poly.edgeNormals[ii];
+        poly.edgePlanes[ii].normal = math::normalized(math::cross(poly.plane.normal, edgeNormal));
+        poly.edgePlanes[ii].origin = vertices[ii];
+    }
+
+    return poly;
 }

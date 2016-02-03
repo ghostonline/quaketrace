@@ -35,9 +35,22 @@ struct Scene
 
     struct ConvexPolygon
     {
+        static const ConvexPolygon create(const std::vector<math::Vec3f>& vertices, const Color& color);
+
         std::vector<math::Vec3f> vertices;
 
+        // Precalculated data based on vertices
+        struct Plane { math::Vec3f normal; math::Vec3f origin; };
+
+        Plane plane;
+
+        std::vector<math::Vec3f> edgeNormals;
+        std::vector<Plane> edgePlanes;
+
         Color color;
+
+    private:
+        ConvexPolygon() {}
     };
 
     struct DirectionalLight

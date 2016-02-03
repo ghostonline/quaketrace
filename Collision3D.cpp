@@ -151,48 +151,22 @@ int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std:
     math::Vec3f minNormal;
     for (int ii = util::lastIndex(polygons); ii >= 0; --ii)
     {
-        const Scene::ConvexPolygon& poly = polygons[ii];
-        ASSERT(poly.vertices.size() > 2);
-
-        // TODO: Precalculate this
-        // Create edge normals
-        std::vector<math::Vec3f> normals(poly.vertices.size());
-        for (int ii = util::lastIndex(normals) - 1; ii >= 0; --ii)
-        {
-            normals[ii] = poly.vertices[ii + 1] - poly.vertices[ii];
-            math::normalize(&normals[ii]);
-        }
-        // Special case: last normal wraps around
-        normals.back() = poly.vertices.front() - poly.vertices.back();
-        math::normalize(&normals.back());
-
-        // Create polygon normal (this is not safe when both edges are the same)
-        const math::Vec3f polyNormal = math::normalized(math::cross(normals[0], normals[1]));
-
-        // Create edge/poly planes
-        struct Plane { math::Vec3f normal; math::Vec3f origin; };
-        std::vector<Plane> edgePolyPlanes(normals.size());
-        for (int ii = util::lastIndex(normals); ii >= 0; --ii)
-        {
-            const math::Vec3f& edgeNormal = normals[ii];
-            edgePolyPlanes[ii].normal = math::normalized(math::cross(polyNormal, edgeNormal));
-            edgePolyPlanes[ii].origin = poly.vertices[ii];
-        }
+        const auto& poly = polygons[ii];
 
         // Actual collision algorithm
 
         // Perform plane intersection
         float dist = 0.0f;
-        bool intersects = rayPlaneIntersection(ray, poly.vertices[0], polyNormal, &dist);
+        bool intersects = rayPlaneIntersection(ray, poly.plane.origin, poly.plane.normal, &dist);
         if (!intersects || dist > minDist) { continue; }
 
         math::Vec3f intersection = ray.dir * dist + ray.origin;
 
         // Detect whether intersection point lies in front of each edge plane
         bool insidePolygon = true;
-        for (int ii = util::lastIndex(edgePolyPlanes); ii >= 0; --ii)
+        for (int ii = util::lastIndex(poly.edgePlanes); ii >= 0; --ii)
         {
-            const auto& plane = edgePolyPlanes[ii];
+            const auto& plane = poly.edgePlanes[ii];
             auto relative = intersection - plane.origin;
             if (math::dot(relative, plane.normal) < 0)
             {
@@ -206,7 +180,7 @@ int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std:
 
         minDist = dist;
         minIndex = ii;
-        minNormal = polyNormal;
+        minNormal = poly.plane.normal;
     }
 
     if (minIndex > -1 && hitResult)
