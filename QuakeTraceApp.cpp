@@ -203,7 +203,7 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
                 breakX = breakY = -1;
                 SDL_TriggerBreakpoint();
             }
-            const int baseIdx = x * ARGBCanvas::PIXEL_SIZE + y * canvas->width;
+            const int baseIdx = (x + y * canvas->width) * ARGBCanvas::PIXEL_SIZE;
             uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[baseIdx]);
             Color aggregate(0.0f);
 
