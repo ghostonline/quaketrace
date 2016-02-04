@@ -215,8 +215,8 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         scene.polygons.push_back(poly);
     }
 
-    Scene::pointCamera(&scene.camera, {-144, 0, -72}, {0, 1, 0}, {0, 0, 1});
     const float fov = 80;
+    Scene::pointCamera(&scene.camera, {-144, 0, -72}, {-1, 0, 0}, {0, 0, -1});
     scene.camera.halfViewAngles.set(
                                      std::tan(math::deg2rad(fov)) / 2.0f,
                                      std::tan(math::deg2rad(fov)) / 2.0f
