@@ -9,7 +9,11 @@ void Scene::initDefault(Scene* scene)
     ASSERT(scene != nullptr);
 
     pointCamera(&scene->camera, {0, 0, 30}, {0, 0, -1}, {0, 1, 0});
-
+    const float fov = 60;
+    scene->camera.halfViewAngles.set(
+                               std::tan(math::deg2rad(fov)) / 2.0f,
+                               std::tan(math::deg2rad(fov)) / 2.0f
+                               );
     // Spheres
     scene->spheres.push_back({ math::Vec3f(15.0f, 15.0f, -20.0f), 8.0, Color(1.0f, 0.0f, 0.0f) });
     scene->spheres.push_back({ math::Vec3f(15.0f, 5.0f, -5.0f), 6.0, Color(0.0f, 1.0f, 0.0f) });
@@ -60,12 +64,6 @@ void Scene::pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3
 
     camera->near = 10.0f;
     camera->far = 10000.0f;
-
-    const float fov = 60;
-    camera->halfViewAngles.set(
-                               std::tan(math::deg2rad(fov)) / 2.0f,
-                               std::tan(math::deg2rad(fov)) / 2.0f
-                               );
 }
 
 const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Color& color)
