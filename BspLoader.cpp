@@ -176,6 +176,11 @@ namespace {
     {
         return { vert.x, vert.y, vert.z };
     }
+
+    inline math::Vec3f norm2vec3(const Vec& normal)
+    {
+        return { normal.x, normal.y, normal.z };
+    }
 }
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
@@ -209,14 +214,14 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             polyVertices[jj] = vert2vec3(vertices[idxStart]);
         }
         const Plane& plane = planes[f.plane_id];
-        const auto normal = vert2vec3(plane.normal) * (-1 + f.side * 2);
+        const auto normal = norm2vec3(plane.normal) * (-1 + f.side * 2);
         const Color& color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
         const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, color);
         scene.polygons.push_back(poly);
     }
 
     const float fov = 60;
-    Scene::pointCamera(&scene.camera, {-144, 0, -72}, {-1, 0, 0}, {0, 0, -1});
+    Scene::pointCamera(&scene.camera, {-144, 0, -72}, {1, 0, 0}, {0, 0, 1});
     scene.camera.halfViewAngles.set(
                                      std::tan(math::deg2rad(fov)) / 2.0f,
                                      std::tan(math::deg2rad(fov)) / 2.0f
