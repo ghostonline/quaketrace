@@ -8,30 +8,30 @@ void Scene::initDefault(Scene* scene)
 {
     ASSERT(scene != nullptr);
 
-    pointCamera(&scene->camera, {0, 0, 30}, {0, 0, -1}, {0, 1, 0});
+    pointCamera(&scene->camera, {-30, 0, 0}, {1, 0, 0}, {0, 0, 1});
     const float fov = 60;
     scene->camera.halfViewAngles.set(
                                std::tan(math::deg2rad(fov)) / 2.0f,
                                std::tan(math::deg2rad(fov)) / 2.0f
                                );
     // Spheres
-    scene->spheres.push_back({ math::Vec3f(15.0f, 15.0f, -20.0f), 8.0, Color(1.0f, 0.0f, 0.0f) });
-    scene->spheres.push_back({ math::Vec3f(15.0f, 5.0f, -5.0f), 6.0, Color(0.0f, 1.0f, 0.0f) });
+    scene->spheres.push_back({ math::Vec3f(20, 15, 15), 8.0, Color(1.0f, 0.0f, 0.0f) });
+    scene->spheres.push_back({ math::Vec3f(5, 15, 5), 6.0, Color(0.0f, 1.0f, 0.0f) });
 
     // Ground plane
-    scene->planes.push_back({ math::Vec3f(0, -10, 0), math::Vec3f(0, 1, 0), Color(0.0f, 0.0f, 1.0f) });
+    scene->planes.push_back({ math::Vec3f(0, 0, -10), math::Vec3f(0, 0, 1), Color(0.0f, 0.0f, 1.0f) });
 
     // Random triangle
-    scene->triangles.push_back({ math::Vec3f(-5, 0, 0), math::Vec3f(5, 0, 0), math::Vec3f(0, 5, 0), Color(0.5f, 0.5f, 1.0f) });
+    scene->triangles.push_back({ math::Vec3f(0, -5, 0), math::Vec3f(0, 5, 0), math::Vec3f(0, 0, 5), Color(0.5f, 0.5f, 1.0f) });
 
     // Polygon
     {
         std::vector<math::Vec3f> polyVerts;
-        polyVerts.push_back(math::Vec3f(-3, 7, -1));
-        polyVerts.push_back(math::Vec3f(0, 5, -1));
-        polyVerts.push_back(math::Vec3f(3, 7, -1));
-        polyVerts.push_back(math::Vec3f(2, 10, -1));
-        polyVerts.push_back(math::Vec3f(-2, 10, -1));
+        polyVerts.push_back(math::Vec3f(1, -3, 7));
+        polyVerts.push_back(math::Vec3f(1, 0, 5));
+        polyVerts.push_back(math::Vec3f(1, 3, 7));
+        polyVerts.push_back(math::Vec3f(1, 2, 10));
+        polyVerts.push_back(math::Vec3f(1, -2, 10));
         auto edgeA = polyVerts[1] - polyVerts[0];
         auto edgeB = polyVerts.back() - polyVerts[0];
         auto normal = math::normalized(math::cross(edgeA, edgeB));
@@ -41,10 +41,10 @@ void Scene::initDefault(Scene* scene)
     }
 
     // Directional lights
-    scene->directionalLights.push_back({ math::Vec3f(0, -1, 0), 0.3f});
+    scene->directionalLights.push_back({ math::Vec3f(0, 0, -1), 0.3f});
 
     // Point lights
-    scene->lights.push_back({ math::Vec3f(0, 30, -5), 3000});
+    scene->lights.push_back({ math::Vec3f(5, 0, 30), 3000});
 
     scene->ambientLightFactor = 0.3f;
 }
