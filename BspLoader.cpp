@@ -245,8 +245,8 @@ void BspLoader::printBspAsObj(const void* data, int size)
 
     for (int ii = 0; ii < vertices.size; ++ii)
     {
-        const Vertex& a = vertices[ii];
-        printf("v %.01f %.03f %.01f\n", a.x, a.z, a.y);
+        const auto a = vert2vec3(vertices[ii]);
+        printf("v %.01f %.01f %.01f\n", a.x, a.y, a.z);
     }
 
     for (int ii = 0; ii < base.face_num; ++ii)
