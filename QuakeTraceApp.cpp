@@ -80,7 +80,7 @@ void QuakeTraceApp::runUntilFinished()
 
     auto font = Font::create();
     int mapDataSize = 0;
-    const void* mapData = AssetHelper::getRaw(AssetHelper::TESTMAP2, &mapDataSize);
+    const void* mapData = AssetHelper::getRaw(AssetHelper::TESTMAP, &mapDataSize);
     Scene scene = BspLoader::createSceneFromBsp(mapData, mapDataSize);
 
     bool finished = false;
