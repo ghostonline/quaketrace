@@ -55,8 +55,8 @@ void Scene::pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3
     camera->direction = forward;
     camera->up = up; // General up direction
     ASSERT(camera->up != camera->direction);
-    camera->right = math::cross(camera->direction, camera->up);
-    camera->up = math::cross(camera->right, camera->direction);
+    camera->right = math::cross(camera->up, camera->direction);
+    camera->up = math::cross(camera->direction, camera->right);
 
     math::normalize(&camera->direction);
     math::normalize(&camera->up);
