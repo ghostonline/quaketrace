@@ -110,7 +110,7 @@ int collision3d::raycastTriangles(const Ray& ray, float maxDist, const std::vect
         // Find intersection point with plane
         float dist = 0.0f;
         bool intersects = rayPlaneIntersection(ray, triangle.a, triangleNormal, &dist);
-        if (!intersects || minDist < dist) { continue; }
+        if (!intersects || dist < 0 || minDist < dist) { continue; }
 
         auto relativeIntersection = (ray.dir * dist) + (ray.origin - triangle.a);
 
@@ -158,7 +158,7 @@ int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std:
         // Perform plane intersection
         float dist = 0.0f;
         bool intersects = rayPlaneIntersection(ray, poly.plane.origin, poly.plane.normal, &dist);
-        if (!intersects || dist > minDist) { continue; }
+        if (!intersects || dist < 0 || dist > minDist) { continue; }
 
         math::Vec3f intersection = ray.dir * dist + ray.origin;
 
