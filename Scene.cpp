@@ -34,8 +34,7 @@ void Scene::initDefault(Scene* scene)
         polyVerts.push_back(math::Vec3f(1, -2, 10));
         auto edgeA = polyVerts[1] - polyVerts[0];
         auto edgeB = polyVerts.back() - polyVerts[0];
-        auto normal = math::normalized(math::cross(edgeA, edgeB));
-        normal.set(0, 0, 1);
+        auto normal = math::normalized(math::cross(edgeB, edgeA));
         auto polygon = ConvexPolygon::create(polyVerts, normal, Color(1.0f, 0.5f, 0.5f));
         scene->polygons.push_back(polygon);
     }
@@ -91,7 +90,7 @@ const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::
     for (int ii = util::lastIndex(poly.edgeNormals); ii >= 0; --ii)
     {
         const math::Vec3f& edgeNormal = poly.edgeNormals[ii];
-        poly.edgePlanes[ii].normal = math::normalized(math::cross(poly.plane.normal, edgeNormal));
+        poly.edgePlanes[ii].normal = math::normalized(math::cross(edgeNormal, poly.plane.normal));
         poly.edgePlanes[ii].origin = vertices[ii];
     }
 
