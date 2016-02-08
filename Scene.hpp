@@ -89,4 +89,10 @@ struct Scene
 
     static void initDefault(Scene* scene);
     static void pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3f& forward, const math::Vec3f& up);
+    static void pointCameraAt(Camera* camera, const math::Vec3f& pos, const math::Vec3f& focus, const math::Vec3f& up);
 };
+
+inline void Scene::pointCameraAt(Camera* camera, const math::Vec3f& pos, const math::Vec3f& focus, const math::Vec3f& up)
+{
+    pointCamera(camera, pos, math::normalized(focus - pos), up);
+}
