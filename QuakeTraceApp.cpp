@@ -31,7 +31,6 @@ int QuakeTraceApp::breakY = -1;
 
 using namespace std;
 
-#define SHOW_FPS _DEBUG
 #define DEFAULT_SCENE 0
 
 struct ARGBCanvas
