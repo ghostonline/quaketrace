@@ -32,6 +32,7 @@ int QuakeTraceApp::breakY = -1;
 using namespace std;
 
 #define SHOW_FPS _DEBUG
+#define DEFAULT_SCENE 0
 
 struct ARGBCanvas
 {
@@ -79,9 +80,14 @@ void QuakeTraceApp::runUntilFinished()
     ARGBCanvas canvas(fb->getWidth(), fb->getHeight());
 
     auto font = Font::create();
+#if DEFAULT_SCENE
+    Scene scene;
+    Scene::initDefault(&scene);
+#else
     int mapDataSize = 0;
     const void* mapData = AssetHelper::getRaw(AssetHelper::TESTMAP, &mapDataSize);
     Scene scene = BspLoader::createSceneFromBsp(mapData, mapDataSize);
+#endif
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;
