@@ -63,17 +63,12 @@ int collision3d::raycastPlanes(const Ray& ray, float maxDist, const std::vector<
     {
         const Scene::Plane& plane = planes[ii];
 
-        float denom = math::dot(ray.dir, plane.normal);
-        // Only render plane if point moves toward front of the plane
-        if (denom > math::APPROXIMATE_ZERO) { continue; }
-
-        // Determine intersection time
-        auto relativeOrigin = plane.origin - ray.origin;
-        float t = math::dot(relativeOrigin, plane.normal) / denom;
+        float dist = 0.0f;
+        bool hit = rayPlaneIntersection(ray, plane.origin, plane.normal, &dist);
+        if (!hit || dist < 0 || dist > minDist) { continue; }
 
         // Calculate intersection point relative to the ray origin
-        auto intersection = ray.dir * t;
-        float dist = math::length(intersection);
+        auto intersection = ray.dir * dist;
         if (minDist > dist)
         {
             minDist = dist;
