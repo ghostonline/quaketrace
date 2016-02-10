@@ -8,7 +8,7 @@ else:
 	output = sys.argv[1]
 
 assets = []
-files = sorted(f for f in os.listdir(script_src) if f.endswith(".bmp") or f.endswith(".bsp"))
+files = sorted(f for f in os.listdir(script_src) if f.endswith(".bmp") or f.endswith(".bsp") or f.endswith(".lmp"))
 for file_ in files:
 	full_path = os.path.join(script_src, file_)
 	varname = "ASSET_%s" % os.path.splitext(file_)[0].upper()

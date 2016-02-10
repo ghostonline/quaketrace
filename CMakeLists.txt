@@ -31,6 +31,7 @@ include_directories (${CMAKE_CURRENT_BINARY_DIR})
 
 # Assets to be bundled in the executable
 set(ASSETS
+	assets/palette.lmp
 	assets/font.bmp
 	assets/icon.bmp
 	assets/testmap.bsp
