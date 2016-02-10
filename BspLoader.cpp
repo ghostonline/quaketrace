@@ -121,6 +121,23 @@ namespace {
         uint8_t ambient_level[4]; // ambient sfx
     };
 
+    struct MipsTexture
+    {
+        enum
+        {
+            MIP_1X1,
+            MIP_2X2,
+            MIP_4X4,
+            MIP_8X8,
+            NUM_MIPS,
+        };
+
+        char name[16];
+        uint32_t width;
+        uint32_t height;
+        uint32_t offset[NUM_MIPS];
+    };
+
     template<typename T>
     struct Lump
     {
@@ -196,6 +213,16 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
     auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
     auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
+
+    const int32_t* textureInfo = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
+    int textureCount = textureInfo[0];
+    std::vector<const MipsTexture*> textures;
+    for (int ii = textureCount; ii > 0; --ii)
+    {
+        int offset = header.lumps[LUMP_TEXTURES].offset + textureInfo[ii];
+        auto texture = util::castFromMemory<MipsTexture>(data, offset);
+        textures.push_back(texture);
+    }
 
     const Model& base = models[0];
 
