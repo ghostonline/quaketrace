@@ -35,7 +35,10 @@ void Scene::initDefault(Scene* scene)
         auto edgeA = polyVerts[1] - polyVerts[0];
         auto edgeB = polyVerts.back() - polyVerts[0];
         auto normal = math::normalized(math::cross(edgeB, edgeA));
-        auto polygon = ConvexPolygon::create(polyVerts, normal, Color(1.0f, 0.5f, 0.5f));
+        Material mat;
+        mat.color = Color(1.0f, 0.5f, 0.5f);
+        mat.texture = -1;
+        auto polygon = ConvexPolygon::create(polyVerts, normal, mat);
         scene->polygons.push_back(polygon);
     }
 
@@ -65,12 +68,12 @@ void Scene::pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3
     camera->far = 10000.0f;
 }
 
-const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Color& color)
+const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Material& material)
 {
     ASSERT(vertices.size() > 2);
     
     ConvexPolygon poly;
-    poly.color = color;
+    poly.material = material;
     poly.plane.normal = normal;
     poly.plane.origin = vertices[0];
 

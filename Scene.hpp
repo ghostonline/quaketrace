@@ -11,6 +11,14 @@ struct Scene
 {
     static const int DIRECTIONAL_RAY_LENGTH = 1000;
 
+    struct Material
+    {
+        int texture;
+        math::Vec3f u;
+        math::Vec3f v;
+        Color color;
+    };
+
     struct Sphere
     {
         math::Vec3f origin;
@@ -36,7 +44,7 @@ struct Scene
 
     struct ConvexPolygon
     {
-        static const ConvexPolygon create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Color& color);
+        static const ConvexPolygon create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Material& material);
 
         std::vector<math::Vec3f> vertices;
 
@@ -48,7 +56,7 @@ struct Scene
         std::vector<math::Vec3f> edgeNormals;
         std::vector<Plane> edgePlanes;
 
-        Color color;
+        Material material;
 
     private:
         ConvexPolygon() {}

@@ -246,8 +246,12 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         }
         const Plane& plane = planes[f.plane_id];
         const auto normal = norm2vec3(plane.normal) * (1 - f.side * 2);
-        const Color& color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
-        const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, color);
+        Scene::Material mat;
+        mat.color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
+        mat.u = {1, 0, 0};
+        mat.v = {0, 0, 1};
+        mat.texture = 0;
+        const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
         scene.polygons.push_back(poly);
     }
 

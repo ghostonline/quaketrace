@@ -277,7 +277,7 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     }
     else if (polygonHitIdx > -1)
     {
-        color = scene.polygons[polygonHitIdx].color;
+        color = scene.polygons[polygonHitIdx].material.color;
         hitInfo = infoPolygon;
     }
 
