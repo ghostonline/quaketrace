@@ -20,7 +20,7 @@ Font* Font::create()
     vector<Glyph> index;
 
     auto tex = AssetHelper::loadTexture(FONT);
-    int glyphsPerRow = tex->getWidth() / GLYPH_WIDTH;
+    int glyphsPerRow = tex.getWidth() / GLYPH_WIDTH;
 
     // Build index
     for (int idx = 0; GLYPH_CHARS[idx] != 0; ++idx)
@@ -57,8 +57,8 @@ void Font::blitString(FrameBuffer* fb, const char* text, int x, int y, Align ali
 
     vector<pixel> label(width * height);
     int writeX = 0;
-    const pixel* pixels = reinterpret_cast<pixel*>(texture->getPixels());
-    int texPitch = texture->getPitch() / sizeof(pixel);
+    const pixel* pixels = reinterpret_cast<pixel*>(texture.getPixels());
+    int texPitch = texture.getPitch() / sizeof(pixel);
     for (auto glyph : glyphs)
     {
         int glyphWidth = glyph->w * sizeof(pixel);

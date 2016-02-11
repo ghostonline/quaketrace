@@ -5,7 +5,6 @@
 #include "Texture.hpp"
 
 class FrameBuffer;
-class Texture;
 
 class Font
 {
@@ -22,8 +21,8 @@ public:
 private:
     struct Glyph { int x, y, w, h; };
 
-    Font(Texture* texture, const std::vector<Glyph>& index) : texture(texture), index(index) {}
+    Font(const Texture& texture, const std::vector<Glyph>& index) : texture(texture), index(index) {}
 
-    std::unique_ptr<Texture> texture;
+    Texture texture;
     std::vector<Glyph> index;
 };

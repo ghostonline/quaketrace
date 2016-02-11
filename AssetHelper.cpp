@@ -25,10 +25,10 @@ const void* AssetHelper::getRaw(AssetHelper::ID id, int* size)
 }
 
 
-Texture* AssetHelper::loadTexture(AssetHelper::ID id)
+Texture AssetHelper::loadTexture(AssetHelper::ID id)
 {
     auto surface = AssetHelper::loadSurface(id);
-    auto texture = Texture::createFromSurface(surface);
+    auto texture = Texture::createFromSDL(surface);
     SDL_FreeSurface(surface);
     return texture;
 }
