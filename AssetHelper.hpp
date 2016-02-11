@@ -11,6 +11,7 @@ struct AssetHelper
         ICON,
         TESTMAP,
         TESTMAP2,
+        PALETTE,
     };
 
     static Texture loadTexture(ID id);

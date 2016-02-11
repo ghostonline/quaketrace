@@ -5,6 +5,7 @@
 #include <vector>
 
 class FrameBuffer;
+class Texture;
 
 struct Scene
 {
@@ -84,6 +85,8 @@ struct Scene
     std::vector<ConvexPolygon> polygons;
     std::vector<DirectionalLight> directionalLights;
     std::vector<Light> lights;
+
+    std::vector<Texture> textures;
 
     float ambientLightFactor;
 

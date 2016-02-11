@@ -4,7 +4,8 @@
 
 Texture Texture::createFromIndexedRGB(int width, int height, const void *indices, const void *palette)
 {
-    static const int PIXEL_WIDTH = 3;
+    static const int PIXEL_WIDTH = 4;
+    static const int PALETTE_WIDTH = 3;
     Texture texture(width, height, PIXEL_WIDTH);
     
     auto paletteBytes = reinterpret_cast<const std::uint8_t*>(palette);
@@ -12,14 +13,13 @@ Texture Texture::createFromIndexedRGB(int width, int height, const void *indices
 
     for (int ii = 0; ii < width * height; ++ii)
     {
-        int indexIdx = ii * PIXEL_WIDTH;
+        int paletteIdx = indicesBytes[ii] * PALETTE_WIDTH;
         int pixelIdx = ii * PIXEL_WIDTH;
-        for (int channel = 0; channel < 3; ++channel)
-        {
-            const int pixelChannelIdx = pixelIdx + channel;
-            const int indexChannelIdx = indexIdx + channel;
-            texture.pixels[pixelChannelIdx] = paletteBytes[indicesBytes[indexChannelIdx]];
-        }
+
+        texture.pixels[pixelIdx + 0] = paletteBytes[paletteIdx + 2];
+        texture.pixels[pixelIdx + 1] = paletteBytes[paletteIdx + 1];
+        texture.pixels[pixelIdx + 2] = paletteBytes[paletteIdx + 0];
+        texture.pixels[pixelIdx + 3] = 0xFF;
     }
 
     return texture;

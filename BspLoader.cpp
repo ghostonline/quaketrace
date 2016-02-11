@@ -2,6 +2,8 @@
 #include "Logger.hpp"
 #include "Assert.hpp"
 #include "Util.hpp"
+#include "Texture.hpp"
+#include "AssetHelper.hpp"
 #include <cstdint>
 #include <cstdlib>
 
@@ -214,14 +216,16 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
     auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
 
+    const void* palette = AssetHelper::getRaw(AssetHelper::PALETTE, nullptr);
     const int32_t* textureInfo = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
     int textureCount = textureInfo[0];
-    std::vector<const MipsTexture*> textures;
-    for (int ii = textureCount; ii > 0; --ii)
+    scene.textures.reserve(textureCount);
+    for (int ii = 1; ii <= textureCount; ++ii)
     {
         int offset = header.lumps[LUMP_TEXTURES].offset + textureInfo[ii];
-        auto texture = util::castFromMemory<MipsTexture>(data, offset);
-        textures.push_back(texture);
+        auto def = util::castFromMemory<MipsTexture>(data, offset);
+        auto indices = util::castFromMemory<uint8_t>(data, offset + def->offset[MipsTexture::MIP_1X1]);
+        scene.textures.push_back(Texture::createFromIndexedRGB(def->width, def->height, indices, palette));
     }
 
     const Model& base = models[0];
