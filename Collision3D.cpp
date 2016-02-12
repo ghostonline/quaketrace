@@ -159,9 +159,9 @@ int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std:
 
         // Detect whether intersection point lies in front of each edge plane
         bool insidePolygon = true;
-        for (int ii = util::lastIndex(poly.edgePlanes); ii >= 0; --ii)
+        for (int jj = util::lastIndex(poly.edgePlanes); jj >= 0; --jj)
         {
-            const auto& plane = poly.edgePlanes[ii];
+            const auto& plane = poly.edgePlanes[jj];
             auto relative = intersection - plane.origin;
             if (math::dot(relative, plane.normal) < 0)
             {

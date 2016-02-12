@@ -203,7 +203,7 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
             sampleOffsets.push_back(offset);
         }
     }
-    const math::Vec2f fbSize(canvas->width, canvas->height);
+    const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
 
     uint8_t* pixels = canvas->pixels.data();
     // TODO: Parallelize
@@ -227,7 +227,7 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
                 const float normX = (sampleX / static_cast<float>(canvas->width) - 0.5f) * 2.0f;
                 const float normY = (sampleY / static_cast<float>(canvas->height) - 0.5f) * -2.0f;
                 Color color = renderPixel(scene, normX, normY);
-                aggregate += color / sampleOffsets.size();
+                aggregate += color / static_cast<float>(sampleOffsets.size());
             }
 
             *pixel = Color::asARGB(aggregate);

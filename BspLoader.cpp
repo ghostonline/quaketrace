@@ -268,7 +268,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             polyVertices[jj] = vert2vec3(vertices[idxStart]);
         }
         const Plane& plane = planes[f.plane_id];
-        const auto normal = norm2vec3(plane.normal) * (1 - f.side * 2);
+        const auto normal = norm2vec3(plane.normal) * static_cast<float>(1 - f.side * 2);
         const auto& texture = textureInfo[f.texinfo_id];
 #if COLOR_DEBUG
         auto mat = info2material(texture, DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT]);
@@ -280,7 +280,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     }
 
     const float fov = 60;
-    math::Vec3f cameraFocus{17.98, -21.20, 0};
+    math::Vec3f cameraFocus{17.98f, -21.20f, 0};
     math::Vec3f cameraOrigin{-224, 160, 48};
     Scene::pointCameraAt(&scene.camera, cameraOrigin, cameraFocus, {0, 0, 1});
     scene.camera.halfViewAngles.set(

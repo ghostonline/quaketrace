@@ -9,12 +9,12 @@ class FrameBuffer;
 
 struct Scene
 {
-    static const int DIRECTIONAL_RAY_LENGTH = 1000;
+    static const float DIRECTIONAL_RAY_LENGTH;
 
     struct Material
     {
         Material() : texture(-1) {}
-        
+
         int texture;
         math::Vec3f u;
         math::Vec3f v;

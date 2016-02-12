@@ -4,6 +4,8 @@
 #include "Math.hpp"
 #include "Util.hpp"
 
+const float Scene::DIRECTIONAL_RAY_LENGTH = 1000.0f;
+
 void Scene::initDefault(Scene* scene)
 {
     ASSERT(scene != nullptr);
@@ -71,7 +73,7 @@ void Scene::pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3
 const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Material& material)
 {
     ASSERT(vertices.size() > 2);
-    
+
     ConvexPolygon poly;
     poly.material = material;
     poly.plane.normal = normal;
