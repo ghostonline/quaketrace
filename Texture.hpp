@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cstdint>
+#include "Color.hpp"
 
 struct SDL_Surface;
 
@@ -19,10 +20,12 @@ public:
     std::uint8_t* getPixels() { return pixels.data(); }
     const std::uint8_t* getPixels() const { return pixels.data(); }
 
+    const Color sample(int x, int y) const;
 
 private:
     int width;
     int height;
     int pitch;
+    int channels;
     std::vector<std::uint8_t> pixels;
 };

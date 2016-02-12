@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "Math.hpp"
+#include <cmath>
 
 struct Color
 {
@@ -84,9 +85,16 @@ struct Color
         return
         {
             a.r * factor + b.r * (1.0f - factor),
-            a.b * factor + b.b * (1.0f - factor),
             a.g * factor + b.g * (1.0f - factor),
+            a.b * factor + b.b * (1.0f - factor),
         };
+    }
+
+    inline static void normalize(Color* c)
+    {
+        c->r = math::clamp01(c->r);
+        c->g = math::clamp01(c->g);
+        c->b = math::clamp01(c->b);
     }
 
 private:

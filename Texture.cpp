@@ -53,5 +53,19 @@ Texture::Texture(int width, int height, int channels)
     : width(width)
     , height(height)
     , pitch(width * channels)
+    , channels(channels)
     , pixels(width * height * channels)
 {}
+
+const Color Texture::sample(int x, int y) const
+{
+    // FIXME: Assumes RGBA
+    const uint8_t* pixel = pixels.data() + x * channels + y * pitch;
+    const uint8_t byte_r = pixel[2];
+    const uint8_t byte_g = pixel[1];
+    const uint8_t byte_b = pixel[0];
+    const float r = byte_r / 255.0f;
+    const float g = byte_g / 255.0f;
+    const float b = byte_b / 255.0f;
+    return Color(r, g, b);
+}

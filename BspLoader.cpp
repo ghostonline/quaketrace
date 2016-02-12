@@ -140,6 +140,16 @@ namespace {
         uint32_t offset[NUM_MIPS];
     };
 
+    struct TextureInfo
+    {
+        Vec u;
+        scalar_t offset_u;
+        Vec v;
+        scalar_t offset_v;
+        uint32_t   texture_id;         // Index of Mip Texture
+        uint32_t   animated;           // 0 for ordinary textures, 1 for water
+    };
+
     template<typename T>
     struct Lump
     {
@@ -200,6 +210,18 @@ namespace {
     {
         return { normal.x, normal.y, normal.z };
     }
+
+    inline Scene::Material info2material(const TextureInfo& info, const Color& c)
+    {
+        Scene::Material mat;
+        mat.color = c;
+        mat.u = vert2vec3(info.u);
+        mat.v = vert2vec3(info.v);
+        mat.texture = info.texture_id;
+        mat.offset.x = info.offset_u;
+        mat.offset.y = info.offset_v;
+        return mat;
+    }
 }
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
@@ -215,14 +237,15 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
     auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
     auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
+    auto textureInfo = Lump<TextureInfo>::fromEntry(data, header.lumps[LUMP_TEXINFO]);
 
     const void* palette = AssetHelper::getRaw(AssetHelper::PALETTE, nullptr);
-    const int32_t* textureInfo = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
-    int textureCount = textureInfo[0];
+    const int32_t* textureOffsets = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
+    int textureCount = textureOffsets[0];
     scene.textures.reserve(textureCount);
     for (int ii = 1; ii <= textureCount; ++ii)
     {
-        int offset = header.lumps[LUMP_TEXTURES].offset + textureInfo[ii];
+        int offset = header.lumps[LUMP_TEXTURES].offset + textureOffsets[ii];
         auto def = util::castFromMemory<MipsTexture>(data, offset);
         auto indices = util::castFromMemory<uint8_t>(data, offset + def->offset[MipsTexture::MIP_1X1]);
         scene.textures.push_back(Texture::createFromIndexedRGB(def->width, def->height, indices, palette));
@@ -246,11 +269,12 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         }
         const Plane& plane = planes[f.plane_id];
         const auto normal = norm2vec3(plane.normal) * (1 - f.side * 2);
-        Scene::Material mat;
-        mat.color = DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT];
-        mat.u = {1, 0, 0};
-        mat.v = {0, 0, 1};
-        mat.texture = 0;
+        const auto& texture = textureInfo[f.texinfo_id];
+#if COLOR_DEBUG
+        auto mat = info2material(texture, DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT]);
+#else
+        auto mat = info2material(texture, Color());
+#endif
         const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
         scene.polygons.push_back(poly);
     }

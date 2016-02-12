@@ -2,10 +2,10 @@
 
 #include "Math.hpp"
 #include "Color.hpp"
+#include "Texture.hpp"
 #include <vector>
 
 class FrameBuffer;
-class Texture;
 
 struct Scene
 {
@@ -13,10 +13,15 @@ struct Scene
 
     struct Material
     {
+        Material() : texture(-1) {}
+        
         int texture;
         math::Vec3f u;
         math::Vec3f v;
+        math::Vec2f offset;
         Color color;
+
+        math::Vec2f positionToUV(const math::Vec3f& pos) const;
     };
 
     struct Sphere
@@ -98,6 +103,8 @@ struct Scene
 
     float ambientLightFactor;
 
+    Color getTexturePixel(const Material& mat, const math::Vec3f& pos) const;
+
     static void initDefault(Scene* scene);
     static void pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3f& forward, const math::Vec3f& up);
     static void pointCameraAt(Camera* camera, const math::Vec3f& pos, const math::Vec3f& focus, const math::Vec3f& up);
@@ -106,4 +113,13 @@ struct Scene
 inline void Scene::pointCameraAt(Camera* camera, const math::Vec3f& pos, const math::Vec3f& focus, const math::Vec3f& up)
 {
     pointCamera(camera, pos, math::normalized(focus - pos), up);
+}
+
+inline math::Vec2f Scene::Material::positionToUV(const math::Vec3f& pos) const
+{
+    math::Vec2f uv;
+    uv.x = math::dot(pos, u);
+    uv.y = math::dot(pos, v);
+    uv += offset;
+    return uv;
 }
