@@ -273,7 +273,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 #if COLOR_DEBUG
         auto mat = info2material(texture, DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT]);
 #else
-        auto mat = info2material(texture, Color());
+        auto mat = info2material(texture, Color(0.0f, 0.0f, 0.0f));
 #endif
         const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
         scene.polygons.push_back(poly);

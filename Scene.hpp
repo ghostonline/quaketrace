@@ -13,7 +13,7 @@ struct Scene
 
     struct Material
     {
-        Material() : texture(-1) {}
+        Material() : texture(-1), color(0.0f, 0.0f, 0.0f) {}
 
         int texture;
         math::Vec3f u;
