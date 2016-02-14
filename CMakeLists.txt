@@ -36,6 +36,7 @@ set(ASSETS
 	assets/icon.bmp
 	assets/testmap.bsp
 	assets/testmap2.bsp
+	assets/e1m1.bsp
 )
 
 # Generate source files
