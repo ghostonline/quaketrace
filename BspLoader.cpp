@@ -4,10 +4,14 @@
 #include "Util.hpp"
 #include "Texture.hpp"
 #include "AssetHelper.hpp"
+#include "BspEntity.hpp"
+#include "ArrayView.hpp"
 #include <cstdint>
 #include <cstdlib>
 
 using namespace std;
+
+#define COLOR_DEBUG 0
 
 namespace {
     enum Lumps
@@ -150,28 +154,7 @@ namespace {
         uint32_t   animated;           // 0 for ordinary textures, 1 for water
     };
 
-    template<typename T>
-    struct Lump
-    {
-        int size;
-        const T* array;
-
-        inline const T& operator[](int idx) const
-        {
-            ASSERT(0 <= idx && idx < size);
-            return array[idx];
-        }
-
-        static inline const Lump fromEntry(const void* data, const Entry& entry)
-        {
-            Lump l;
-            l.size = entry.size / sizeof(T);
-            ASSERT(l.size > 0);
-            l.array = util::castFromMemory<T>(data, entry.offset);
-            return l;
-        }
-    };
-
+#if COLOR_DEBUG
     static const Color DISTINCT_COLORS[] = {
         {0xD5/255.0f, 0x6D/255.0f, 0x73/255.0f},
         {0x6A/255.0f, 0xD1/255.0f, 0x45/255.0f},
@@ -200,6 +183,7 @@ namespace {
         {0xA6/255.0f, 0x9A/255.0f, 0x4E/255.0f},
     };
     static const int DISTINCT_COLOR_COUNT = UTIL_ARRAY_SIZE(DISTINCT_COLORS);
+#endif
 
     inline math::Vec3f vert2vec3(const Vertex& vert)
     {
@@ -222,6 +206,15 @@ namespace {
         mat.offset.y = info.offset_v;
         return mat;
     }
+
+    template<typename T>
+    static inline const util::ArrayView<T> entry2view(const void* data, const Entry& entry)
+    {
+        int size = entry.size / sizeof(T);
+        ASSERT(size > 0);
+        auto array = util::castFromMemory<T>(data, entry.offset);
+        return {array, size};
+    }
 }
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
@@ -231,13 +224,15 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     Scene scene;
 
     auto& header = *util::castFromMemory<Header>(data);
-    auto planes = Lump<Plane>::fromEntry(data, header.lumps[LUMP_PLANES]);
-    auto faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
-    auto vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
-    auto edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
-    auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
-    auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
-    auto textureInfo = Lump<TextureInfo>::fromEntry(data, header.lumps[LUMP_TEXINFO]);
+    auto planes = entry2view<Plane>(data, header.lumps[LUMP_PLANES]);
+    auto faces = entry2view<Face>(data, header.lumps[LUMP_FACES]);
+    auto vertices = entry2view<Vertex>(data, header.lumps[LUMP_VERTEXES]);
+    auto edges = entry2view<Edge>(data, header.lumps[LUMP_EDGES]);
+    auto models = entry2view<Model>(data, header.lumps[LUMP_MODELS]);
+    auto edgeIndices = entry2view<int32_t>(data, header.lumps[LUMP_SURFEDGES]);
+    auto textureInfo = entry2view<TextureInfo>(data, header.lumps[LUMP_TEXINFO]);
+    auto entitiesEntry = entry2view<char>(data, header.lumps[LUMP_ENTITIES]);
+    BspEntity::parseList({entitiesEntry.array, entitiesEntry.size});
 
     const void* palette = AssetHelper::getRaw(AssetHelper::PALETTE, nullptr);
     const int32_t* textureOffsets = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
@@ -296,11 +291,11 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 void BspLoader::printBspAsObj(const void* data, int size)
 {
     auto& header = *util::castFromMemory<Header>(data);
-    auto faces = Lump<Face>::fromEntry(data, header.lumps[LUMP_FACES]);
-    auto vertices = Lump<Vertex>::fromEntry(data, header.lumps[LUMP_VERTEXES]);
-    auto edges = Lump<Edge>::fromEntry(data, header.lumps[LUMP_EDGES]);
-    auto models = Lump<Model>::fromEntry(data, header.lumps[LUMP_MODELS]);
-    auto edgeIndices = Lump<int32_t>::fromEntry(data, header.lumps[LUMP_SURFEDGES]);
+    auto faces = entry2view<Face>(data, header.lumps[LUMP_FACES]);
+    auto vertices = entry2view<Vertex>(data, header.lumps[LUMP_VERTEXES]);
+    auto edges = entry2view<Edge>(data, header.lumps[LUMP_EDGES]);
+    auto models = entry2view<Model>(data, header.lumps[LUMP_MODELS]);
+    auto edgeIndices = entry2view<int32_t>(data, header.lumps[LUMP_SURFEDGES]);
 
     const Model& base = models[0];
 
