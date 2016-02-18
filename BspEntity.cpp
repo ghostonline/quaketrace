@@ -38,6 +38,7 @@ std::vector<BspEntity> BspEntity::parseList(const util::ArrayView<char>& seriali
                 else if (tok == '{') { ++indent; }
             }
             const BspEntity entity = parse(serialized.slice(entityStart, ii));
+            entities.push_back(entity);
         }
     }
     return entities;
