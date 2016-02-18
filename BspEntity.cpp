@@ -12,6 +12,16 @@ static const std::string ENTITY_TYPE_NAMES[] = {
 
 STATIC_ASSERT_ARRAY_SIZE(ENTITY_TYPE_NAMES, BspEntity::NUM_TYPES);
 
+static const std::string ENTITY_PROPERTY_KEY_NAMES[] = {
+    "classname",
+    "origin",
+    "mangle",
+    "angle",
+    "light",
+};
+
+STATIC_ASSERT_ARRAY_SIZE(ENTITY_PROPERTY_KEY_NAMES, BspEntity::Property::NUM_KEYS);
+
 std::vector<BspEntity> BspEntity::parseList(const util::ArrayView<char>& serialized)
 {
     std::vector<BspEntity> entities;
@@ -45,9 +55,9 @@ const BspEntity BspEntity::parse(const util::ArrayView<char>& serialized)
             Property prop = Property::parse(serialized.slice(propStart, ii));
             entity.properties.push_back(prop);
 
-            if (prop.key == ENTITY_TYPE_KEY)
+            if (prop.key == Property::KEY_CLASSNAME)
             {
-                int idx = util::findItemInArray({ ENTITY_TYPE_NAMES, BspEntity::NUM_TYPES }, prop.value);
+                int idx = util::findItemInArray({ ENTITY_TYPE_NAMES, NUM_TYPES }, prop.value);
                 entity.type = static_cast<Type>(idx);
             }
         }
@@ -71,7 +81,7 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
             }
             if (key)
             {
-                property.key = std::string(serialized.array + start, ii - start);
+                property.keyName = std::string(serialized.array + start, ii - start);
                 key = false;
             }
             else
@@ -81,6 +91,8 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
         }
     }
 
-    ASSERT(!property.key.empty() && !property.value.empty());
+    int idx = util::findItemInArray({ENTITY_PROPERTY_KEY_NAMES, NUM_KEYS}, property.keyName);
+    property.key = static_cast<Key>(idx);
+    ASSERT(!property.keyName.empty() && !property.value.empty());
     return property;
 }
