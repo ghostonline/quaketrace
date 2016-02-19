@@ -5,9 +5,9 @@
 namespace util
 {
     template<typename T>
-    inline int lastIndex(const std::vector<T>& vec)
+    inline int lastIndex(const T& container)
     {
-        return static_cast<int>(vec.size() - 1);
+        return static_cast<int>(container.size() - 1);
     }
 
     template<typename T>
