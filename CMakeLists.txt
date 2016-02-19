@@ -72,6 +72,8 @@ set (BASE_SOURCE_FILES
 set(UTIL_SOURCE_FILES
     Util.hpp
     ArrayView.hpp
+    StringTool.cpp
+    StringTool.hpp
 )
 
 set (MATH_SOURCE_FILES

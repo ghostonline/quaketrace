@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "ArrayView.hpp"
+#include "Math.hpp"
 
 struct BspEntity
 {
@@ -29,10 +30,15 @@ struct BspEntity
             NUM_KEYS,
         };
 
-        Key key;
         std::string keyName;
         std::string value;
 
+        Key key;
+        math::Vec3f vec;
+        float number;
+        int integer;
+
+        Property() : key(KEY_OTHER), vec{0.0f, 0.0f, 0.0f}, number(0.0f), integer(0) {}
         static const Property parse(const util::ArrayView<char>& serialized);
     };
 

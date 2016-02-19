@@ -1,6 +1,7 @@
 #include "BspEntity.hpp"
 #include <cstdio>
 #include "Util.hpp"
+#include "StringTool.hpp"
 
 static const std::string ENTITY_TYPE_KEY = "classname";
 static const std::string ENTITY_TYPE_NAMES[] = {
@@ -94,6 +95,20 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
 
     int idx = util::findItemInArray({ENTITY_PROPERTY_KEY_NAMES, NUM_KEYS}, property.keyName);
     property.key = static_cast<Key>(idx);
+
+    switch(property.key)
+    {
+        default:
+            break;
+        case KEY_ORIGIN:
+        case KEY_MANGLE:
+            property.vec = util::StringTool::parseVec3f(property.value.c_str());
+            break;
+        case KEY_ANGLE:
+        case KEY_LIGHT:
+            property.number = util::StringTool::parseFloat(property.value.c_str());
+            break;
+    }
     ASSERT(!property.keyName.empty() && !property.value.empty());
     return property;
 }
