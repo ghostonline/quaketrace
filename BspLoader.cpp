@@ -14,6 +14,8 @@ using namespace std;
 #define COLOR_DEBUG 0
 
 namespace {
+    static const int PLAYER_EYE_HEIGHT = 56;
+
     enum Lumps
     {
         LUMP_ENTITIES,
@@ -234,26 +236,29 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto entitiesEntry = entry2view<char>(data, header.lumps[LUMP_ENTITIES]);
     auto entities = BspEntity::parseList({entitiesEntry.array, entitiesEntry.size});
 
-    struct CameraDefinition
-    {
-        math::Vec3f origin;
-        math::Vec3f mangle;
-        math::Vec3f direction;
-    };
-    static const math::Vec3f UNIT_X{1.0f, 0.0f, 0.0f};
-    static const math::Vec3f UNIT_Y{0.0f, 1.0f, 0.0f};
-    static const math::Vec3f UNIT_Z{0.0f, 0.0f, 1.0f};
     std::vector<CameraDefinition> cameras;
+    CameraDefinition startCamera;
     for (int ii = util::lastIndex(entities); ii >= 0; --ii)
     {
-        if (entities[ii].type != BspEntity::TYPE_INTERMISSION_CAMERA) { continue; }
-        auto origin = entities[ii].getProperty(BspEntity::Property::KEY_ORIGIN).vec;
-        auto mangle = entities[ii].getProperty(BspEntity::Property::KEY_MANGLE).vec;
+        switch (entities[ii].type)
+        {
+            case BspEntity::TYPE_PLAYER_START:
+                startCamera = parsePlayerStart(entities[ii]);
+                break;
+            case BspEntity::TYPE_INTERMISSION_CAMERA:
+                {
+                    const auto camera = parseIntermissionCamera(entities[ii]);
+                    cameras.push_back(camera);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
-        auto rotZ = math::createRotationMatrix(UNIT_Z, -math::deg2rad(mangle.x));
-        auto rotY = math::createRotationMatrix(UNIT_Y, -math::deg2rad(mangle.y));
-        auto direction = rotY * rotZ * UNIT_X;
-        cameras.push_back({origin, mangle, direction});
+    if (!cameras.size())
+    {
+        cameras.push_back(startCamera);
     }
 
     const void* palette = AssetHelper::getRaw(AssetHelper::PALETTE, nullptr);
@@ -297,7 +302,8 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     }
 
     const float fov = 60;
-    Scene::pointCamera(&scene.camera, cameras[0].origin, cameras[0].direction, {0, 0, 1});
+    const auto& camera = cameras.front();
+    Scene::pointCamera(&scene.camera, camera.origin, camera.direction, {0, 0, 1});
     scene.camera.halfViewAngles.set(
                                      std::tan(math::deg2rad(fov)) / 2.0f,
                                      std::tan(math::deg2rad(fov)) / 2.0f
@@ -306,6 +312,44 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     scene.ambientLightFactor = 1.0f;
 
     return scene;
+}
+
+const BspLoader::CameraDefinition BspLoader::parseIntermissionCamera(const BspEntity& entity)
+{
+    static const math::Vec3f UNIT_X{1.0f, 0.0f, 0.0f};
+    static const math::Vec3f UNIT_Y{0.0f, 1.0f, 0.0f};
+    static const math::Vec3f UNIT_Z{0.0f, 0.0f, 1.0f};
+
+    ASSERT(entity.type == BspEntity::TYPE_INTERMISSION_CAMERA);
+
+    const auto& origin = entity.getProperty(BspEntity::Property::KEY_ORIGIN).vec;
+    const auto& mangle = entity.getProperty(BspEntity::Property::KEY_MANGLE).vec;
+
+    const float pitch = math::deg2rad(mangle.x);
+    const float yaw = math::deg2rad(mangle.y);
+
+    const auto rotZ = math::createRotationMatrix(UNIT_Z, yaw);
+    const auto rotY = math::createRotationMatrix(UNIT_Y, pitch);
+    const auto direction = rotZ * rotY * UNIT_X;
+    return {origin, direction};
+}
+
+const BspLoader::CameraDefinition BspLoader::parsePlayerStart(const BspEntity& entity)
+{
+    static const math::Vec3f UNIT_X{1.0f, 0.0f, 0.0f};
+    static const math::Vec3f UNIT_Z{0.0f, 0.0f, 1.0f};
+    static const math::Vec3f PLAYER_EYE_OFFSET{0.0f, 0.0f, PLAYER_EYE_HEIGHT};
+
+    ASSERT(entity.type == BspEntity::TYPE_PLAYER_START);
+
+    const auto& origin = entity.getProperty(BspEntity::Property::KEY_ORIGIN).vec;
+    const auto& angle = entity.getProperty(BspEntity::Property::KEY_ANGLE).number;
+
+    const float yaw = math::deg2rad(angle);
+
+    const auto rotZ = math::createRotationMatrix(UNIT_Z, yaw);
+    const auto direction = rotZ * UNIT_X;
+    return {origin + PLAYER_EYE_OFFSET, direction};
 }
 
 void BspLoader::printBspAsObj(const void* data, int size)
