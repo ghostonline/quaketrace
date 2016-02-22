@@ -240,14 +240,15 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     CameraDefinition startCamera;
     for (int ii = util::lastIndex(entities); ii >= 0; --ii)
     {
-        switch (entities[ii].type)
+        const BspEntity& entity = entities[ii];
+        switch (entity.type)
         {
             case BspEntity::TYPE_PLAYER_START:
-                startCamera = parsePlayerStart(entities[ii]);
+                startCamera = parsePlayerStart(entity);
                 break;
             case BspEntity::TYPE_INTERMISSION_CAMERA:
                 {
-                    const auto camera = parseIntermissionCamera(entities[ii]);
+                    const auto camera = parseIntermissionCamera(entity);
                     cameras.push_back(camera);
                 }
                 break;
