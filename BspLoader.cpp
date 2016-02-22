@@ -234,6 +234,28 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto entitiesEntry = entry2view<char>(data, header.lumps[LUMP_ENTITIES]);
     auto entities = BspEntity::parseList({entitiesEntry.array, entitiesEntry.size});
 
+    struct CameraDefinition
+    {
+        math::Vec3f origin;
+        math::Vec3f mangle;
+        math::Vec3f direction;
+    };
+    static const math::Vec3f UNIT_X{1.0f, 0.0f, 0.0f};
+    static const math::Vec3f UNIT_Y{0.0f, 1.0f, 0.0f};
+    static const math::Vec3f UNIT_Z{0.0f, 0.0f, 1.0f};
+    std::vector<CameraDefinition> cameras;
+    for (int ii = util::lastIndex(entities); ii >= 0; --ii)
+    {
+        if (entities[ii].type != BspEntity::TYPE_INTERMISSION_CAMERA) { continue; }
+        auto origin = entities[ii].getProperty(BspEntity::Property::KEY_ORIGIN).vec;
+        auto mangle = entities[ii].getProperty(BspEntity::Property::KEY_MANGLE).vec;
+
+        auto rotZ = math::createRotationMatrix(UNIT_Z, -math::deg2rad(mangle.x));
+        auto rotY = math::createRotationMatrix(UNIT_Y, -math::deg2rad(mangle.y));
+        auto direction = rotY * rotZ * UNIT_X;
+        cameras.push_back({origin, mangle, direction});
+    }
+
     const void* palette = AssetHelper::getRaw(AssetHelper::PALETTE, nullptr);
     const int32_t* textureOffsets = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
     int textureCount = textureOffsets[0];
@@ -275,20 +297,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     }
 
     const float fov = 60;
-    math::Vec3f cameraOrigin, cameraMangle;
-    for (int ii = util::lastIndex(entities); ii >= 0; --ii)
-    {
-        if (entities[ii].type != BspEntity::TYPE_INTERMISSION_CAMERA) { continue; }
-        cameraOrigin = entities[ii].getProperty(BspEntity::Property::KEY_ORIGIN).vec;
-        cameraMangle = entities[ii].getProperty(BspEntity::Property::KEY_MANGLE).vec;
-    }
-    static const math::Vec3f UNIT_X{1.0f, 0.0f, 0.0f};
-    static const math::Vec3f UNIT_Y{0.0f, 1.0f, 0.0f};
-    static const math::Vec3f UNIT_Z{0.0f, 0.0f, 1.0f};
-    auto rotZ = math::createRotationMatrix(UNIT_Z, -math::deg2rad(cameraMangle.x));
-    auto rotY = math::createRotationMatrix(UNIT_Y, -math::deg2rad(cameraMangle.y));
-    auto cameraFocusOffset = rotY * rotZ * UNIT_X;
-    Scene::pointCameraAt(&scene.camera, cameraOrigin, cameraOrigin + cameraFocusOffset, {0, 0, 1});
+    Scene::pointCamera(&scene.camera, cameras[0].origin, cameras[0].direction, {0, 0, 1});
     scene.camera.halfViewAngles.set(
                                      std::tan(math::deg2rad(fov)) / 2.0f,
                                      std::tan(math::deg2rad(fov)) / 2.0f
