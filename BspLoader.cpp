@@ -232,7 +232,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto edgeIndices = entry2view<int32_t>(data, header.lumps[LUMP_SURFEDGES]);
     auto textureInfo = entry2view<TextureInfo>(data, header.lumps[LUMP_TEXINFO]);
     auto entitiesEntry = entry2view<char>(data, header.lumps[LUMP_ENTITIES]);
-    BspEntity::parseList({entitiesEntry.array, entitiesEntry.size});
+    auto entities = BspEntity::parseList({entitiesEntry.array, entitiesEntry.size});
 
     const void* palette = AssetHelper::getRaw(AssetHelper::PALETTE, nullptr);
     const int32_t* textureOffsets = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
@@ -275,9 +275,20 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     }
 
     const float fov = 60;
-    math::Vec3f cameraFocus{17.98f, -21.20f, 0};
-    math::Vec3f cameraOrigin{-224, 160, 48};
-    Scene::pointCameraAt(&scene.camera, cameraOrigin, cameraFocus, {0, 0, 1});
+    math::Vec3f cameraOrigin, cameraMangle;
+    for (int ii = util::lastIndex(entities); ii >= 0; --ii)
+    {
+        if (entities[ii].type != BspEntity::TYPE_INTERMISSION_CAMERA) { continue; }
+        cameraOrigin = entities[ii].getProperty(BspEntity::Property::KEY_ORIGIN).vec;
+        cameraMangle = entities[ii].getProperty(BspEntity::Property::KEY_MANGLE).vec;
+    }
+    static const math::Vec3f UNIT_X{1.0f, 0.0f, 0.0f};
+    static const math::Vec3f UNIT_Y{0.0f, 1.0f, 0.0f};
+    static const math::Vec3f UNIT_Z{0.0f, 0.0f, 1.0f};
+    auto rotZ = math::createRotationMatrix(UNIT_Z, -math::deg2rad(cameraMangle.x));
+    auto rotY = math::createRotationMatrix(UNIT_Y, -math::deg2rad(cameraMangle.y));
+    auto cameraFocusOffset = rotY * rotZ * UNIT_X;
+    Scene::pointCameraAt(&scene.camera, cameraOrigin, cameraOrigin + cameraFocusOffset, {0, 0, 1});
     scene.camera.halfViewAngles.set(
                                      std::tan(math::deg2rad(fov)) / 2.0f,
                                      std::tan(math::deg2rad(fov)) / 2.0f
