@@ -14,7 +14,7 @@ using namespace std;
 #define COLOR_DEBUG 0
 
 namespace {
-    static const int PLAYER_EYE_HEIGHT = 56;
+    static const float PLAYER_EYE_HEIGHT = 56.0f;
 
     enum Lumps
     {
