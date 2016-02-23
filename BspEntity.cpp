@@ -70,7 +70,8 @@ const BspEntity BspEntity::parse(const util::ArrayView<char>& serialized)
     if (entity.hasProperty(Property::KEY_CLASSNAME))
     {
         const Property& prop = entity.getProperty(Property::KEY_CLASSNAME);
-        int idx = util::findItemInArray({ ENTITY_TYPE_NAMES, NUM_TYPES }, prop.value);
+        const util::ArrayView<std::string> view = { ENTITY_TYPE_NAMES, NUM_TYPES };
+        int idx = util::findItemInArray(view, prop.value);
         entity.type = static_cast<Type>(idx);
     }
 
@@ -103,7 +104,8 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
         }
     }
 
-    int idx = util::findItemInArray({ENTITY_PROPERTY_KEY_NAMES, NUM_KEYS}, property.keyName);
+    const util::ArrayView<std::string> view = { ENTITY_PROPERTY_KEY_NAMES, NUM_TYPES };
+    int idx = util::findItemInArray(view, property.keyName);
     property.key = static_cast<Key>(idx);
 
     switch(property.key)
