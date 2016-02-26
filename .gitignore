@@ -4,3 +4,4 @@
 /testmap/*.prt
 /testmap/*.bsp
 /assets/*.bsp
+*.sublime-*
