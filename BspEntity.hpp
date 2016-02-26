@@ -28,6 +28,9 @@ struct BspEntity
             KEY_MANGLE,
             KEY_ANGLE,
             KEY_LIGHT,
+            KEY_WAIT,
+            KEY_DELAY,
+            KEY_COLOR,
             NUM_KEYS,
         };
 

@@ -3,6 +3,7 @@
 #include "Math.hpp"
 #include "Color.hpp"
 #include "Texture.hpp"
+#include "Light.hpp"
 #include <vector>
 
 class FrameBuffer;
@@ -13,13 +14,14 @@ struct Scene
 
     struct Material
     {
-        Material() : texture(-1), color(0.0f, 0.0f, 0.0f) {}
+        Material() : texture(-1), color(0.0f, 0.0f, 0.0f), lighted(true) {}
 
         int texture;
         math::Vec3f u;
         math::Vec3f v;
         math::Vec2f offset;
         Color color;
+        bool lighted;
 
         math::Vec2f positionToUV(const math::Vec3f& pos) const;
     };
@@ -73,12 +75,6 @@ struct Scene
         float intensity;
     };
 
-    struct Light
-    {
-        math::Vec3f origin;
-        float strength;
-    };
-
     struct Camera
     {
         math::Vec3f origin;
@@ -97,7 +93,7 @@ struct Scene
     std::vector<Triangle> triangles;
     std::vector<ConvexPolygon> polygons;
     std::vector<DirectionalLight> directionalLights;
-    std::vector<Light> lights;
+    std::vector<PointLight> lights;
 
     std::vector<Texture> textures;
 

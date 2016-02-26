@@ -26,3 +26,8 @@ const float util::StringTool::parseFloat(const char* str)
 {
     return std::stof(str);
 }
+
+const int util::StringTool::parseInteger(const char* str)
+{
+    return std::stoi(str);
+}

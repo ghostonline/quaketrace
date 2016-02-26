@@ -260,6 +260,7 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
 
     Color color = COLOR_BACKGROUND;
     collision3d::Hit hitInfo;
+    bool lighted = true;
     if (triangleHitIdx > -1)
     {
         color = scene.triangles[triangleHitIdx].color;
@@ -278,12 +279,13 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     else if (polygonHitIdx > -1)
     {
         const Scene::Material& mat = scene.polygons[polygonHitIdx].material;
+        lighted = mat.lighted;
         color = scene.getTexturePixel(mat, infoPolygon.pos);
         hitInfo = infoPolygon;
     }
 
-    float lightLevel = 0.0f;
-    for (int ii = util::lastIndex(scene.directionalLights); ii >= 0; --ii)
+    float lightLevel = lighted ? 0.0f : 1.0f;
+    for (int ii = util::lastIndex(scene.directionalLights); ii >= 0 && lighted; --ii)
     {
         const Scene::DirectionalLight& light = scene.directionalLights[ii];
         Ray lightRay{ hitInfo.pos, -light.normal };
@@ -294,17 +296,22 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         }
     }
 
-    for (int ii = util::lastIndex(scene.lights); ii >= 0; --ii)
+    for (int ii = util::lastIndex(scene.lights); ii >= 0 && lighted; --ii)
     {
-        const Scene::Light& light = scene.lights[ii];
-        Ray lightRay{ hitInfo.pos, light.origin - hitInfo.pos };
-        float rayLength = math::length(lightRay.dir);
-        lightRay.dir /= rayLength;
-        if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
+        const auto& light = scene.lights[ii];
+        if (light.isShiningAtPoint(hitInfo.pos, hitInfo.normal))
         {
-            float factor = math::max(0.0f, math::dot(lightRay.dir, hitInfo.normal));
-            float intensity = light.strength / (4 * math::PI * math::squared(rayLength));
-            lightLevel += factor * intensity;
+            Ray lightRay{ hitInfo.pos, light.origin - hitInfo.pos };
+            float rayLength = math::length(lightRay.dir);
+            lightRay.dir /= rayLength;
+            if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
+            {
+                /*
+                float factor = math::max(0.0f, math::dot(lightRay.dir, hitInfo.normal));
+                float intensity = light.strength / (4 * math::PI * math::squared(rayLength));
+                 */
+                lightLevel += light.calcContribution(rayLength);
+            }
         }
     }
 

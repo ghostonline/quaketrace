@@ -13,15 +13,43 @@ static const std::string ENTITY_TYPE_NAMES[] = {
 
 STATIC_ASSERT_ARRAY_SIZE(ENTITY_TYPE_NAMES, BspEntity::NUM_TYPES);
 
-static const std::string ENTITY_PROPERTY_KEY_NAMES[] = {
-    "classname",
-    "origin",
-    "mangle",
-    "angle",
-    "light",
+enum KeyType
+{
+    TYPE_UNKNOWN = -1,
+    TYPE_VEC,
+    TYPE_NUMBER,
+    TYPE_INTEGER,
 };
 
-STATIC_ASSERT_ARRAY_SIZE(ENTITY_PROPERTY_KEY_NAMES, BspEntity::Property::NUM_KEYS);
+struct
+{
+    const char* keyName;
+    KeyType type;
+} ENTITY_PROPERTY_KEY_DATA[] = {
+    { "classname",	TYPE_UNKNOWN,},
+    { "origin",		TYPE_VEC,    },
+    { "mangle",		TYPE_VEC,    },
+    { "angle",		TYPE_NUMBER, },
+    { "light",		TYPE_NUMBER, },
+    { "wait",		TYPE_NUMBER, },
+    { "delay",		TYPE_INTEGER,},
+    { "color",		TYPE_VEC,    },
+};
+
+
+STATIC_ASSERT_ARRAY_SIZE(ENTITY_PROPERTY_KEY_DATA, BspEntity::Property::NUM_KEYS);
+
+static const std::vector<std::string> extractKeyNames()
+{
+    std::vector<std::string> names(BspEntity::Property::NUM_KEYS);
+    for (int ii = 0; ii < BspEntity::Property::NUM_KEYS; ++ii)
+    {
+        names[ii] = ENTITY_PROPERTY_KEY_DATA[ii].keyName;
+    }
+    return names;
+}
+
+static const std::vector<std::string> KEY_NAMES = extractKeyNames();
 
 BspEntity::Property BspEntity::Property::NULL_PROPERTY;
 
@@ -104,23 +132,29 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
         }
     }
 
-    const util::ArrayView<std::string> view = { ENTITY_PROPERTY_KEY_NAMES, NUM_TYPES };
+    const util::ArrayView<std::string> view = { KEY_NAMES.data(), static_cast<int>(KEY_NAMES.size()) };
     int idx = util::findItemInArray(view, property.keyName);
     property.key = static_cast<Key>(idx);
 
-    switch(property.key)
+    if (property.key != KEY_OTHER)
     {
-        default:
-            break;
-        case KEY_ORIGIN:
-        case KEY_MANGLE:
-            property.vec = util::StringTool::parseVec3f(property.value.c_str());
-            break;
-        case KEY_ANGLE:
-        case KEY_LIGHT:
-            property.number = util::StringTool::parseFloat(property.value.c_str());
-            break;
+        const auto& keyData = ENTITY_PROPERTY_KEY_DATA[property.key];
+        switch(keyData.type)
+        {
+            case TYPE_VEC:
+                property.vec = util::StringTool::parseVec3f(property.value.c_str());
+                break;
+            case TYPE_NUMBER:
+                property.number = util::StringTool::parseFloat(property.value.c_str());
+                break;
+            case TYPE_INTEGER:
+                property.integer = util::StringTool::parseInteger(property.value.c_str());
+                break;
+            default:
+                break;
+        }
     }
+
     ASSERT(!property.keyName.empty() && !property.value.empty());
     return property;
 }

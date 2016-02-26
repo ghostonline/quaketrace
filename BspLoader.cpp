@@ -217,6 +217,11 @@ namespace {
         auto array = util::castFromMemory<T>(data, entry.offset);
         return {array, size};
     }
+
+    static inline bool isSkyTexture(const char* name)
+    {
+        return !std::strncmp(name, "sky", 3);
+    }
 }
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
@@ -252,6 +257,12 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
                     cameras.push_back(camera);
                 }
                 break;
+            case BspEntity::TYPE_LIGHT:
+                {
+                    const auto light = parseLight(entity);
+                    scene.lights.push_back(light);
+                }
+                break;
             default:
                 break;
         }
@@ -266,12 +277,14 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     const int32_t* textureOffsets = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
     int textureCount = textureOffsets[0];
     scene.textures.reserve(textureCount);
+    std::vector<bool> lighted;
     for (int ii = 1; ii <= textureCount; ++ii)
     {
         int offset = header.lumps[LUMP_TEXTURES].offset + textureOffsets[ii];
         auto def = util::castFromMemory<MipsTexture>(data, offset);
         auto indices = util::castFromMemory<uint8_t>(data, offset + def->offset[MipsTexture::MIP_1X1]);
         scene.textures.push_back(Texture::createFromIndexedRGB(def->width, def->height, indices, palette));
+        lighted.push_back(!isSkyTexture(def->name));
     }
 
     const Model& base = models[0];
@@ -298,6 +311,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 #else
         auto mat = info2material(texture, Color(0.0f, 0.0f, 0.0f));
 #endif
+        mat.lighted = lighted[texture.texture_id];
         const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
         scene.polygons.push_back(poly);
     }
@@ -310,7 +324,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
                                      std::tan(math::deg2rad(fov)) / 2.0f
                                      );
 
-    scene.ambientLightFactor = 1.0f;
+    scene.ambientLightFactor = 0.0f;
 
     return scene;
 }
@@ -386,4 +400,13 @@ void BspLoader::printBspAsObj(const void* data, int size)
         }
         printf("\n");
     }
+}
+
+const PointLight BspLoader::parseLight(const BspEntity& entity)
+{
+    ASSERT(entity.type == BspEntity::TYPE_LIGHT);
+    auto origin = entity.getProperty(BspEntity::Property::KEY_ORIGIN).vec;
+    auto strength = entity.getProperty(BspEntity::Property::KEY_LIGHT).number;
+    PointLight light(origin, strength);
+    return light;
 }

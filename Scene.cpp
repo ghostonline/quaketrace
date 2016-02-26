@@ -47,9 +47,6 @@ void Scene::initDefault(Scene* scene)
     // Directional lights
     scene->directionalLights.push_back({ math::Vec3f(0, 0, -1), 0.3f});
 
-    // Point lights
-    scene->lights.push_back({ math::Vec3f(5, 0, 30), 3000});
-
     scene->ambientLightFactor = 0.3f;
 }
 
