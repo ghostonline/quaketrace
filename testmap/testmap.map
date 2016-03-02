@@ -91,14 +91,19 @@
 }
 {
  "classname" "info_intermission"
+ "origin" "48 0 -48"
+ "mangle" "0 0 0"
+}
+{
+ "classname" "info_intermission"
  "origin" "-224 160 48"
  "mangle" "17.98 -21.20 0"
 }
 {
  "classname" "light"
- "light" "300"
+ "light" "600"
  "angle" "360"
- "origin" "128 0 -24"
+ "origin" "224 144 -88"
 }
 {
  "classname" "trigger_changelevel"
