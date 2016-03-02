@@ -243,7 +243,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 
     std::vector<CameraDefinition> cameras;
     CameraDefinition startCamera;
-    for (int ii = util::lastIndex(entities); ii >= 0; --ii)
+    for (int ii = 0; ii < static_cast<int>(entities.size()); ++ii)
     {
         const BspEntity& entity = entities[ii];
         switch (entity.type)
