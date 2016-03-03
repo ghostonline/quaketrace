@@ -261,7 +261,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             case BspEntity::TYPE_LIGHT:
                 {
                     const auto light = parseLight(entity);
-                    scene.lights.push_back(light);
+                    scene.lighting.add(light);
                 }
                 break;
             default:
@@ -324,8 +324,6 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
                                      std::tan(math::deg2rad(fov)) / 2.0f,
                                      std::tan(math::deg2rad(fov)) / 2.0f
                                      );
-
-    scene.ambientLightFactor = 0.0f;
 
     return scene;
 }
@@ -403,11 +401,11 @@ void BspLoader::printBspAsObj(const void* data, int size)
     }
 }
 
-const PointLight BspLoader::parseLight(const BspEntity& entity)
+const Lighting::Point BspLoader::parseLight(const BspEntity& entity)
 {
     ASSERT(entity.type == BspEntity::TYPE_LIGHT);
     auto origin = entity.getProperty(BspEntity::Property::KEY_ORIGIN).vec;
     auto strength = entity.getProperty(BspEntity::Property::KEY_LIGHT).number;
-    PointLight light(origin, strength, LIGHT_SOURCE_RADIUS);
+    Lighting::Point light(origin, strength, LIGHT_SOURCE_RADIUS);
     return light;
 }

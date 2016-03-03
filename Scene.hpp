@@ -3,7 +3,7 @@
 #include "Math.hpp"
 #include "Color.hpp"
 #include "Texture.hpp"
-#include "Light.hpp"
+#include "Lighting.hpp"
 #include <vector>
 
 class FrameBuffer;
@@ -69,12 +69,6 @@ struct Scene
         ConvexPolygon() {}
     };
 
-    struct DirectionalLight
-    {
-        math::Vec3f normal;
-        float intensity;
-    };
-
     struct Camera
     {
         math::Vec3f origin;
@@ -92,12 +86,9 @@ struct Scene
     std::vector<Plane> planes;
     std::vector<Triangle> triangles;
     std::vector<ConvexPolygon> polygons;
-    std::vector<DirectionalLight> directionalLights;
-    std::vector<PointLight> lights;
+    Lighting lighting;
 
     std::vector<Texture> textures;
-
-    float ambientLightFactor;
 
     Color getTexturePixel(const Material& mat, const math::Vec3f& pos) const;
 

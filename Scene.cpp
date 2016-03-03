@@ -45,9 +45,9 @@ void Scene::initDefault(Scene* scene)
     }
 
     // Directional lights
-    scene->directionalLights.push_back({ math::Vec3f(0, 0, -1), 0.3f});
+    scene->lighting.add({ math::Vec3f(0, 0, -1), 0.3f});
 
-    scene->ambientLightFactor = 0.3f;
+    scene->lighting.ambient = 0.3f;
 }
 
 void Scene::pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3f& forward, const math::Vec3f& up)

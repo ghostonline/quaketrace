@@ -67,7 +67,8 @@ set (BASE_SOURCE_FILES
     BspEntity.cpp
     BspEntity.hpp
     Logger.hpp
-    Light.hpp
+    Lighting.hpp
+    Lighting.cpp
 )
 
 set(UTIL_SOURCE_FILES

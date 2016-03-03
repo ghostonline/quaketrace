@@ -284,36 +284,15 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         hitInfo = infoPolygon;
     }
 
-    float lightLevel = lighted ? 0.0f : 1.0f;
-    for (int ii = util::lastIndex(scene.directionalLights); ii >= 0 && lighted; --ii)
+    float lightLevel = 0.0f;
+    if (lighted)
     {
-        const Scene::DirectionalLight& light = scene.directionalLights[ii];
-        Ray lightRay{ hitInfo.pos, -light.normal };
-        if (!collision3d::raySceneCollision(lightRay, Scene::DIRECTIONAL_RAY_LENGTH, scene))
-        {
-            float factor = math::max(0.0f, math::dot(lightRay.dir, hitInfo.normal));
-            lightLevel += factor * light.intensity;
-        }
+        lightLevel = scene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, scene);
+    }
+    else
+    {
+        lightLevel = 1.0f;
     }
 
-    for (int ii = util::lastIndex(scene.lights); ii >= 0 && lighted; --ii)
-    {
-        const auto& light = scene.lights[ii];
-        if (light.isShiningAtPoint(hitInfo.pos, hitInfo.normal))
-        {
-            Ray lightRay{ hitInfo.pos, light.origin - hitInfo.pos };
-            float rayLength = math::length(lightRay.dir);
-            lightRay.dir /= rayLength;
-            if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
-            {
-                const float totalLightLevel = light.calcLightAtDistance(rayLength);
-                static const float anglescale = 0.5f;
-                float angle = (1.0f - anglescale) + anglescale * light.calcContribution(hitInfo.normal, lightRay.dir);
-                lightLevel += totalLightLevel * angle;
-            }
-        }
-    }
-
-    float colorScale = math::clamp01(lightLevel + scene.ambientLightFactor);
-    return color * colorScale;
+    return color * lightLevel;
 }

@@ -2,7 +2,7 @@
 
 #include "Scene.hpp"
 #include "Vec3.hpp"
-#include "Light.hpp"
+#include "Lighting.hpp"
 
 struct BspEntity;
 
@@ -17,6 +17,6 @@ struct BspLoader
     static const Scene createSceneFromBsp(const void* data, int size);
     static const CameraDefinition parseIntermissionCamera(const BspEntity& entity);
     static const CameraDefinition parsePlayerStart(const BspEntity& entity);
-    static const PointLight parseLight(const BspEntity& entity);
+    static const Lighting::Point parseLight(const BspEntity& entity);
     static void printBspAsObj(const void* data, int size);
 };
