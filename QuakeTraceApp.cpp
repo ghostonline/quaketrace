@@ -306,11 +306,10 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
             lightRay.dir /= rayLength;
             if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
             {
-                /*
-                float factor = math::max(0.0f, math::dot(lightRay.dir, hitInfo.normal));
-                float intensity = light.strength / (4 * math::PI * math::squared(rayLength));
-                 */
-                lightLevel += light.calcContribution(rayLength);
+                const float totalLightLevel = light.calcLightAtDistance(rayLength);
+                static const float anglescale = 0.5f;
+                float angle = (1.0f - anglescale) + anglescale * light.calcContribution(hitInfo.normal, lightRay.dir);
+                lightLevel += totalLightLevel * angle;
             }
         }
     }
