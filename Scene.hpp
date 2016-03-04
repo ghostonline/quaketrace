@@ -10,8 +10,6 @@ class FrameBuffer;
 
 struct Scene
 {
-    static const float DIRECTIONAL_RAY_LENGTH;
-
     struct Material
     {
         Material() : texture(-1), color(0.0f, 0.0f, 0.0f), lighted(true) {}

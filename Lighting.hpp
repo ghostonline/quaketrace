@@ -35,6 +35,9 @@ struct Lighting
     {
         math::Vec3f normal;
         float intensity;
+
+        const bool isShiningAtPoint(const math::Vec3f& planeNormal) const;
+        const float calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const;
     };
 
     std::vector<Point> points;
@@ -59,6 +62,16 @@ inline const float Lighting::Point::calcLightAtDistance(float dist) const
 }
 
 inline const float Lighting::Point::calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const
+{
+    return math::max(0.0f, math::dot(rayNormal, planeNormal));
+}
+
+inline const bool Lighting::Directional::isShiningAtPoint(const math::Vec3f& planeNormal) const
+{
+    return math::dot(planeNormal, normal) < 0;
+}
+
+inline const float Lighting::Directional::calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const
 {
     return math::max(0.0f, math::dot(planeNormal, rayNormal));
 }

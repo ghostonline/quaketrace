@@ -4,8 +4,6 @@
 #include "Math.hpp"
 #include "Util.hpp"
 
-const float Scene::DIRECTIONAL_RAY_LENGTH = 1000.0f;
-
 void Scene::initDefault(Scene* scene)
 {
     ASSERT(scene != nullptr);

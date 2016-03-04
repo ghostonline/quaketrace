@@ -5,17 +5,28 @@
 #include "Collision3D.hpp"
 #include "Math.hpp"
 
+static const float DIRECTIONAL_RAY_LENGTH = 1000.0f;
+
+inline float applyAngleScale(float value)
+{
+    static const float anglescale = 0.5f;
+    return (1.0f - anglescale) + anglescale * value;
+}
+
 const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene) const
 {
     float lightLevel = 0.0f;
     for (int ii = util::lastIndex(directional); ii >= 0; --ii)
     {
         const Directional& light = directional[ii];
-        Ray lightRay{ origin, -light.normal };
-        if (!collision3d::raySceneCollision(lightRay, Scene::DIRECTIONAL_RAY_LENGTH, scene))
+        if (light.isShiningAtPoint(hitNormal))
         {
-            float factor = math::max(0.0f, math::dot(lightRay.dir, hitNormal));
-            lightLevel += factor * light.intensity;
+            Ray lightRay{ origin, -light.normal };
+            if (!collision3d::raySceneCollision(lightRay, DIRECTIONAL_RAY_LENGTH, scene))
+            {
+                const float factor = light.calcContribution(hitNormal, lightRay.dir);
+                lightLevel += applyAngleScale(factor) * light.intensity;
+            }
         }
     }
 
@@ -30,9 +41,8 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
             if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
             {
                 const float totalLightLevel = light.calcLightAtDistance(rayLength);
-                static const float anglescale = 0.5f;
-                float angle = (1.0f - anglescale) + anglescale * light.calcContribution(hitNormal, lightRay.dir);
-                lightLevel += totalLightLevel * angle;
+                const float factor = light.calcContribution(hitNormal, lightRay.dir);
+                lightLevel += totalLightLevel * applyAngleScale(factor);
             }
         }
     }
