@@ -223,6 +223,16 @@ namespace {
     {
         return !std::strncmp(name, "sky", 3);
     }
+
+    static inline float getNormalizedLightValue(const BspEntity& entity)
+    {
+        float value = 0.0f;
+        if (entity.hasProperty(BspEntity::Property::KEY_LIGHT))
+        {
+            value = entity.getProperty(BspEntity::Property::KEY_LIGHT).number / 255.0f;
+        }
+        return value;
+    }
 }
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
@@ -263,6 +273,9 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
                     const auto light = parseLight(entity);
                     scene.lighting.add(light);
                 }
+                break;
+            case BspEntity::TYPE_WORLD_SPAWN:
+                scene.lighting.ambient = getNormalizedLightValue(entity);
                 break;
             default:
                 break;
