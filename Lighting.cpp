@@ -15,7 +15,7 @@ inline float applyAngleScale(float value)
 
 const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene) const
 {
-    float lightLevel = 0.0f;
+    float lightLevel = ambient;
     for (int ii = util::lastIndex(directional); ii >= 0; --ii)
     {
         const Directional& light = directional[ii];
