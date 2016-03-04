@@ -87,6 +87,8 @@ void QuakeTraceApp::runUntilFinished()
     const void* mapData = AssetHelper::getRaw(AssetHelper::TESTMAP, &mapDataSize);
     Scene scene = BspLoader::createSceneFromBsp(mapData, mapDataSize);
 #endif
+    // Correct for aspect ratio
+    scene.camera.halfViewAngles.y *= SCREEN_HEIGHT / static_cast<float>(SCREEN_WIDTH);
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;
