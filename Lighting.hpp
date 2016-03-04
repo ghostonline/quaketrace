@@ -27,8 +27,10 @@ struct Lighting
         Color color;
 
         const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal) const;
+        static const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin, float range);
         const float calcLightAtDistance(float dist) const;
         const float calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const;
+        const std::vector<math::Vec3f> getRandomLightPoints(const math::Vec3f& castNormal, int count) const;
     };
 
     struct Directional
@@ -52,8 +54,13 @@ struct Lighting
 
 inline const bool Lighting::Point::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal) const
 {
-    const auto lightBeam = planeOrigin - origin;
-    return math::length(lightBeam) < range && math::dot(planeNormal, lightBeam) < 0;
+    return isShiningAtPoint(planeOrigin, planeNormal, origin, range);
+}
+
+inline const bool Lighting::Point::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin, float lightRange)
+{
+    const auto lightBeam = planeOrigin - lightOrigin;
+    return math::length(lightBeam) < lightRange && math::dot(planeNormal, lightBeam) < 0;
 }
 
 inline const float Lighting::Point::calcLightAtDistance(float dist) const

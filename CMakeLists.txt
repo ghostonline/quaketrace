@@ -76,6 +76,7 @@ set(UTIL_SOURCE_FILES
     ArrayView.hpp
     StringTool.cpp
     StringTool.hpp
+    Random.hpp
 )
 
 set (MATH_SOURCE_FILES
