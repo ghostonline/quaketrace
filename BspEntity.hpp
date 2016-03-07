@@ -31,6 +31,7 @@ struct BspEntity
             KEY_WAIT,
             KEY_DELAY,
             KEY_COLOR,
+            KEY_MODEL,
             NUM_KEYS,
         };
 

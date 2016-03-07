@@ -258,6 +258,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     auto entities = BspEntity::parseList({entitiesEntry.array, entitiesEntry.size});
 
     std::vector<CameraDefinition> cameras;
+    std::vector<int> modelIndices;
     CameraDefinition startCamera;
     for (int ii = 0; ii < static_cast<int>(entities.size()); ++ii)
     {
@@ -285,7 +286,14 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             default:
                 break;
         }
+
+        if (entity.hasProperty(BspEntity::Property::KEY_MODEL))
+        {
+            modelIndices.push_back(entity.getProperty(BspEntity::Property::KEY_MODEL).integer);
+        }
     }
+
+    modelIndices.push_back(0);
 
     if (!cameras.size())
     {
@@ -310,32 +318,36 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         scene.textures.push_back({Texture::createFromIndexedRGB(def->width, def->height, indices, palette), fullbright});
     }
 
-    const Model& base = models[0];
-
-    for (int ii = 0; ii < base.face_num; ++ii)
+    for (int ii = util::lastIndex(modelIndices); ii >= 0; --ii)
     {
-        const int faceIdx = base.face_id + ii;
-        const Face& f = faces[faceIdx];
-        std::vector<math::Vec3f> polyVertices(f.ledge_num);
-        for (int jj = 0; jj < f.ledge_num; ++jj)
-        {
-            const int edgeLookup = edgeIndices[f.ledge_id + jj];
-            ASSERT(edgeLookup != 0);
-            const Edge& e = edges[std::abs(edgeLookup)];
+        const int modelIdx = modelIndices[ii];
+        const Model& model = models[modelIdx];
 
-            int idxStart = edgeLookup > 0 ? e.vertex_idx_start : e.vertex_idx_end;
-            polyVertices[jj] = vert2vec3(vertices[idxStart]);
-        }
-        const Plane& plane = planes[f.plane_id];
-        const auto normal = norm2vec3(plane.normal) * static_cast<float>(1 - f.side * 2);
-        const auto& texture = textureInfo[f.texinfo_id];
+        for (int ii = 0; ii < model.face_num; ++ii)
+        {
+            const int faceIdx = model.face_id + ii;
+            const Face& f = faces[faceIdx];
+            std::vector<math::Vec3f> polyVertices(f.ledge_num);
+            for (int jj = 0; jj < f.ledge_num; ++jj)
+            {
+                const int edgeLookup = edgeIndices[f.ledge_id + jj];
+                ASSERT(edgeLookup != 0);
+                const Edge& e = edges[std::abs(edgeLookup)];
+
+                int idxStart = edgeLookup > 0 ? e.vertex_idx_start : e.vertex_idx_end;
+                polyVertices[jj] = vert2vec3(vertices[idxStart]);
+            }
+            const Plane& plane = planes[f.plane_id];
+            const auto normal = norm2vec3(plane.normal) * static_cast<float>(1 - f.side * 2);
+            const auto& texture = textureInfo[f.texinfo_id];
 #if COLOR_DEBUG
-        auto mat = info2material(texture, DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT]);
+            auto mat = info2material(texture, DISTINCT_COLORS[ii % DISTINCT_COLOR_COUNT]);
 #else
-        auto mat = info2material(texture, Color(0.0f, 0.0f, 0.0f));
+            auto mat = info2material(texture, Color(0.0f, 0.0f, 0.0f));
 #endif
-        const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
-        scene.polygons.push_back(poly);
+            const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
+            scene.polygons.push_back(poly);
+        }
     }
 
     const float fov = 60;

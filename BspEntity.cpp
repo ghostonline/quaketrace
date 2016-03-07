@@ -19,6 +19,7 @@ enum KeyType
     TYPE_VEC,
     TYPE_NUMBER,
     TYPE_INTEGER,
+    TYPE_BRUSH,
 };
 
 struct
@@ -34,6 +35,7 @@ struct
     { "wait",		TYPE_NUMBER, },
     { "delay",		TYPE_INTEGER,},
     { "color",		TYPE_VEC,    },
+    { "model",		TYPE_BRUSH,  },
 };
 
 
@@ -149,6 +151,10 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
                 break;
             case TYPE_INTEGER:
                 property.integer = util::StringTool::parseInteger(property.value.c_str());
+                break;
+            case TYPE_BRUSH:
+                ASSERT(property.value[0] == '*');
+                property.integer = util::StringTool::parseInteger(property.value.c_str() + 1);
                 break;
             default:
                 break;
