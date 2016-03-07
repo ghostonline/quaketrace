@@ -97,22 +97,25 @@ const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::
     return poly;
 }
 
-Color Scene::getTexturePixel(const Scene::Material& mat, const math::Vec3f& pos) const
+Scene::TexturePixel Scene::getTexturePixel(const Scene::Material& mat, const math::Vec3f& pos) const
 {
     if (mat.texture > -1)
     {
         auto uv = mat.positionToUV(pos);
-        const Texture& tex = textures[mat.texture];
+        auto& data = textures[mat.texture];
+        const Texture& tex = data.texture;
+        const auto& fullbright = data.fullbright;
         int x = static_cast<int>(std::round(uv.x)) % tex.getWidth();
         int y = static_cast<int>(std::round(uv.y)) % tex.getHeight();
         if (x < 0) { x += tex.getWidth(); }
         if (y < 0) { y += tex.getHeight(); }
         Color c = tex.sample(x, y) + mat.color;
         Color::normalize(&c);
-        return c;
+        const int idx = x + y * tex.getWidth();
+        return {c, fullbright[idx]};
     }
     else
     {
-        return mat.color;
+        return {mat.color, false};
     }
 }

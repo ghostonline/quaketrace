@@ -86,9 +86,19 @@ struct Scene
     std::vector<ConvexPolygon> polygons;
     Lighting lighting;
 
-    std::vector<Texture> textures;
+    struct TextureData
+    {
+        Texture texture;
+        std::vector<bool> fullbright;
+    };
+    std::vector<TextureData> textures;
 
-    Color getTexturePixel(const Material& mat, const math::Vec3f& pos) const;
+    struct TexturePixel
+    {
+        Color color;
+        bool fullbright;
+    };
+    TexturePixel getTexturePixel(const Material& mat, const math::Vec3f& pos) const;
 
     static void initDefault(Scene* scene);
     static void pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3f& forward, const math::Vec3f& up);

@@ -210,6 +210,11 @@ namespace {
         return mat;
     }
 
+    inline bool isFullBright(int index)
+    {
+        return index >= 224;
+    }
+
     template<typename T>
     static inline const util::ArrayView<T> entry2view(const void* data, const Entry& entry)
     {
@@ -297,7 +302,12 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         int offset = header.lumps[LUMP_TEXTURES].offset + textureOffsets[ii];
         auto def = util::castFromMemory<MipsTexture>(data, offset);
         auto indices = util::castFromMemory<uint8_t>(data, offset + def->offset[MipsTexture::MIP_1X1]);
-        scene.textures.push_back(Texture::createFromIndexedRGB(def->width, def->height, indices, palette));
+        std::vector<bool> fullbright(def->width * def->height);
+        for (int ii = util::lastIndex(fullbright); ii >= 0; --ii)
+        {
+            fullbright[ii] = isFullBright(indices[ii]);
+        }
+        scene.textures.push_back({Texture::createFromIndexedRGB(def->width, def->height, indices, palette), fullbright});
         lighted.push_back(!isSkyTexture(def->name));
     }
 

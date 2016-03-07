@@ -283,7 +283,9 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     {
         const Scene::Material& mat = scene.polygons[polygonHitIdx].material;
         lighted = mat.lighted;
-        color = scene.getTexturePixel(mat, infoPolygon.pos);
+        auto pixel = scene.getTexturePixel(mat, infoPolygon.pos);
+        color = pixel.color;
+        lighted = !pixel.fullbright;
         hitInfo = infoPolygon;
     }
 
