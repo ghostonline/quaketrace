@@ -102,9 +102,9 @@
 }
 {
  "classname" "light"
- "light" "100"
+ "light" "300"
  "angle" "360"
- "origin" "224 144 -88"
+ "origin" "128 0 -24"
 }
 {
  "classname" "trigger_changelevel"
