@@ -7,7 +7,6 @@
 #include "Random.hpp"
 
 static const float DIRECTIONAL_RAY_LENGTH = 1000.0f;
-static const int SOFT_SHADOW_RAYS = 10;
 
 inline float applyAngleScale(float value)
 {
@@ -15,7 +14,7 @@ inline float applyAngleScale(float value)
     return (1.0f - anglescale) + anglescale * value;
 }
 
-const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene) const
+const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays) const
 {
     float lightLevel = ambient;
     for (int ii = util::lastIndex(directional); ii >= 0; --ii)
@@ -36,7 +35,7 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
     {
         const auto& light = points[ii];
         auto castRay = math::normalized(light.origin - origin);
-        auto lightRays = light.getRandomLightPoints(castRay, SOFT_SHADOW_RAYS);
+        auto lightRays = light.getRandomLightPoints(castRay, softShadowRays);
         lightRays.push_back(light.origin);
         const float rayContribution = 1.0f / lightRays.size();
         for (int ii = util::lastIndex(lightRays); ii >= 0; --ii )

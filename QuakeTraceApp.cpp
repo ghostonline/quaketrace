@@ -22,6 +22,7 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 const int DETAIL_LEVEL = 1;
+const int SOFT_SHADOW_RAYS = 10;
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
 const Color COLOR_BACKGROUND {0x22/255.0f, 0x22/255.0f, 0x22/255.0f};
@@ -289,7 +290,7 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     float lightLevel = 0.0f;
     if (lighted)
     {
-        lightLevel = scene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, scene);
+        lightLevel = scene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, scene, SOFT_SHADOW_RAYS);
     }
     else
     {
