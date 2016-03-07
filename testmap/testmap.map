@@ -92,11 +92,6 @@
 }
 {
  "classname" "info_intermission"
- "origin" "48 0 -48"
- "mangle" "0 0 0"
-}
-{
- "classname" "info_intermission"
  "origin" "-224 160 48"
  "mangle" "17.98 -21.20 0"
 }
