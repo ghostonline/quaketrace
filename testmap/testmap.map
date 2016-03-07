@@ -102,7 +102,7 @@
 }
 {
  "classname" "light"
- "light" "600"
+ "light" "100"
  "angle" "360"
  "origin" "224 144 -88"
 }
