@@ -296,19 +296,18 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     const int32_t* textureOffsets = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
     int textureCount = textureOffsets[0];
     scene.textures.reserve(textureCount);
-    std::vector<bool> lighted;
     for (int ii = 1; ii <= textureCount; ++ii)
     {
         int offset = header.lumps[LUMP_TEXTURES].offset + textureOffsets[ii];
         auto def = util::castFromMemory<MipsTexture>(data, offset);
         auto indices = util::castFromMemory<uint8_t>(data, offset + def->offset[MipsTexture::MIP_1X1]);
         std::vector<bool> fullbright(def->width * def->height);
+        const bool isSky = isSkyTexture(def->name);
         for (int ii = util::lastIndex(fullbright); ii >= 0; --ii)
         {
-            fullbright[ii] = isFullBright(indices[ii]);
+            fullbright[ii] = isFullBright(indices[ii]) || isSky;
         }
         scene.textures.push_back({Texture::createFromIndexedRGB(def->width, def->height, indices, palette), fullbright});
-        lighted.push_back(!isSkyTexture(def->name));
     }
 
     const Model& base = models[0];
@@ -335,7 +334,6 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 #else
         auto mat = info2material(texture, Color(0.0f, 0.0f, 0.0f));
 #endif
-        mat.lighted = lighted[texture.texture_id];
         const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
         scene.polygons.push_back(poly);
     }

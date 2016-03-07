@@ -12,14 +12,13 @@ struct Scene
 {
     struct Material
     {
-        Material() : texture(-1), color(0.0f, 0.0f, 0.0f), lighted(true) {}
+        Material() : texture(-1), color(0.0f, 0.0f, 0.0f) {}
 
         int texture;
         math::Vec3f u;
         math::Vec3f v;
         math::Vec2f offset;
         Color color;
-        bool lighted;
 
         math::Vec2f positionToUV(const math::Vec3f& pos) const;
     };
