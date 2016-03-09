@@ -238,6 +238,12 @@ namespace {
         }
         return value;
     }
+
+    static bool isRenderable(const BspEntity& entity)
+    {
+        const auto& classname = entity.getProperty(BspEntity::Property::KEY_CLASSNAME).value;
+        return !std::strncmp(classname.data(), "func_", 5);
+    }
 }
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
@@ -287,7 +293,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
                 break;
         }
 
-        if (entity.hasProperty(BspEntity::Property::KEY_MODEL))
+        if (entity.hasProperty(BspEntity::Property::KEY_MODEL) && isRenderable(entity))
         {
             modelIndices.push_back(entity.getProperty(BspEntity::Property::KEY_MODEL).integer);
         }
