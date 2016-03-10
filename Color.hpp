@@ -97,6 +97,11 @@ struct Color
         c->b = math::clamp01(c->b);
     }
 
+    inline static bool isBlack(const Color& c)
+    {
+        return c.r == 0.0f && c.g == 0.0f && c.b == 0.0f;
+    }
+
 private:
     static inline const std::uint32_t float2byte(float v, int lshift = 0) { return (static_cast<std::uint32_t>(v * 0xFF) & 0xFF) << lshift; }
 };

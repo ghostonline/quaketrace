@@ -142,8 +142,13 @@ Scene::TexturePixel Scene::getSkyPixel(const Material& mat, const Ray& ray, cons
     const Texture& tex = textures[mat.texture].texture;
     const int x = normalize(uv.x, tex.getWidth() >> 1);
     const int y = normalize(uv.y, tex.getHeight());
-    Color c = tex.sample(x, y) + mat.color;
-    Color::normalize(&c);
+    Color frontPlane = tex.sample(x, y);
+    Color backPlane = tex.sample(x + (tex.getWidth() >> 1), y);
+    if (!Color::isBlack(frontPlane))
+    {
+        backPlane = frontPlane;
+    }
+    Color::normalize(&backPlane);
 
-    return {c, true};
+    return {backPlane, true};
 }
