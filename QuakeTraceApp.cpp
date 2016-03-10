@@ -282,7 +282,15 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
     else if (polygonHitIdx > -1)
     {
         const Scene::Material& mat = scene.polygons[polygonHitIdx].material;
-        auto pixel = scene.getTexturePixel(mat, infoPolygon.pos);
+        Scene::TexturePixel pixel;
+        if (mat.useSkyShader)
+        {
+            pixel = scene.getSkyPixel(mat, pixelRay, infoPolygon.pos);
+        }
+        else
+        {
+            pixel = scene.getTexturePixel(mat, infoPolygon.pos);
+        }
         color = pixel.color;
         lighted = !pixel.fullbright;
         hitInfo = infoPolygon;

@@ -310,6 +310,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     const int32_t* textureOffsets = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
     int textureCount = textureOffsets[0];
     scene.textures.reserve(textureCount);
+    std::vector<bool> skyTexture;
     for (int ii = 1; ii <= textureCount; ++ii)
     {
         int offset = header.lumps[LUMP_TEXTURES].offset + textureOffsets[ii];
@@ -322,6 +323,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             fullbright[ii] = isFullBright(indices[ii]) || isSky;
         }
         scene.textures.push_back({Texture::createFromIndexedRGB(def->width, def->height, indices, palette), fullbright});
+        skyTexture.push_back(isSky);
     }
 
     for (int ii = util::lastIndex(modelIndices); ii >= 0; --ii)
@@ -351,6 +353,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 #else
             auto mat = info2material(texture, Color(0.0f, 0.0f, 0.0f));
 #endif
+            mat.useSkyShader = skyTexture[texture.texture_id];
             const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
             scene.polygons.push_back(poly);
         }

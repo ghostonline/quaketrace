@@ -14,6 +14,7 @@ namespace collision3d
         float t;
     };
 
+    bool rayPlaneIntersection(const Ray& ray, const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, float* t);
     bool raySceneCollision(const Ray& ray, float maxDist, const Scene& scene);
     int raycastSpheres(const Ray& ray, float maxDist, const std::vector<Scene::Sphere>& spheres, Hit* hitResult = nullptr);
     int raycastPlanes(const Ray& ray, float maxDist, const std::vector<Scene::Plane>& planes, Hit* hitResult = nullptr);

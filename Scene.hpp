@@ -7,18 +7,20 @@
 #include <vector>
 
 class FrameBuffer;
+struct Ray;
 
 struct Scene
 {
     struct Material
     {
-        Material() : texture(-1), color(0.0f, 0.0f, 0.0f) {}
+        Material() : texture(-1), color(0.0f, 0.0f, 0.0f), useSkyShader(false) {}
 
         int texture;
         math::Vec3f u;
         math::Vec3f v;
         math::Vec2f offset;
         Color color;
+        bool useSkyShader;
 
         math::Vec2f positionToUV(const math::Vec3f& pos) const;
     };
@@ -98,6 +100,7 @@ struct Scene
         bool fullbright;
     };
     TexturePixel getTexturePixel(const Material& mat, const math::Vec3f& pos) const;
+    TexturePixel getSkyPixel(const Material& mat, const Ray& ray, const math::Vec3f& pos) const;
 
     static void initDefault(Scene* scene);
     static void pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3f& forward, const math::Vec3f& up);

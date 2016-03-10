@@ -4,7 +4,7 @@
 #include "Assert.hpp"
 #include <limits>
 
-inline bool rayPlaneIntersection(const Ray& ray, const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, float* t)
+bool collision3d::rayPlaneIntersection(const Ray& ray, const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, float* t)
 {
     ASSERT(t);
     float denom = math::dot(ray.dir, planeNormal);

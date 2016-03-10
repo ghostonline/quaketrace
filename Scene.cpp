@@ -3,6 +3,18 @@
 #include <cmath>
 #include "Math.hpp"
 #include "Util.hpp"
+#include "Ray.hpp"
+#include "Collision3D.hpp"
+
+namespace {
+    inline int normalize(float value, int max)
+    {
+        int normalized = static_cast<int>(std::round(value)) % max;
+        if (normalized < 0) { normalized += max; }
+        return normalized;
+    }
+}
+
 
 void Scene::initDefault(Scene* scene)
 {
@@ -105,10 +117,8 @@ Scene::TexturePixel Scene::getTexturePixel(const Scene::Material& mat, const mat
         auto& data = textures[mat.texture];
         const Texture& tex = data.texture;
         const auto& fullbright = data.fullbright;
-        int x = static_cast<int>(std::round(uv.x)) % tex.getWidth();
-        int y = static_cast<int>(std::round(uv.y)) % tex.getHeight();
-        if (x < 0) { x += tex.getWidth(); }
-        if (y < 0) { y += tex.getHeight(); }
+        const int x = normalize(uv.x, tex.getWidth() >> 1);
+        const int y = normalize(uv.y, tex.getHeight());
         Color c = tex.sample(x, y) + mat.color;
         Color::normalize(&c);
         const int idx = x + y * tex.getWidth();
@@ -118,4 +128,22 @@ Scene::TexturePixel Scene::getTexturePixel(const Scene::Material& mat, const mat
     {
         return {mat.color, false};
     }
+}
+
+Scene::TexturePixel Scene::getSkyPixel(const Material& mat, const Ray& ray, const math::Vec3f& pos) const
+{
+    static const math::Vec3f SKY_PLANE_ORIGIN = {0.0f, 0.0f, 0.0f};
+    static const math::Vec3f SKY_PLANE_NORMAL = {0.0f, 0.0f, -1.0f};
+    float t = 0.0f;
+    collision3d::rayPlaneIntersection(ray, SKY_PLANE_ORIGIN, SKY_PLANE_NORMAL, &t);
+    const math::Vec3f skyPos = ray.dir * t;
+
+    auto uv = mat.positionToUV(skyPos);
+    const Texture& tex = textures[mat.texture].texture;
+    const int x = normalize(uv.x, tex.getWidth() >> 1);
+    const int y = normalize(uv.y, tex.getHeight());
+    Color c = tex.sample(x, y) + mat.color;
+    Color::normalize(&c);
+
+    return {c, true};
 }
