@@ -47,7 +47,9 @@ struct Lighting
     float ambient;
 
     Lighting() : ambient(0.0f) {}
-    const float calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays) const;
+    const float calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays, int occlusionRays) const;
+    const std::vector<math::Vec3f> getPointsOnUnitSphere(int count) const;
+
     void add(const Point& light) { points.push_back(light); }
     void add(const Directional& light) { directional.push_back(light); }
 };

@@ -14,7 +14,7 @@ inline float applyAngleScale(float value)
     return (1.0f - anglescale) + anglescale * value;
 }
 
-const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays) const
+const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays, int occlusionRays) const
 {
     float lightLevel = ambient;
     for (int ii = util::lastIndex(directional); ii >= 0; --ii)
@@ -55,8 +55,26 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
             }
         }
     }
+    lightLevel = math::clamp01(lightLevel);
 
-    return math::clamp01(lightLevel);
+    if (lightLevel > 0.0f)
+    {
+        static const float AMBIENT_OCCLUSION_STRENGTH = 16;
+        std::vector<math::Vec3f> occlusion = getPointsOnUnitSphere(occlusionRays);
+        int occlusionHits = 0;
+        for (int ii = util::lastIndex(occlusion); ii >= 0; --ii)
+        {
+            auto& dir = occlusion[ii];
+            dir *= math::dot(hitNormal, dir);
+            math::normalize(&dir);
+            Ray ray = {origin, dir};
+            occlusionHits += collision3d::raySceneCollision(ray, AMBIENT_OCCLUSION_STRENGTH, scene) & 1;
+        }
+        float occlusionFactor = 1.0f - occlusionHits / static_cast<float>(occlusionRays);
+        lightLevel *= occlusionFactor;
+    }
+
+    return lightLevel;
 }
 
 const std::vector<math::Vec3f> Lighting::Point::getRandomLightPoints(const math::Vec3f& castNormal, int count) const
@@ -80,4 +98,18 @@ const std::vector<math::Vec3f> Lighting::Point::getRandomLightPoints(const math:
         points[ii] = point;
     }
     return points;
+}
+
+const std::vector<math::Vec3f> Lighting::getPointsOnUnitSphere(int count) const
+{
+    std::vector<math::Vec3f> directions(count);
+    for (int ii = count - 1; ii >= 0; --ii)
+    {
+        float azimuth = Random::rand(0, math::PI2);
+        float zenith = std::acos(2.0f - Random::randFloat() - 1);
+        directions[ii].x = std::cos(azimuth) * std::sin(zenith);
+        directions[ii].y = std::sin(azimuth) * std::sin(zenith);
+        directions[ii].z = std::cos(zenith);
+    }
+    return directions;
 }
