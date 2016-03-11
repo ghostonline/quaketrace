@@ -285,7 +285,7 @@ const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
         Scene::TexturePixel pixel;
         if (mat.useSkyShader)
         {
-            pixel = scene.getSkyPixel(mat, pixelRay, infoPolygon.pos);
+            pixel = scene.getSkyPixel(mat, pixelRay, {SCREEN_WIDTH, SCREEN_HEIGHT});
         }
         else
         {

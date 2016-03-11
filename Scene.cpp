@@ -130,15 +130,22 @@ Scene::TexturePixel Scene::getTexturePixel(const Scene::Material& mat, const mat
     }
 }
 
-Scene::TexturePixel Scene::getSkyPixel(const Material& mat, const Ray& ray, const math::Vec3f& pos) const
+Scene::TexturePixel Scene::getSkyPixel(const Material& mat, const Ray& ray, const math::Vec2i& screen) const
 {
-    static const math::Vec3f SKY_PLANE_ORIGIN = {0.0f, 0.0f, 0.0f};
-    static const math::Vec3f SKY_PLANE_NORMAL = {0.0f, 0.0f, -1.0f};
-    float t = 0.0f;
-    collision3d::rayPlaneIntersection(ray, SKY_PLANE_ORIGIN, SKY_PLANE_NORMAL, &t);
-    const math::Vec3f skyPos = ray.dir * t;
+    auto skyDir = ray.dir;
+    skyDir += camera.direction * 4096;
+    skyDir.z *= 3;
+    math::normalize(&skyDir);
 
-    auto uv = mat.positionToUV(skyPos);
+    static const int SKY_SIZE = 1 << 7;
+    static const int SKY_SPAN_SHIFT = 4; // slightly tweaked (was 5 in original code)
+
+    int temp = screen.x >= screen.y ? screen.x : screen.y;
+
+    math::Vec2f uv;
+    uv.x = static_cast<int>((temp + 6*(SKY_SIZE/2-1)*skyDir.x) * 0x10000) >> SKY_SPAN_SHIFT;
+    uv.y = static_cast<int>((temp + 6*(SKY_SIZE/2-1)*skyDir.y) * 0x10000) >> SKY_SPAN_SHIFT;
+
     const Texture& tex = textures[mat.texture].texture;
     const int x = normalize(uv.x, tex.getWidth() >> 1);
     const int y = normalize(uv.y, tex.getHeight());

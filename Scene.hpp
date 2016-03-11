@@ -100,7 +100,7 @@ struct Scene
         bool fullbright;
     };
     TexturePixel getTexturePixel(const Material& mat, const math::Vec3f& pos) const;
-    TexturePixel getSkyPixel(const Material& mat, const Ray& ray, const math::Vec3f& pos) const;
+    TexturePixel getSkyPixel(const Material& mat, const Ray& ray, const math::Vec2i& screen) const;
 
     static void initDefault(Scene* scene);
     static void pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3f& forward, const math::Vec3f& up);
