@@ -128,7 +128,7 @@ void QuakeTraceApp::runUntilFinished()
                 updateMouse = true;
             }
 
-            if (event.type == SDL_MOUSEBUTTONDOWN)
+            if (event.type == SDL_MOUSEBUTTONDOWN && event.button.clicks == 2)
             {
                 breakX = mouseX;
                 breakY = mouseY;
