@@ -117,7 +117,7 @@ Scene::TexturePixel Scene::getTexturePixel(const Scene::Material& mat, const mat
         auto& data = textures[mat.texture];
         const Texture& tex = data.texture;
         const auto& fullbright = data.fullbright;
-        const int x = normalize(uv.x, tex.getWidth() >> 1);
+        const int x = normalize(uv.x, tex.getWidth());
         const int y = normalize(uv.y, tex.getHeight());
         Color c = tex.sample(x, y) + mat.color;
         Color::normalize(&c);
