@@ -51,6 +51,7 @@ struct RayInput
     int x, y, pixelIdx, canvasWidth, canvasHeight;
     const Scene& scene;
     const std::vector<math::Vec2f>& sampleOffsets;
+    const bool breakDebugger;
 };
 
 void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
@@ -219,20 +220,15 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
 
     uint8_t* pixels = canvas->pixels.data();
     std::vector<RayInput> input;
-    // TODO: Parallelize
     for (int x = canvas->width - 1; x >= 0; --x)
     {
         for (int y = canvas->height - 1; y >= 0; --y)
         {
-            if (breakX == x && breakY == y)
-            {
-                breakX = breakY = -1;
-                SDL_TriggerBreakpoint();
-            }
             const int baseIdx = (x + y * canvas->width) * ARGBCanvas::PIXEL_SIZE;
-            input.push_back({x, y, baseIdx, canvas->width, canvas->height, scene, sampleOffsets});
+            input.push_back({x, y, baseIdx, canvas->width, canvas->height, scene, sampleOffsets, breakX == x && breakY == y});
         }
     }
+    breakX = breakY = -1;
 
     Scheduler scheduler;
     auto output = scheduler.schedule<RayInput, Color>(input);
@@ -248,6 +244,11 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
 template<>
 const Color Scheduler::process<RayInput, Color>(RayInput in)
 {
+    if (in.breakDebugger)
+    {
+        SDL_TriggerBreakpoint();
+    }
+
     Color aggregate(0.0f);
 
     for (int ii = util::lastIndex(in.sampleOffsets); ii >= 0; --ii)
