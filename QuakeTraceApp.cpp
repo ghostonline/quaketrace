@@ -18,6 +18,7 @@
 #include "Ray.hpp"
 #include "Util.hpp"
 #include "BspLoader.hpp"
+#include "Scheduler.hpp"
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -43,6 +44,13 @@ struct ARGBCanvas
     int width;
     int height;
     std::vector<uint8_t> pixels;
+};
+
+struct RayInput
+{
+    int x, y, pixelIdx, canvasWidth, canvasHeight;
+    const Scene& scene;
+    const std::vector<math::Vec2f>& sampleOffsets;
 };
 
 void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
@@ -210,6 +218,7 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
     const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
 
     uint8_t* pixels = canvas->pixels.data();
+    std::vector<RayInput> input;
     // TODO: Parallelize
     for (int x = canvas->width - 1; x >= 0; --x)
     {
@@ -221,22 +230,36 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
                 SDL_TriggerBreakpoint();
             }
             const int baseIdx = (x + y * canvas->width) * ARGBCanvas::PIXEL_SIZE;
-            uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[baseIdx]);
-            Color aggregate(0.0f);
-
-            for (int ii = util::lastIndex(sampleOffsets); ii >= 0; --ii)
-            {
-                const float sampleX = x + sampleOffsets[ii].x;
-                const float sampleY = y + sampleOffsets[ii].y;
-                const float normX = (sampleX / static_cast<float>(canvas->width) - 0.5f) * 2.0f;
-                const float normY = (sampleY / static_cast<float>(canvas->height) - 0.5f) * -2.0f;
-                Color color = renderPixel(scene, normX, normY);
-                aggregate += color / static_cast<float>(sampleOffsets.size());
-            }
-
-            *pixel = Color::asARGB(aggregate);
+            input.push_back({x, y, baseIdx, canvas->width, canvas->height, scene, sampleOffsets});
         }
     }
+
+    Scheduler scheduler;
+    auto output = scheduler.schedule<RayInput, Color>(input);
+    for (int ii = util::lastIndex(output); ii >= 0; --ii)
+    {
+        const auto& color = output[ii];
+        const int pixelIdx = input[ii].pixelIdx;
+        uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[pixelIdx]);
+        *pixel = Color::asARGB(color);
+    }
+}
+
+template<>
+const Color Scheduler::process<RayInput, Color>(RayInput in)
+{
+    Color aggregate(0.0f);
+
+    for (int ii = util::lastIndex(in.sampleOffsets); ii >= 0; --ii)
+    {
+        const float sampleX = in.x + in.sampleOffsets[ii].x;
+        const float sampleY = in.y + in.sampleOffsets[ii].y;
+        const float normX = (sampleX / static_cast<float>(in.canvasWidth) - 0.5f) * 2.0f;
+        const float normY = (sampleY / static_cast<float>(in.canvasHeight) - 0.5f) * -2.0f;
+        Color color = QuakeTraceApp::renderPixel(in.scene, normX, normY);
+        aggregate += color / static_cast<float>(in.sampleOffsets.size());
+    }
+    return aggregate;
 }
 
 const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)

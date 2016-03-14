@@ -79,6 +79,11 @@ set(UTIL_SOURCE_FILES
     Random.hpp
 )
 
+set(THREADING_SOURCE_FILES
+    Scheduler.cpp
+    Scheduler.hpp
+)
+
 set (MATH_SOURCE_FILES
 	Math.cpp
 	Math.hpp
@@ -92,11 +97,13 @@ set (MATH_SOURCE_FILES
 source_group("Source" FILES ${BASE_SOURCE_FILES})
 source_group("Source\\Math" FILES ${MATH_SOURCE_FILES})
 source_group("Source\\Util" FILES ${UTIL_SOURCE_FILES})
+source_group("Source\\Threading" FILES ${THREADING_SOURCE_FILES})
 
 set (APP_SOURCE_FILES
 	${BASE_SOURCE_FILES}
 	${MATH_SOURCE_FILES}
     ${UTIL_SOURCE_FILES}
+    ${THREADING_SOURCE_FILES}
 )
 
 foreach(f IN ITEMS ${APP_SOURCE_FILES})
