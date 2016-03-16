@@ -45,8 +45,14 @@ public:
 template<typename Input, typename Output, typename Context>
 const std::vector<Output> Scheduler::schedule(const std::vector<Input>& in, const Context& context)
 {
+    static const int WORKER_COUNT = 4;
     std::vector<Output> out(in.size());
-    std::unique_ptr<Task> task(new TaskImpl<Input, Output, Context>(in.data(), out.data(), in.size(), context));
-    while(task->processNext()) {}
+    const auto taskCount = in.size();
+    const auto batchCount = taskCount / WORKER_COUNT;
+    for (int ii = 0; ii < taskCount; ii += batchCount)
+    {
+        std::unique_ptr<Task> task(new TaskImpl<Input, Output, Context>(in.data() + ii, out.data() + ii, batchCount, context));
+        while(task->processNext()) {}
+    }
     return out;
 }
