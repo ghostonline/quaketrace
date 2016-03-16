@@ -48,10 +48,17 @@ struct ARGBCanvas
 
 struct RayInput
 {
-    int x, y, pixelIdx, canvasWidth, canvasHeight;
+    int x, y, pixelIdx;
+    const bool breakDebugger;
+};
+
+struct RayContext
+{
+    int canvasWidth, canvasHeight;
     const Scene& scene;
     const std::vector<math::Vec2f>& sampleOffsets;
-    const bool breakDebugger;
+
+    const Color process(RayInput in) const;
 };
 
 void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
@@ -218,6 +225,8 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
     }
     const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
 
+    RayContext context = {canvas->width, canvas->height, scene, sampleOffsets};
+
     uint8_t* pixels = canvas->pixels.data();
     std::vector<RayInput> input;
     for (int x = canvas->width - 1; x >= 0; --x)
@@ -225,13 +234,13 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
         for (int y = canvas->height - 1; y >= 0; --y)
         {
             const int baseIdx = (x + y * canvas->width) * ARGBCanvas::PIXEL_SIZE;
-            input.push_back({x, y, baseIdx, canvas->width, canvas->height, scene, sampleOffsets, breakX == x && breakY == y});
+            input.push_back({x, y, baseIdx, breakX == x && breakY == y});
         }
     }
     breakX = breakY = -1;
 
     Scheduler scheduler;
-    auto output = scheduler.schedule<RayInput, Color>(input);
+    auto output = scheduler.schedule<RayInput, Color, RayContext>(input, context);
     for (int ii = util::lastIndex(output); ii >= 0; --ii)
     {
         const auto& color = output[ii];
@@ -241,8 +250,7 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
     }
 }
 
-template<>
-const Color Scheduler::process<RayInput, Color>(RayInput in)
+const Color RayContext::process(RayInput in) const
 {
     if (in.breakDebugger)
     {
@@ -251,14 +259,14 @@ const Color Scheduler::process<RayInput, Color>(RayInput in)
 
     Color aggregate(0.0f);
 
-    for (int ii = util::lastIndex(in.sampleOffsets); ii >= 0; --ii)
+    for (int ii = util::lastIndex(sampleOffsets); ii >= 0; --ii)
     {
-        const float sampleX = in.x + in.sampleOffsets[ii].x;
-        const float sampleY = in.y + in.sampleOffsets[ii].y;
-        const float normX = (sampleX / static_cast<float>(in.canvasWidth) - 0.5f) * 2.0f;
-        const float normY = (sampleY / static_cast<float>(in.canvasHeight) - 0.5f) * -2.0f;
-        Color color = QuakeTraceApp::renderPixel(in.scene, normX, normY);
-        aggregate += color / static_cast<float>(in.sampleOffsets.size());
+        const float sampleX = in.x + sampleOffsets[ii].x;
+        const float sampleY = in.y + sampleOffsets[ii].y;
+        const float normX = (sampleX / static_cast<float>(canvasWidth) - 0.5f) * 2.0f;
+        const float normY = (sampleY / static_cast<float>(canvasHeight) - 0.5f) * -2.0f;
+        Color color = QuakeTraceApp::renderPixel(scene, normX, normY);
+        aggregate += color / static_cast<float>(sampleOffsets.size());
     }
     return aggregate;
 }
