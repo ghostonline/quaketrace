@@ -40,6 +40,8 @@ class Scheduler
 
     typedef std::unique_ptr<Task> TaskPtr;
 
+    static void doTask(Task* task);
+    
     void doTasks(const std::vector<TaskPtr>& tasks) const;
 
 public:
