@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 class Scheduler
 {
@@ -35,8 +36,12 @@ class Scheduler
             ++idx;
             return idx < size;
         }
-    };    
-    
+    };
+
+    typedef std::unique_ptr<Task> TaskPtr;
+
+    void doTasks(const std::vector<TaskPtr>& tasks) const;
+
 public:
     template<typename Input, typename Output, typename Context>
     const std::vector<Output> schedule(const std::vector<Input>& in, const Context& context);
@@ -45,14 +50,16 @@ public:
 template<typename Input, typename Output, typename Context>
 const std::vector<Output> Scheduler::schedule(const std::vector<Input>& in, const Context& context)
 {
+
     static const int WORKER_COUNT = 4;
     std::vector<Output> out(in.size());
     const auto taskCount = in.size();
     const auto batchCount = taskCount / WORKER_COUNT;
+    std::vector<TaskPtr> tasks;
     for (int ii = 0; ii < taskCount; ii += batchCount)
     {
-        std::unique_ptr<Task> task(new TaskImpl<Input, Output, Context>(in.data() + ii, out.data() + ii, batchCount, context));
-        while(task->processNext()) {}
+        tasks.emplace_back(new TaskImpl<Input, Output, Context>(in.data() + ii, out.data() + ii, batchCount, context));
     }
+    doTasks(tasks);
     return out;
 }
