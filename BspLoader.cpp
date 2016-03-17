@@ -16,6 +16,7 @@ using namespace std;
 namespace {
     static const float PLAYER_EYE_HEIGHT = 56.0f;
     static const float LIGHT_SOURCE_RADIUS = 16;
+    static const float DEFAULT_LIGHT_LEVEL = 300;
 
     enum Lumps
     {
@@ -448,6 +449,10 @@ const Lighting::Point BspLoader::parseLight(const BspEntity& entity)
     ASSERT(entity.type == BspEntity::TYPE_LIGHT);
     auto origin = entity.getProperty(BspEntity::Property::KEY_ORIGIN).vec;
     auto strength = entity.getProperty(BspEntity::Property::KEY_LIGHT).number;
+    if (!strength)
+    {
+        strength = DEFAULT_LIGHT_LEVEL;
+    }
     Lighting::Point light(origin, strength, LIGHT_SOURCE_RADIUS);
     return light;
 }
