@@ -57,7 +57,7 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
     }
     lightLevel = math::clamp01(lightLevel);
 
-    if (lightLevel > 0.0f)
+    if (lightLevel > 0.0f && occlusionRays > 0)
     {
         static const float AMBIENT_OCCLUSION_STRENGTH = 16;
         std::vector<math::Vec3f> occlusion = getPointsOnUnitSphere(occlusionRays);
