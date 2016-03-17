@@ -4,14 +4,23 @@
 #include "StringTool.hpp"
 
 static const std::string ENTITY_TYPE_KEY = "classname";
-static const std::string ENTITY_TYPE_NAMES[] = {
-    "worldspawn",
-    "info_player_start",
-    "info_intermission",
-    "light",
+struct
+{
+    const char* classname;
+    BspEntity::Type type;
+} ENTITY_TYPE_DATA[] = {
+    { "worldspawn", BspEntity::TYPE_WORLD_SPAWN, },
+    { "info_player_start", BspEntity::TYPE_PLAYER_START, },
+    { "info_intermission", BspEntity::TYPE_INTERMISSION_CAMERA, },
+    { "light", BspEntity::TYPE_LIGHT, },
+    { "light_fluoro", BspEntity::TYPE_LIGHT, },
+    { "light_fluorospark", BspEntity::TYPE_LIGHT, },
+    { "light_globe", BspEntity::TYPE_LIGHT, },
+    { "light_flame_large_yellow", BspEntity::TYPE_LIGHT, },
+    { "light_flame_small_yellow", BspEntity::TYPE_LIGHT, },
+    { "light_flame_small_white", BspEntity::TYPE_LIGHT, },
+    { "light_torch_small_walltorch", BspEntity::TYPE_LIGHT, },
 };
-
-STATIC_ASSERT_ARRAY_SIZE(ENTITY_TYPE_NAMES, BspEntity::NUM_TYPES);
 
 enum KeyType
 {
@@ -51,7 +60,18 @@ static const std::vector<std::string> extractKeyNames()
     return names;
 }
 
+static const std::vector<std::string> extractClassNames()
+{
+    std::vector<std::string> names(UTIL_ARRAY_SIZE(ENTITY_TYPE_DATA));
+    for (int ii = 0; ii < UTIL_ARRAY_SIZE(ENTITY_TYPE_DATA); ++ii)
+    {
+        names[ii] = ENTITY_TYPE_DATA[ii].classname;
+    }
+    return names;
+}
+
 static const std::vector<std::string> KEY_NAMES = extractKeyNames();
+static const std::vector<std::string> CLASS_NAMES = extractClassNames();
 
 BspEntity::Property BspEntity::Property::NULL_PROPERTY;
 
@@ -100,9 +120,9 @@ const BspEntity BspEntity::parse(const util::ArrayView<char>& serialized)
     if (entity.hasProperty(Property::KEY_CLASSNAME))
     {
         const Property& prop = entity.getProperty(Property::KEY_CLASSNAME);
-        const util::ArrayView<std::string> view = { ENTITY_TYPE_NAMES, NUM_TYPES };
+        const util::ArrayView<std::string> view = { CLASS_NAMES.data(), static_cast<int>(CLASS_NAMES.size()) };
         int idx = util::findItemInArray(view, prop.value);
-        entity.type = static_cast<Type>(idx);
+        entity.type = ENTITY_TYPE_DATA[idx].type;
     }
 
     return entity;
