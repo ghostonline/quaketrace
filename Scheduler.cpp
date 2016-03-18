@@ -13,8 +13,10 @@ void Scheduler::Worker::run()
         static const std::chrono::milliseconds timeout(100);
         while (task == nullptr && running) { std::this_thread::sleep_for(timeout); }
 
-        while (running && task && task->processNext()) {}
-        task = nullptr;
+        while (running && task && !task->finished())
+        {
+            task->processNext();
+        }
     }
 }
 
@@ -41,9 +43,9 @@ void Scheduler::Worker::doTask(Task* task)
     this->task = task;
 }
 
-bool Scheduler::Worker::isDone()
+bool Scheduler::Worker::isDone() const
 {
-    return !task;
+    return task->finished();
 }
 
 Scheduler::Scheduler(int numThreads) : workers(numThreads)

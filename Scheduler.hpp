@@ -9,7 +9,8 @@ class Task
 {
 public:
     virtual ~Task() {}
-    virtual bool processNext() = 0;
+    virtual void processNext() = 0;
+    virtual bool finished() const = 0;
 };
 
 typedef std::unique_ptr<Task> TaskPtr;
@@ -32,7 +33,7 @@ class Scheduler
         void stop();
 
         void doTask(Task* task);
-        bool isDone();
+        bool isDone() const;
     };
 
     template<typename Input, typename Output, typename Context>
@@ -53,12 +54,15 @@ class Scheduler
         , context(context)
         {}
 
-        virtual bool processNext()
+        virtual void processNext()
         {
+            ASSERT(!finished());
             output[idx] = context.process(input[idx]);
             ++idx;
-            return idx < size;
         }
+
+        virtual bool finished() const { return idx >= size; }
+
     };
 
     std::vector<Worker> workers;
