@@ -1,23 +1,91 @@
 #include "Scheduler.hpp"
 #include "Util.hpp"
-#include <thread>
+#include <chrono>
 
-void Scheduler::doTask(Task* task)
+typedef std::lock_guard<std::mutex> ScopedLock;
+
+void Scheduler::Worker::threadedRun(Worker* work) { work->run(); }
+
+void Scheduler::Worker::run()
 {
-    while(task->processNext()) {}
+    while(running)
+    {
+        static const std::chrono::milliseconds timeout(100);
+        while (task == nullptr && running) { std::this_thread::sleep_for(timeout); }
+
+        while (running && task && task->processNext()) {}
+        task = nullptr;
+    }
 }
 
-void Scheduler::doTasks(const std::vector<TaskPtr>& tasks) const
+void Scheduler::Worker::start()
 {
-    std::vector<std::thread> threads;
-    for (int ii = util::lastIndex(tasks); ii >= 0; --ii)
+    ScopedLock lock(stateLock);
+    ASSERT(!running);
+    running = true;
+    thread = std::thread(threadedRun, this);
+}
+
+void Scheduler::Worker::stop()
+{
+    ScopedLock lock(stateLock);
+    ASSERT(running);
+    running = false;
+    thread.join();
+}
+
+void Scheduler::Worker::doTask(Task* task)
+{
+    ScopedLock lock(stateLock);
+    ASSERT(!this->task);
+    this->task = task;
+}
+
+bool Scheduler::Worker::isDone()
+{
+    return !task;
+}
+
+Scheduler::Scheduler(int numThreads) : workers(numThreads)
+{
+    for (int ii = workers.size() - 1; ii >= 0; --ii)
     {
-        threads.push_back(std::thread(Scheduler::doTask, tasks[ii].get()));
+        workers[ii].start();
+    }
+}
+
+Scheduler::~Scheduler()
+{
+    for (int ii = workers.size() - 1; ii >= 0; --ii)
+    {
+        workers[ii].stop();
+    }
+}
+
+void Scheduler::doWork()
+{
+    for (int ii = util::lastIndex(workers); ii >= 0 ; --ii)
+    {
+        workers[ii].doTask(tasks[ii].get());
     }
 
-    for (int ii = util::lastIndex(threads); ii >= 0; --ii)
+    bool unfinished = true;
+    while (unfinished)
     {
-        ASSERT(threads[ii].joinable());
-        threads[ii].join();
+        unfinished = false;
+        for (int ii = util::lastIndex(workers); ii >= 0; --ii)
+        {
+            Worker& worker = workers[ii];
+            if (!worker.isDone())
+            {
+                unfinished = true;
+                break;
+            }
+        }
+
+        static const std::chrono::microseconds SLEEP_TIME(100);
+        std::this_thread::sleep_for(SLEEP_TIME);
     }
+    
+    tasks.clear();
 }

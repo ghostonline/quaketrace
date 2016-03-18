@@ -239,7 +239,8 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
     }
     breakX = breakY = -1;
 
-    Scheduler scheduler;
+    static const int WORKER_COUNT = 4;
+    Scheduler scheduler(WORKER_COUNT);
     auto output = scheduler.schedule<RayInput, Color, RayContext>(input, context);
     for (int ii = util::lastIndex(output); ii >= 0; --ii)
     {

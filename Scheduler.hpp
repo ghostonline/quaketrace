@@ -2,14 +2,37 @@
 
 #include <vector>
 #include <memory>
+#include <thread>
+#include <mutex>
+
+class Task
+{
+public:
+    virtual ~Task() {}
+    virtual bool processNext() = 0;
+};
+
+typedef std::unique_ptr<Task> TaskPtr;
 
 class Scheduler
 {
-    class Task
+    class Worker
     {
+        bool running;
+        Task* task;
+        std::thread thread;
+        std::mutex stateLock;
+
+        static void threadedRun(Worker* work);
+        void run();
+
     public:
-        virtual ~Task() {}
-        virtual bool processNext() = 0;
+        Worker() : running(false), task(nullptr) {}
+        void start();
+        void stop();
+
+        void doTask(Task* task);
+        bool isDone();
     };
 
     template<typename Input, typename Output, typename Context>
@@ -38,13 +61,15 @@ class Scheduler
         }
     };
 
-    typedef std::unique_ptr<Task> TaskPtr;
+    std::vector<Worker> workers;
+    std::vector<TaskPtr> tasks;
 
-    static void doTask(Task* task);
-    
-    void doTasks(const std::vector<TaskPtr>& tasks) const;
+    void doWork();
 
 public:
+    Scheduler(int numThreads);
+    ~Scheduler();
+
     template<typename Input, typename Output, typename Context>
     const std::vector<Output> schedule(const std::vector<Input>& in, const Context& context);
 };
@@ -52,16 +77,13 @@ public:
 template<typename Input, typename Output, typename Context>
 const std::vector<Output> Scheduler::schedule(const std::vector<Input>& in, const Context& context)
 {
-
-    static const int WORKER_COUNT = 4;
     std::vector<Output> out(in.size());
     const auto taskCount = in.size();
-    const auto batchCount = taskCount / WORKER_COUNT;
-    std::vector<TaskPtr> tasks;
+    const auto batchCount = taskCount / workers.size();
     for (int ii = 0; ii < taskCount; ii += batchCount)
     {
         tasks.emplace_back(new TaskImpl<Input, Output, Context>(in.data() + ii, out.data() + ii, batchCount, context));
     }
-    doTasks(tasks);
+    doWork();
     return out;
 }
