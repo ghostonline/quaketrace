@@ -10,13 +10,18 @@ void Scheduler::Worker::run()
 {
     while(running)
     {
-        static const std::chrono::milliseconds timeout(100);
-        while (task == nullptr && running) { std::this_thread::sleep_for(timeout); }
+        while (task == nullptr && running)
+        {
+            std::this_thread::yield();
+        }
 
         while (running && task && !task->finished())
         {
             task->processNext();
+            std::this_thread::yield();
         }
+
+        task = nullptr;
     }
 }
 
@@ -85,8 +90,7 @@ void Scheduler::doWork()
             }
         }
 
-        static const std::chrono::microseconds SLEEP_TIME(100);
-        std::this_thread::sleep_for(SLEEP_TIME);
+        std::this_thread::yield();
     }
     
     tasks.clear();
