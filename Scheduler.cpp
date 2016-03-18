@@ -48,11 +48,6 @@ void Scheduler::Worker::doTask(Task* task)
     this->task = task;
 }
 
-bool Scheduler::Worker::isDone() const
-{
-    return task->finished();
-}
-
 Scheduler::Scheduler(int numThreads) : workers(numThreads)
 {
     for (int ii = workers.size() - 1; ii >= 0; --ii)
@@ -83,7 +78,7 @@ void Scheduler::doWork()
         for (int ii = util::lastIndex(workers); ii >= 0; --ii)
         {
             Worker& worker = workers[ii];
-            if (!worker.isDone())
+            if (!worker.isIdle())
             {
                 unfinished = true;
                 break;
@@ -92,6 +87,6 @@ void Scheduler::doWork()
 
         std::this_thread::yield();
     }
-    
+
     tasks.clear();
 }

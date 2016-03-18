@@ -33,7 +33,7 @@ class Scheduler
         void stop();
 
         void doTask(Task* task);
-        bool isDone() const;
+        bool isIdle() const { return task == nullptr; }
     };
 
     template<typename Input, typename Output, typename Context>
