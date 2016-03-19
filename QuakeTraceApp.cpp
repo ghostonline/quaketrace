@@ -20,11 +20,19 @@
 #include "BspLoader.hpp"
 #include "Scheduler.hpp"
 
+#if 1
+const int SCREEN_WIDTH = 64;
+const int SCREEN_HEIGHT = 64;
+const int DETAIL_LEVEL = 1;
+const int SOFT_SHADOW_RAYS = 0;
+const int OCCLUSION_RAYS = 0;
+#else
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 const int DETAIL_LEVEL = 1;
 const int SOFT_SHADOW_RAYS = 10;
 const int OCCLUSION_RAYS = 32;
+#endif
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
 const Color COLOR_BACKGROUND {0x22/255.0f, 0x22/255.0f, 0x22/255.0f};
