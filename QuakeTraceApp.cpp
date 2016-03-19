@@ -19,6 +19,7 @@
 #include "Util.hpp"
 #include "BspLoader.hpp"
 #include "Scheduler.hpp"
+#include "Image.hpp"
 
 #if 1
 const int SCREEN_WIDTH = 64;
@@ -43,16 +44,6 @@ int QuakeTraceApp::breakY = -1;
 using namespace std;
 
 #define DEFAULT_SCENE 0
-
-struct ARGBCanvas
-{
-    ARGBCanvas(int width, int height) : width(width), height(height), pixels(width * height * PIXEL_SIZE) {}
-
-    static const int PIXEL_SIZE = 4;
-    int width;
-    int height;
-    std::vector<uint8_t> pixels;
-};
 
 struct RayInput
 {
@@ -102,7 +93,7 @@ void QuakeTraceApp::runUntilFinished()
     setIconFromAsset(window, AssetHelper::ICON);
 
     auto fb = FrameBuffer::createFromWindow(window);
-    ARGBCanvas canvas(fb->getWidth(), fb->getHeight());
+    Image canvas(fb->getWidth(), fb->getHeight(), Image::FORMAT_ARGB);
 
     auto font = Font::create();
 #if DEFAULT_SCENE
@@ -168,7 +159,7 @@ void QuakeTraceApp::runUntilFinished()
         {
             {
                 uint8_t* fbPixels = static_cast<uint8_t*>(fb->get());
-                const int rowLength = canvas.width * ARGBCanvas::PIXEL_SIZE;
+                const int rowLength = canvas.width * canvas.getPixelSize();
 
                 if (fb->getPitch() == rowLength)
                 {
@@ -213,7 +204,7 @@ void QuakeTraceApp::runUntilFinished()
     return;
 }
 
-void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBCanvas* canvas)
+void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, Image* canvas)
 {
     const float sampleWidth = 1.0f / detailLevel;
     const float sampleHeight = 1.0f / detailLevel;
@@ -241,7 +232,7 @@ void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, ARGBC
     {
         for (int y = canvas->height - 1; y >= 0; --y)
         {
-            const int baseIdx = (x + y * canvas->width) * ARGBCanvas::PIXEL_SIZE;
+            const int baseIdx = (x + y * canvas->width) * canvas->getPixelSize();
             input.push_back({x, y, baseIdx, breakX == x && breakY == y});
         }
     }
