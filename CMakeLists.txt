@@ -82,6 +82,8 @@ set(UTIL_SOURCE_FILES
 set(IMAGE_SOURCE_FILES
     Image.hpp
     Image.cpp
+    Targa.hpp
+    Targa.cpp
 )
 
 set(THREADING_SOURCE_FILES
