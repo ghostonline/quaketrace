@@ -77,6 +77,8 @@ set(UTIL_SOURCE_FILES
     StringTool.cpp
     StringTool.hpp
     Random.hpp
+    BinaryWriter.hpp
+    BinaryWriter.cpp
 )
 
 set(IMAGE_SOURCE_FILES

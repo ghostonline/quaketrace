@@ -20,6 +20,7 @@
 #include "BspLoader.hpp"
 #include "Scheduler.hpp"
 #include "Image.hpp"
+#include "Targa.hpp"
 
 #if 1
 const int SCREEN_WIDTH = 64;
@@ -149,6 +150,12 @@ void QuakeTraceApp::runUntilFinished()
             renderTime = SDL_GetTicks() - renderStart;
             refreshCanvas = false;
             updateScene = true;
+
+            auto tga = targa::encode(canvas);
+            auto fptr = fopen("test.tga", "wb");
+            fwrite(tga.data(), tga.size(), 1, fptr);
+            fflush(fptr);
+            fclose(fptr);
         }
         else
         {

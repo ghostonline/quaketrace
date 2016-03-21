@@ -1,8 +1,14 @@
 #include "Image.hpp"
 #include "Assert.hpp"
+#include "Util.hpp"
 
 const int Image::FORMAT_PIXEL_SIZE[] = {
     4,
+};
+
+#define CHANNEL(r, g, b, a) {{r, g, b, a}}
+const Image::Offset Image::CHANNEL_OFFSET_LOOKUP[] = {
+    CHANNEL(2, 1, 0, 3),
 };
 
 Image::Image(int width, int height, Format format)
