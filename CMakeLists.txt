@@ -80,7 +80,6 @@ set(UTIL_SOURCE_FILES
     BinaryWriter.hpp
     BinaryWriter.cpp
     File.hpp
-    File.cpp
     CommandLine.cpp
     CommandLine.hpp
 )
