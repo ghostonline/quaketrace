@@ -81,6 +81,8 @@ set(UTIL_SOURCE_FILES
     BinaryWriter.cpp
     File.hpp
     File.cpp
+    CommandLine.cpp
+    CommandLine.hpp
 )
 
 set(IMAGE_SOURCE_FILES

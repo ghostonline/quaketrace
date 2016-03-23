@@ -5,7 +5,9 @@
 #include <cstdint>
 #include <vector>
 #include <cmath>
+#include <string>
 #include <algorithm>
+#include <cstdlib>
 #include "Math.hpp"
 #include "Texture.hpp"
 #include "Font.hpp"
@@ -22,6 +24,7 @@
 #include "Image.hpp"
 #include "Targa.hpp"
 #include "File.hpp"
+#include "CommandLine.hpp"
 
 #if 1
 const int SCREEN_WIDTH = 64;
@@ -83,14 +86,37 @@ void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
     SDL_FreeSurface(icon);
 }
 
-void QuakeTraceApp::runUntilFinished()
+int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
 {
+    char const * const testArgs[] = {
+        "-i",
+        "testmap.bsp",
+        "-o",
+        "test.tga",
+    };
+    CommandLine cmd(UTIL_ARRAY_SIZE(testArgs), testArgs);
+    std::string mapName;
+    std::string imageName;
+    if (!cmd.parse(&mapName, "input", 'i'))
+    {
+        SDL_Log("No input map file found");
+        return EXIT_FAILURE;
+    }
+    if (!cmd.parse(&imageName, "output", 'o'))
+    {
+        SDL_Log("No output tga file found");
+        return EXIT_FAILURE;
+    }
+    SDL_Log("Input: %s", mapName.c_str());
+    SDL_Log("Output: %s", imageName.c_str());
+    return EXIT_SUCCESS;
+
     SDL_Init(SDL_INIT_VIDEO);
 
     SDL_Window *window = SDL_CreateWindow("QuakeTrace", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
     if (window == NULL) {
         SDL_Log("Failed to create a window: %s\n", SDL_GetError());
-        return;
+        return EXIT_FAILURE;
     }
     setIconFromAsset(window, AssetHelper::ICON);
 
@@ -207,7 +233,7 @@ void QuakeTraceApp::runUntilFinished()
     SDL_DestroyWindow(window);
     SDL_Quit();
 
-    return;
+    return EXIT_SUCCESS;
 }
 
 void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, Image* canvas)

@@ -11,7 +11,7 @@ struct Image;
 class QuakeTraceApp
 {
 public:
-    static void runUntilFinished();
+    static int runUntilFinished(int argc, char const * const * const argv);
     static const Color renderPixel(const Scene& scene, float x, float y);
 
 private:

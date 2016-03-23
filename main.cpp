@@ -3,6 +3,5 @@
 #include "SDL.h" // Convert main into winmain if necessary
 
 int main(int argc, char* argv[]) {
-    QuakeTraceApp::runUntilFinished();
-    return 0;
+    return QuakeTraceApp::runUntilFinished(argc, argv);
 }
