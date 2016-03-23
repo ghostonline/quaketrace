@@ -79,6 +79,8 @@ set(UTIL_SOURCE_FILES
     Random.hpp
     BinaryWriter.hpp
     BinaryWriter.cpp
+    File.hpp
+    File.cpp
 )
 
 set(IMAGE_SOURCE_FILES

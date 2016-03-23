@@ -21,6 +21,7 @@
 #include "Scheduler.hpp"
 #include "Image.hpp"
 #include "Targa.hpp"
+#include "File.hpp"
 
 #if 1
 const int SCREEN_WIDTH = 64;
@@ -152,10 +153,8 @@ void QuakeTraceApp::runUntilFinished()
             updateScene = true;
 
             auto tga = targa::encode(canvas);
-            auto fptr = fopen("test.tga", "wb");
-            fwrite(tga.data(), tga.size(), 1, fptr);
-            fflush(fptr);
-            fclose(fptr);
+            File f = File::openW("test.tga");
+            f.write(tga.data(), tga.size());
         }
         else
         {
