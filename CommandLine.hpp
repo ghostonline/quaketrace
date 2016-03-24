@@ -20,8 +20,10 @@ public:
         }
     }
 
-    bool parse(std::string* value, const std::string& flag) const;
-    bool parse(std::string* value, const std::string& flag, char abbreviation) const;
+    template<typename T>
+    bool parse(T* value, const std::string& flag) const;
+    template<typename T>
+    bool parse(T* value, const std::string& flag, char abbreviation) const;
 
 private:
     char const * const * const argv;
@@ -29,7 +31,8 @@ private:
     std::vector<bool> isFlag;
 };
 
-inline bool CommandLine::parse(std::string* value, const std::string& flag, char abbreviation) const
+template<typename T>
+inline bool CommandLine::parse(T* value, const std::string& flag, char abbreviation) const
 {
     if (!parse(value, flag))
     {

@@ -15,11 +15,11 @@
 #include "RayTracer.hpp"
 
 #if 1
-const int SCREEN_WIDTH = 64;
-const int SCREEN_HEIGHT = 64;
-const int DETAIL_LEVEL = 1;
-const int SOFT_SHADOW_RAYS = 0;
-const int OCCLUSION_RAYS = 0;
+const int DEFAULT_SCREEN_WIDTH = 64;
+const int DEFAULT_SCREEN_HEIGHT = 64;
+const int DEFAULT_DETAIL_LEVEL = 1;
+const int DEFAULT_SOFT_SHADOW_RAYS = 0;
+const int DEFAULT_OCCLUSION_RAYS = 0;
 #else
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -70,10 +70,17 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
         SDL_Log("No output tga file found");
         return EXIT_FAILURE;
     }
+    RayTracer::Config config;
+    if (!cmd.parse(&config.width, "width", 'w')) { config.width = DEFAULT_SCREEN_WIDTH; }
+    if (!cmd.parse(&config.height, "height", 'h')) { config.height = DEFAULT_SCREEN_HEIGHT; }
+    if (!cmd.parse(&config.detail, "detail", 'd')) { config.detail = DEFAULT_DETAIL_LEVEL; }
+    if (!cmd.parse(&config.occlusionRayCount, "occlusion")) { config.occlusionRayCount = DEFAULT_OCCLUSION_RAYS; }
+    if (!cmd.parse(&config.softshadowRayCount, "shadows")) { config.softshadowRayCount = DEFAULT_SOFT_SHADOW_RAYS; }
+    if (!cmd.parse(&config.threads, "threads", 'j')) { config.threads = 4; }
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    SDL_Window *window = SDL_CreateWindow("QuakeTrace", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    SDL_Window *window = SDL_CreateWindow("QuakeTrace", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, config.width, config.height, 0);
     if (window == NULL) {
         SDL_Log("Failed to create a window: %s\n", SDL_GetError());
         return EXIT_FAILURE;
@@ -96,16 +103,9 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
     Scene scene = BspLoader::createSceneFromBsp(mapData.data(), mapDataSize);
 #endif
     // Correct for aspect ratio
-    scene.camera.halfViewAngles.y *= SCREEN_HEIGHT / static_cast<float>(SCREEN_WIDTH);
+    scene.camera.halfViewAngles.y *= config.height / static_cast<float>(config.width);
 
     RayTracer engine(scene);
-    RayTracer::Config config;
-    config.width = SCREEN_WIDTH;
-    config.height = SCREEN_HEIGHT;
-    config.detail = DETAIL_LEVEL;
-    config.occlusionRayCount = OCCLUSION_RAYS;
-    config.softshadowRayCount = SOFT_SHADOW_RAYS;
-    config.threads = 4;
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;
