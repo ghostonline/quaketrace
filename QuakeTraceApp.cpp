@@ -88,13 +88,7 @@ void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
 
 int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
 {
-    char const * const testArgs[] = {
-        "-i",
-        "testmap.bsp",
-        "-o",
-        "test.tga",
-    };
-    CommandLine cmd(UTIL_ARRAY_SIZE(testArgs), testArgs);
+    CommandLine cmd(argc, argv);
     std::string mapName;
     std::string imageName;
     if (!cmd.parse(&mapName, "input", 'i'))
@@ -107,9 +101,6 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
         SDL_Log("No output tga file found");
         return EXIT_FAILURE;
     }
-    SDL_Log("Input: %s", mapName.c_str());
-    SDL_Log("Output: %s", imageName.c_str());
-    return EXIT_SUCCESS;
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -128,9 +119,12 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
     Scene scene;
     Scene::initDefault(&scene);
 #else
-    int mapDataSize = 0;
-    const void* mapData = AssetHelper::getRaw(AssetHelper::TESTMAP, &mapDataSize);
-    Scene scene = BspLoader::createSceneFromBsp(mapData, mapDataSize);
+    File mapFile = File::open(mapName.c_str());
+    ASSERT(mapFile.isValid());
+    size_t mapDataSize = mapFile.size();
+    std::vector<std::uint8_t> mapData(mapDataSize);
+    mapFile.read(mapData.data(), mapDataSize);
+    Scene scene = BspLoader::createSceneFromBsp(mapData.data(), mapDataSize);
 #endif
     // Correct for aspect ratio
     scene.camera.halfViewAngles.y *= SCREEN_HEIGHT / static_cast<float>(SCREEN_WIDTH);
@@ -179,7 +173,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
             updateScene = true;
 
             auto tga = targa::encode(canvas);
-            File f = File::openW("test.tga");
+            File f = File::openW(imageName.c_str());
             f.write(tga.data(), tga.size());
         }
         else
