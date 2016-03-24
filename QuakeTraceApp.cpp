@@ -105,7 +105,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
     // Correct for aspect ratio
     scene.camera.halfViewAngles.y *= config.height / static_cast<float>(config.width);
 
-    RayTracer engine(scene);
+    RayTracer engine(config);
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;
@@ -144,7 +144,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
         if (refreshCanvas)
         {
             uint32_t renderStart = SDL_GetTicks();
-            canvas = engine.trace(config);
+            canvas = engine.trace(scene);
             engine.resetBreakPoint();
 
             renderTime = SDL_GetTicks() - renderStart;

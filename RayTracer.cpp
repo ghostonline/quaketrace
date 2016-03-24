@@ -3,6 +3,7 @@
 #include "Util.hpp"
 #include "Ray.hpp"
 #include "Collision3D.hpp"
+#include "Scene.hpp"
 
 struct RayInput
 {
@@ -14,13 +15,13 @@ struct RayContext
 {
     int canvasWidth, canvasHeight;
     const RayTracer& engine;
-    const RayTracer::Config& config;
+    const Scene& scene;
     const std::vector<math::Vec2f>& sampleOffsets;
 
     const Color process(RayInput in) const;
 };
 
-const Image RayTracer::trace(const RayTracer::Config& config) const
+const Image RayTracer::trace(const Scene& scene) const
 {
     Image canvas(config.width, config.height, Image::FORMAT_ARGB);
 
@@ -42,7 +43,7 @@ const Image RayTracer::trace(const RayTracer::Config& config) const
     }
     const math::Vec2f fbSize(static_cast<float>(canvas.width), static_cast<float>(canvas.height));
 
-    RayContext context = {canvas.width, canvas.height, *this, config, sampleOffsets};
+    RayContext context = {canvas.width, canvas.height, *this, scene, sampleOffsets};
 
     uint8_t* pixels = canvas.pixels.data();
     std::vector<RayInput> input;
@@ -83,13 +84,13 @@ const Color RayContext::process(RayInput in) const
         const float sampleY = in.y + sampleOffsets[ii].y;
         const float normX = (sampleX / static_cast<float>(canvasWidth) - 0.5f) * 2.0f;
         const float normY = (sampleY / static_cast<float>(canvasHeight) - 0.5f) * -2.0f;
-        Color color = engine.renderPixel(config, normX, normY);
+        Color color = engine.renderPixel(scene, normX, normY);
         aggregate += color / static_cast<float>(sampleOffsets.size());
     }
     return aggregate;
 }
 
-const Color RayTracer::renderPixel(const Config& config, float x, float y) const
+const Color RayTracer::renderPixel(const Scene& scene, float x, float y) const
 {
     Ray pixelRay;
     {

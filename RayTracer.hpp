@@ -1,6 +1,7 @@
-#include "Scene.hpp"
 #include "Image.hpp"
 #include "Color.hpp"
+
+struct Scene;
 
 class RayTracer
 {
@@ -19,8 +20,8 @@ public:
         int threads;
     };
 
-    RayTracer(const Scene& scene)
-    : scene(scene)
+    RayTracer(const Config& config)
+    : config(config)
     , breakX(-1)
     , breakY(-1)
     {}
@@ -28,11 +29,11 @@ public:
     void setBreakPoint(int x, int y) { breakX = x; breakY = y; }
     void resetBreakPoint() { breakX = breakY = -1; }
     
-    const Image trace(const Config& config) const;
+    const Image trace(const Scene& scene) const;
 
 private:
-    const Color renderPixel(const Config& config, float x, float y) const;
+    const Color renderPixel(const Scene& scene, float x, float y) const;
 
-    const Scene scene;
+    Config config;
     int breakX, breakY;
 };
