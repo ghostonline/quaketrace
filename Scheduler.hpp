@@ -4,6 +4,7 @@
 #include <memory>
 #include <thread>
 #include <mutex>
+#include "Assert.hpp"
 
 class Task
 {

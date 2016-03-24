@@ -1,30 +1,18 @@
 #include "QuakeTraceApp.hpp"
 #include "SDL.h"
 #include "FrameBuffer.hpp"
-#include <memory>
 #include <cstdint>
 #include <vector>
-#include <cmath>
 #include <string>
-#include <algorithm>
-#include <cstdlib>
-#include "Math.hpp"
-#include "Texture.hpp"
 #include "Font.hpp"
-#include "Geometry.hpp"
-#include "AssetHelper.hpp"
 #include "GraphicTool.hpp"
-#include "Scene.hpp"
 #include "Assert.hpp"
-#include "Collision3D.hpp"
-#include "Ray.hpp"
 #include "Util.hpp"
 #include "BspLoader.hpp"
-#include "Scheduler.hpp"
-#include "Image.hpp"
 #include "Targa.hpp"
 #include "File.hpp"
 #include "CommandLine.hpp"
+#include "RayTracer.hpp"
 
 #if 1
 const int SCREEN_WIDTH = 64;
@@ -41,29 +29,10 @@ const int OCCLUSION_RAYS = 32;
 #endif
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
-const Color COLOR_BACKGROUND {0x22/255.0f, 0x22/255.0f, 0x22/255.0f};
-
-int QuakeTraceApp::breakX = -1;
-int QuakeTraceApp::breakY = -1;
 
 using namespace std;
 
 #define DEFAULT_SCENE 0
-
-struct RayInput
-{
-    int x, y, pixelIdx;
-    const bool breakDebugger;
-};
-
-struct RayContext
-{
-    int canvasWidth, canvasHeight;
-    const Scene& scene;
-    const std::vector<math::Vec2f>& sampleOffsets;
-
-    const Color process(RayInput in) const;
-};
 
 void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
 {
@@ -129,6 +98,15 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
     // Correct for aspect ratio
     scene.camera.halfViewAngles.y *= SCREEN_HEIGHT / static_cast<float>(SCREEN_WIDTH);
 
+    RayTracer engine(scene);
+    RayTracer::Config config;
+    config.width = SCREEN_WIDTH;
+    config.height = SCREEN_HEIGHT;
+    config.detail = DETAIL_LEVEL;
+    config.occlusionRayCount = OCCLUSION_RAYS;
+    config.softshadowRayCount = SOFT_SHADOW_RAYS;
+    config.threads = 4;
+
     bool finished = false;
     int mouseX = 0, mouseY = 0;
     bool refreshCanvas = true;
@@ -158,8 +136,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
 
             if (event.type == SDL_MOUSEBUTTONDOWN && event.button.clicks == 2)
             {
-                breakX = mouseX;
-                breakY = mouseY;
+                engine.setBreakPoint(mouseX, mouseY);
                 refreshCanvas = true;
             }
         }
@@ -167,7 +144,9 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
         if (refreshCanvas)
         {
             uint32_t renderStart = SDL_GetTicks();
-            renderScene(scene, DETAIL_LEVEL, &canvas);
+            canvas = engine.trace(config);
+            engine.resetBreakPoint();
+
             renderTime = SDL_GetTicks() - renderStart;
             refreshCanvas = false;
             updateScene = true;
@@ -228,142 +207,4 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
     SDL_Quit();
 
     return EXIT_SUCCESS;
-}
-
-void QuakeTraceApp::renderScene(const Scene& scene, const int detailLevel, Image* canvas)
-{
-    const float sampleWidth = 1.0f / detailLevel;
-    const float sampleHeight = 1.0f / detailLevel;
-    const float halfSampleWidth = sampleWidth / 2.0f;
-    const float halfSampleHeight = sampleHeight / 2.0f;
-    std::vector<math::Vec2f> sampleOffsets;
-    for (int dx = detailLevel - 1; dx >= 0; --dx)
-    {
-        for (int dy = detailLevel - 1; dy >= 0; --dy)
-        {
-            math::Vec2f offset = {
-                sampleWidth * dx + halfSampleWidth,
-                sampleHeight * dy + halfSampleHeight,
-            };
-            sampleOffsets.push_back(offset);
-        }
-    }
-    const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
-
-    RayContext context = {canvas->width, canvas->height, scene, sampleOffsets};
-
-    uint8_t* pixels = canvas->pixels.data();
-    std::vector<RayInput> input;
-    for (int x = canvas->width - 1; x >= 0; --x)
-    {
-        for (int y = canvas->height - 1; y >= 0; --y)
-        {
-            const int baseIdx = (x + y * canvas->width) * canvas->getPixelSize();
-            input.push_back({x, y, baseIdx, breakX == x && breakY == y});
-        }
-    }
-    breakX = breakY = -1;
-
-    static const int WORKER_COUNT = 4;
-    Scheduler scheduler(WORKER_COUNT);
-    auto output = scheduler.schedule<RayInput, Color, RayContext>(input, context);
-    for (int ii = util::lastIndex(output); ii >= 0; --ii)
-    {
-        const auto& color = output[ii];
-        const int pixelIdx = input[ii].pixelIdx;
-        uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[pixelIdx]);
-        *pixel = Color::asARGB(color);
-    }
-}
-
-const Color RayContext::process(RayInput in) const
-{
-    if (in.breakDebugger)
-    {
-        SDL_TriggerBreakpoint();
-    }
-
-    Color aggregate(0.0f);
-
-    for (int ii = util::lastIndex(sampleOffsets); ii >= 0; --ii)
-    {
-        const float sampleX = in.x + sampleOffsets[ii].x;
-        const float sampleY = in.y + sampleOffsets[ii].y;
-        const float normX = (sampleX / static_cast<float>(canvasWidth) - 0.5f) * 2.0f;
-        const float normY = (sampleY / static_cast<float>(canvasHeight) - 0.5f) * -2.0f;
-        Color color = QuakeTraceApp::renderPixel(scene, normX, normY);
-        aggregate += color / static_cast<float>(sampleOffsets.size());
-    }
-    return aggregate;
-}
-
-const Color QuakeTraceApp::renderPixel(const Scene& scene, float x, float y)
-{
-    Ray pixelRay;
-    {
-        const Scene::Camera& camera = scene.camera;
-
-        math::Vec3f dir = camera.direction;
-        dir += camera.right * (x * camera.halfViewAngles.x);
-        dir += camera.up * (y * camera.halfViewAngles.y);
-        math::normalize(&dir);
-
-        pixelRay.origin = camera.origin;
-        pixelRay.dir = dir;
-    }
-
-    collision3d::Hit infoSphere, infoPlane, infoTriangle, infoPolygon;
-    infoSphere.t = scene.camera.far;
-    int sphereHitIdx = collision3d::raycastSpheres(pixelRay, infoSphere.t, scene.spheres, &infoSphere);
-    infoPlane.t = infoSphere.t;
-    int planeHitIdx = collision3d::raycastPlanes(pixelRay, infoSphere.t, scene.planes, &infoPlane);
-    int triangleHitIdx = collision3d::raycastTriangles(pixelRay, infoPlane.t, scene.triangles, &infoTriangle);
-    int polygonHitIdx = collision3d::raycastConvexPolygons(pixelRay, infoPlane.t, scene.polygons, &infoPolygon);
-
-    Color color = COLOR_BACKGROUND;
-    collision3d::Hit hitInfo;
-    bool lighted = true;
-    if (triangleHitIdx > -1)
-    {
-        color = scene.triangles[triangleHitIdx].color;
-        hitInfo = infoTriangle;
-    }
-    else if (planeHitIdx > -1)
-    {
-        color = scene.planes[planeHitIdx].color;
-        hitInfo = infoPlane;
-    }
-    else if (sphereHitIdx > -1)
-    {
-        color = scene.spheres[sphereHitIdx].color;
-        hitInfo = infoSphere;
-    }
-    else if (polygonHitIdx > -1)
-    {
-        const Scene::Material& mat = scene.polygons[polygonHitIdx].material;
-        Scene::TexturePixel pixel;
-        if (mat.useSkyShader)
-        {
-            pixel = scene.getSkyPixel(mat, pixelRay, {SCREEN_WIDTH, SCREEN_HEIGHT});
-        }
-        else
-        {
-            pixel = scene.getTexturePixel(mat, infoPolygon.pos);
-        }
-        color = pixel.color;
-        lighted = !pixel.fullbright;
-        hitInfo = infoPolygon;
-    }
-
-    float lightLevel = 0.0f;
-    if (lighted)
-    {
-        lightLevel = scene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, scene, SOFT_SHADOW_RAYS, OCCLUSION_RAYS);
-    }
-    else
-    {
-        lightLevel = 1.0f;
-    }
-
-    return color * lightLevel;
 }

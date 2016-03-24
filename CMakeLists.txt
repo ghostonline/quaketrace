@@ -69,6 +69,8 @@ set (BASE_SOURCE_FILES
     Logger.hpp
     Lighting.hpp
     Lighting.cpp
+    RayTracer.hpp
+    RayTracer.cpp
 )
 
 set(UTIL_SOURCE_FILES
