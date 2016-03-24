@@ -2,6 +2,9 @@
 
 #include <cstdlib>
 
+namespace util
+{
+
 struct Random
 {
     static void setGlobalSeed(unsigned int seed)
@@ -29,3 +32,5 @@ struct Random
         return min + rand(max - min);
     }
 };
+
+}

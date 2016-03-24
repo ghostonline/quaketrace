@@ -2,7 +2,7 @@
 #include "StringTool.hpp"
 
 template<>
-bool CommandLine::parse(std::string* value, const std::string& flag) const
+bool util::CommandLine::parse(std::string* value, const std::string& flag) const
 {
     for (int ii = 0; ii < argc - 1; ++ii)
     {
@@ -17,7 +17,7 @@ bool CommandLine::parse(std::string* value, const std::string& flag) const
 }
 
 template<>
-bool CommandLine::parse(int* value, const std::string& flag) const
+bool util::CommandLine::parse(int* value, const std::string& flag) const
 {
     for (int ii = 0; ii < argc - 1; ++ii)
     {

@@ -54,7 +54,7 @@ const targa::Buffer targa::encode(const Image& image)
     ASSERT(id.size() < 0xFF);
     //ASSERT(image.format == FORMAT_ARGB); // Only ARGB is supported
 
-    BinaryWriter writer;
+    util::BinaryWriter writer;
     writer.write<std::uint8_t>(id.size()); // idlength
     writer.write<std::uint8_t>(0); // colourmaptype
     writer.write<std::uint8_t>(datatype); // datatypecode

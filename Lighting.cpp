@@ -92,7 +92,7 @@ const std::vector<math::Vec3f> Lighting::Point::getRandomLightPoints(const math:
     for (int ii = count - 1; ii >= 0; --ii)
     {
         auto point = origin;
-        float theta = Random::rand(0, math::PI2);
+        float theta = util::Random::rand(0, math::PI2);
         point += up * std::sin(theta) * radiusSqrt;
         point += right * std::cos(theta) * radiusSqrt;
         points[ii] = point;
@@ -105,8 +105,8 @@ const std::vector<math::Vec3f> Lighting::getPointsOnUnitSphere(int count) const
     std::vector<math::Vec3f> directions(count);
     for (int ii = count - 1; ii >= 0; --ii)
     {
-        float azimuth = Random::rand(0, math::PI2);
-        float zenith = std::acos(2.0f - Random::randFloat() - 1);
+        float azimuth = util::Random::rand(0, math::PI2);
+        float zenith = std::acos(2.0f - util::Random::randFloat() - 1);
         directions[ii].x = std::cos(azimuth) * std::sin(zenith);
         directions[ii].y = std::sin(azimuth) * std::sin(zenith);
         directions[ii].z = std::cos(zenith);

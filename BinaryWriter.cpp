@@ -1,6 +1,6 @@
 #include "BinaryWriter.hpp"
 
-int BinaryWriter::write(const std::uint8_t* data, std::size_t size)
+int util::BinaryWriter::write(const std::uint8_t* data, std::size_t size)
 {
     auto ptrIdx = stream.size();
     stream.resize(ptrIdx + size);

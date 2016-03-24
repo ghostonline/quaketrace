@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <string>
 
+namespace util
+{
+
 struct BinaryWriter
 {
     std::vector<std::uint8_t> stream;
@@ -13,8 +16,10 @@ struct BinaryWriter
     int write(const std::uint8_t* data, std::size_t size);
 };
 
+}
+
 template<>
-inline int BinaryWriter::write<std::string>(const std::string& data)
+inline int util::BinaryWriter::write<std::string>(const std::string& data)
 {
     return write(reinterpret_cast<const std::uint8_t*>(data.c_str()), data.size());
 }

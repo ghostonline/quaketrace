@@ -57,7 +57,7 @@ void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
 
 int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
 {
-    CommandLine cmd(argc, argv);
+    util::CommandLine cmd(argc, argv);
     std::string mapName;
     std::string imageName;
     if (!cmd.parse(&mapName, "input", 'i'))

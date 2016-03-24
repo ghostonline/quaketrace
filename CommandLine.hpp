@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+namespace util
+{
 
 class CommandLine
 {
@@ -40,4 +42,6 @@ inline bool CommandLine::parse(T* value, const std::string& flag, char abbreviat
         return parse(value, abbrString.c_str());
     }
     return true;
+}
+
 }
