@@ -52,7 +52,7 @@ const targa::Buffer targa::encode(const Image& image)
     static const ImageDescriptor descriptor;
 
     ASSERT(id.size() < 0xFF);
-    //ASSERT(image.format == FORMAT_ARGB); // Only ARGB is supported
+    ASSERT(image.format == Image::FORMAT_ARGB); // Only ARGB is supported
 
     util::BinaryWriter writer;
     writer.write<std::uint8_t>(id.size()); // idlength
