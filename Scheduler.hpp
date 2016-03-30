@@ -67,9 +67,9 @@ class Scheduler
     };
 
     std::vector<Worker> workers;
-    std::vector<TaskPtr> tasks;
 
-    void doWork();
+    void startWork(const std::vector<TaskPtr>& tasks);
+    bool isFinished() const;
 
 public:
     Scheduler(int numThreads);
@@ -85,10 +85,20 @@ const std::vector<Output> Scheduler::schedule(const std::vector<Input>& in, cons
     std::vector<Output> out(in.size());
     const auto taskCount = in.size();
     const auto batchCount = taskCount / workers.size();
+    std::vector<TaskPtr> tasks;
     for (int ii = 0; ii < taskCount; ii += batchCount)
     {
         tasks.emplace_back(new TaskImpl<Input, Output, Context>(in.data() + ii, out.data() + ii, batchCount, context));
     }
-    doWork();
+
+    startWork(tasks);
+
+    while (!isFinished())
+    {
+        std::this_thread::yield();
+    }
+
+    tasks.clear();
+
     return out;
 }

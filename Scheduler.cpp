@@ -64,29 +64,24 @@ Scheduler::~Scheduler()
     }
 }
 
-void Scheduler::doWork()
+void Scheduler::startWork(const std::vector<TaskPtr>& tasks)
 {
     for (int ii = util::lastIndex(workers); ii >= 0 ; --ii)
     {
         workers[ii].doTask(tasks[ii].get());
     }
+}
 
-    bool unfinished = true;
-    while (unfinished)
+bool Scheduler::isFinished() const
+{
+    for (int ii = util::lastIndex(workers); ii >= 0; --ii)
     {
-        unfinished = false;
-        for (int ii = util::lastIndex(workers); ii >= 0; --ii)
+        const Worker& worker = workers[ii];
+        if (!worker.isIdle())
         {
-            Worker& worker = workers[ii];
-            if (!worker.isIdle())
-            {
-                unfinished = true;
-                break;
-            }
+            return false;
         }
-
-        std::this_thread::yield();
     }
 
-    tasks.clear();
+    return true;
 }
