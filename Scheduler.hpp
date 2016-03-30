@@ -1,20 +1,10 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include <thread>
 #include <mutex>
 #include "Assert.hpp"
-
-class Task
-{
-public:
-    virtual ~Task() {}
-    virtual void processNext() = 0;
-    virtual bool finished() const = 0;
-};
-
-typedef std::unique_ptr<Task> TaskPtr;
+#include "Task.hpp"
 
 class Scheduler
 {

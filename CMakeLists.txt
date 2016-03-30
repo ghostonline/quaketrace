@@ -96,6 +96,7 @@ set(IMAGE_SOURCE_FILES
 set(THREADING_SOURCE_FILES
     Scheduler.cpp
     Scheduler.hpp
+    Task.hpp
 )
 
 set (MATH_SOURCE_FILES
