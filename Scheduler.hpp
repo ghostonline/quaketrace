@@ -8,10 +8,12 @@
 
 class Scheduler
 {
+    typedef std::lock_guard<std::mutex> ScopedLock;
+    
     class Worker
     {
         bool running;
-        Task* task;
+        TaskPtr task;
         std::thread thread;
         std::mutex stateLock;
 
@@ -23,7 +25,7 @@ class Scheduler
         void start();
         void stop();
 
-        void doTask(Task* task);
+        void take(TaskPtr&& task);
         bool isIdle() const { return task == nullptr; }
     };
 
@@ -57,9 +59,16 @@ class Scheduler
     };
 
     std::vector<Worker> workers;
+    std::vector<Worker*> idleWorkers;
+    std::vector<Worker*> activeWorkers;
+    std::vector<TaskPtr> tasks;
+    std::thread thread;
+    std::mutex taskLock;
+    bool active;
 
-    void startWork(const std::vector<TaskPtr>& tasks);
-    bool isFinished() const;
+    bool isFinished() const { return tasks.empty() && activeWorkers.empty(); }
+    static void doMonitorTasks(Scheduler* scheduler);
+    void monitorTasks();
 
 public:
     Scheduler(int numThreads);
@@ -75,20 +84,18 @@ const std::vector<Output> Scheduler::schedule(const std::vector<Input>& in, cons
     std::vector<Output> out(in.size());
     const auto taskCount = in.size();
     const auto batchCount = taskCount / workers.size();
-    std::vector<TaskPtr> tasks;
-    for (int ii = 0; ii < taskCount; ii += batchCount)
     {
-        tasks.emplace_back(new TaskImpl<Input, Output, Context>(in.data() + ii, out.data() + ii, batchCount, context));
+        ScopedLock lock(taskLock);
+        for (int ii = 0; ii < taskCount; ii += batchCount)
+        {
+            tasks.emplace_back(new TaskImpl<Input, Output, Context>(in.data() + ii, out.data() + ii, batchCount, context));
+        }
     }
-
-    startWork(tasks);
 
     while (!isFinished())
     {
         std::this_thread::yield();
     }
-
-    tasks.clear();
 
     return out;
 }

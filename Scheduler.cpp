@@ -2,8 +2,6 @@
 #include "Util.hpp"
 #include <chrono>
 
-typedef std::lock_guard<std::mutex> ScopedLock;
-
 void Scheduler::Worker::threadedRun(Worker* work) { work->run(); }
 
 void Scheduler::Worker::run()
@@ -41,47 +39,69 @@ void Scheduler::Worker::stop()
     thread.join();
 }
 
-void Scheduler::Worker::doTask(Task* task)
+void Scheduler::Worker::take(TaskPtr&& task)
 {
     ScopedLock lock(stateLock);
     ASSERT(!this->task);
-    this->task = task;
+    this->task = std::move(task);
 }
 
-Scheduler::Scheduler(int numThreads) : workers(numThreads)
+Scheduler::Scheduler(int numThreads) : workers(numThreads), active(true)
 {
     for (int ii = workers.size() - 1; ii >= 0; --ii)
     {
-        workers[ii].start();
+        auto& worker = workers[ii];
+        worker.start();
+        idleWorkers.push_back(&worker);
     }
+
+    thread = std::thread(doMonitorTasks, this);
 }
 
 Scheduler::~Scheduler()
 {
+    active = false;
+    if (thread.joinable()) { thread.join(); }
+
     for (int ii = workers.size() - 1; ii >= 0; --ii)
     {
         workers[ii].stop();
     }
 }
 
-void Scheduler::startWork(const std::vector<TaskPtr>& tasks)
+void Scheduler::doMonitorTasks(Scheduler* scheduler)
 {
-    for (int ii = util::lastIndex(workers); ii >= 0 ; --ii)
-    {
-        workers[ii].doTask(tasks[ii].get());
-    }
+    scheduler->monitorTasks();
 }
 
-bool Scheduler::isFinished() const
+void Scheduler::monitorTasks()
 {
-    for (int ii = util::lastIndex(workers); ii >= 0; --ii)
+    while(active)
     {
-        const Worker& worker = workers[ii];
-        if (!worker.isIdle())
+        std::this_thread::yield();
+        for (int ii = util::lastIndex(activeWorkers); ii >= 0; --ii)
         {
-            return false;
+            auto worker = activeWorkers[ii];
+            if (worker->isIdle())
+            {
+                std::swap(activeWorkers[ii], activeWorkers.back());
+                activeWorkers.pop_back();
+                idleWorkers.push_back(worker);
+            }
+        }
+
+        if (!tasks.empty() && !idleWorkers.empty())
+        {
+            ScopedLock lock(taskLock);
+            while (!tasks.empty() && !idleWorkers.empty())
+            {
+                auto worker = idleWorkers.back();
+                idleWorkers.pop_back();
+                activeWorkers.push_back(worker);
+                worker->take(std::move(tasks.back()));
+                ASSERT(tasks.back() == nullptr);
+                tasks.pop_back();
+            }
         }
     }
-
-    return true;
 }
