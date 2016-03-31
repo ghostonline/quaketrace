@@ -17,6 +17,7 @@ void Scheduler::Worker::run()
         {
             task->processNext();
             std::this_thread::yield();
+            remainingJobs = task->remaining();
         }
 
         task = nullptr;
@@ -44,9 +45,10 @@ void Scheduler::Worker::take(TaskPtr&& task)
     ScopedLock lock(stateLock);
     ASSERT(!this->task);
     this->task = std::move(task);
+    remainingJobs = this->task->remaining();
 }
 
-Scheduler::Scheduler(int numThreads) : workers(numThreads), active(true)
+Scheduler::Scheduler(int numThreads) : workers(numThreads), totalJobCount(0), active(true)
 {
     for (int ii = workers.size() - 1; ii >= 0; --ii)
     {
@@ -79,9 +81,11 @@ void Scheduler::monitorTasks()
     while(active)
     {
         std::this_thread::yield();
+        totalJobCount = 0;
         for (int ii = util::lastIndex(activeWorkers); ii >= 0; --ii)
         {
             auto worker = activeWorkers[ii];
+            totalJobCount += worker->getRemainingJobs();
             if (worker->isIdle())
             {
                 std::swap(activeWorkers[ii], activeWorkers.back());

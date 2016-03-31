@@ -13,6 +13,7 @@ class Scheduler
     class Worker
     {
         bool running;
+        int remainingJobs;
         TaskPtr task;
         std::thread thread;
         std::mutex stateLock;
@@ -21,12 +22,13 @@ class Scheduler
         void run();
 
     public:
-        Worker() : running(false), task(nullptr) {}
+        Worker() : running(false), remainingJobs(0), task(nullptr) {}
         void start();
         void stop();
 
         void take(TaskPtr&& task);
         bool isIdle() const { return task == nullptr; }
+        int getRemainingJobs() const { return remainingJobs; }
     };
 
     template<typename Input, typename Output, typename Context>
@@ -54,7 +56,8 @@ class Scheduler
             ++idx;
         }
 
-        virtual bool finished() const { return idx >= size; }
+        virtual bool finished() const { return remaining() <= 0; }
+        virtual size_t remaining() const { return size - idx; }
 
     };
 
@@ -64,6 +67,7 @@ class Scheduler
     std::vector<TaskPtr> tasks;
     std::thread thread;
     std::mutex taskLock;
+    int totalJobCount;
     bool active;
 
     bool isFinished() const { return tasks.empty() && activeWorkers.empty(); }
@@ -76,6 +80,8 @@ public:
 
     template<typename Input, typename Output, typename Context>
     const std::vector<Output> schedule(const std::vector<Input>& in, const Context& context);
+
+    int getTotalJobCount() const { return totalJobCount; }
 };
 
 template<typename Input, typename Output, typename Context>
