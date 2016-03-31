@@ -12,7 +12,7 @@
 #include "Targa.hpp"
 #include "File.hpp"
 #include "CommandLine.hpp"
-#include "RayTracer.hpp"
+#include "BackgroundTracer.hpp"
 
 const int DEFAULT_SCREEN_WIDTH = 640;
 const int DEFAULT_SCREEN_HEIGHT = 480;
@@ -80,7 +80,6 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
     setIconFromAsset(window, AssetHelper::ICON);
 
     auto fb = FrameBuffer::createFromWindow(window);
-    Image canvas(fb->getWidth(), fb->getHeight(), Image::FORMAT_ARGB);
 
     auto font = Font::create();
 #if DEFAULT_SCENE
@@ -97,7 +96,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
     // Correct for aspect ratio
     scene.camera.halfViewAngles.y *= config.height / static_cast<float>(config.width);
 
-    RayTracer engine(config);
+    BackgroundTracer engine(config);
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;
@@ -128,24 +127,25 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
 
             if (event.type == SDL_MOUSEBUTTONDOWN && event.button.clicks == 2)
             {
-                engine.setBreakPoint(mouseX, mouseY);
-                refreshCanvas = true;
+                //engine.setBreakPoint(mouseX, mouseY);
+                //refreshCanvas = true;
             }
         }
 
         if (refreshCanvas)
         {
-            uint32_t renderStart = SDL_GetTicks();
-            canvas = engine.trace(scene);
-            engine.resetBreakPoint();
+            //uint32_t renderStart = SDL_GetTicks();
+            engine.startTrace(scene);
 
-            renderTime = SDL_GetTicks() - renderStart;
+            //renderTime = SDL_GetTicks() - renderStart;
             refreshCanvas = false;
             updateScene = true;
 
+            /*
             auto tga = targa::encode(canvas);
             File f = File::openW(imageName.c_str());
             f.write(tga.data(), tga.size());
+             */
         }
         else
         {
@@ -155,6 +155,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
         if (updateMouse || updateScene)
         {
             {
+                const auto& canvas = engine.getCanvas();
                 uint8_t* fbPixels = static_cast<uint8_t*>(fb->get());
                 const int rowLength = canvas.width * canvas.getPixelSize();
 
@@ -168,7 +169,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
                     for (int ii = 0; ii < canvas.height; ++ii)
                     {
                         uint8_t* fbRow = fbPixels + (ii * fb->getPitch());
-                        uint8_t* canvasRow = canvas.pixels.data() + (ii * canvas.width);
+                        const uint8_t* canvasRow = canvas.pixels.data() + (ii * canvas.width);
                         memcpy(fbRow, canvasRow, rowLength);
                     }
                 }

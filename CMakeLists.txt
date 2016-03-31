@@ -71,6 +71,8 @@ set (BASE_SOURCE_FILES
     Lighting.cpp
     RayTracer.hpp
     RayTracer.cpp
+    BackgroundTracer.hpp
+    BackgroundTracer.cpp
 )
 
 set(UTIL_SOURCE_FILES
