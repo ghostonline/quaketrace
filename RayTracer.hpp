@@ -30,6 +30,7 @@ public:
     void resetBreakPoint() { breakX = breakY = -1; }
     
     const Image trace(const Scene& scene) const;
+    void trace(const Scene& scene, Image* target) const;
 
 private:
     const Color renderPixel(const Scene& scene, float x, float y) const;

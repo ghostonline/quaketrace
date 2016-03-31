@@ -24,7 +24,12 @@ struct RayContext
 const Image RayTracer::trace(const Scene& scene) const
 {
     Image canvas(config.width, config.height, Image::FORMAT_ARGB);
+    trace(scene, &canvas);
+    return canvas;
+}
 
+void RayTracer::trace(const Scene& scene, Image* canvas) const
+{
     const float sampleWidth = 1.0f / config.detail;
     const float sampleHeight = 1.0f / config.detail;
     const float halfSampleWidth = sampleWidth / 2.0f;
@@ -41,17 +46,17 @@ const Image RayTracer::trace(const Scene& scene) const
             sampleOffsets.push_back(offset);
         }
     }
-    const math::Vec2f fbSize(static_cast<float>(canvas.width), static_cast<float>(canvas.height));
+    const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
 
-    RayContext context = {canvas.width, canvas.height, *this, scene, sampleOffsets};
+    RayContext context = {canvas->width, canvas->height, *this, scene, sampleOffsets};
 
-    uint8_t* pixels = canvas.pixels.data();
+    uint8_t* pixels = canvas->pixels.data();
     std::vector<RayInput> input;
-    for (int x = canvas.width - 1; x >= 0; --x)
+    for (int x = canvas->width - 1; x >= 0; --x)
     {
-        for (int y = canvas.height - 1; y >= 0; --y)
+        for (int y = canvas->height - 1; y >= 0; --y)
         {
-            const int baseIdx = (x + y * canvas.width) * canvas.getPixelSize();
+            const int baseIdx = (x + y * canvas->width) * canvas->getPixelSize();
             input.push_back({x, y, baseIdx, breakX == x && breakY == y});
         }
     }
@@ -65,8 +70,6 @@ const Image RayTracer::trace(const Scene& scene) const
         uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[pixelIdx]);
         *pixel = Color::asARGB(color);
     }
-
-    return canvas;
 }
 
 const Color RayContext::process(RayInput in) const
