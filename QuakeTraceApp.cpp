@@ -139,7 +139,6 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
 
             //renderTime = SDL_GetTicks() - renderStart;
             refreshCanvas = false;
-            updateScene = true;
 
             /*
             auto tga = targa::encode(canvas);
@@ -152,6 +151,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
             SDL_Delay(250);
         }
 
+        updateScene = engine.isTracing();
         if (updateMouse || updateScene)
         {
             {
@@ -173,7 +173,6 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
                         memcpy(fbRow, canvasRow, rowLength);
                     }
                 }
-                updateScene = false;
             }
 
             // Display rendertime
@@ -191,7 +190,6 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
                 updateMouse = false;
             }
         }
-
 
         fb->flip();
     }

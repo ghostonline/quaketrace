@@ -13,6 +13,7 @@ public:
     void startTrace(const Scene& scene);
     float getProgress() { return 0; }
     const Image& getCanvas() const { return canvas; }
+    bool isTracing() const { return running; }
 
 private:
     static void threadRunner(BackgroundTracer* self) { self->traceAsync(); }
