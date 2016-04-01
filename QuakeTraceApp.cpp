@@ -143,7 +143,7 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
         }
         else
         {
-            SDL_Delay(250);
+            SDL_Delay(updateScene ? 500 : 250);
         }
 
         wasTracing = updateScene;
