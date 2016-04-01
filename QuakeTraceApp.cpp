@@ -103,7 +103,9 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
     bool refreshCanvas = true;
     bool updateMouse = true;
     bool updateScene = false;
+    bool wasTracing = false;
     uint32_t renderTime = 0;
+    uint32_t renderStart = 0;
     while (!finished)
     {
         // Process all events
@@ -134,25 +136,28 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
 
         if (refreshCanvas)
         {
-            //uint32_t renderStart = SDL_GetTicks();
+            renderStart = SDL_GetTicks();
             engine.startTrace(scene);
 
-            //renderTime = SDL_GetTicks() - renderStart;
             refreshCanvas = false;
-
-            /*
-            auto tga = targa::encode(canvas);
-            File f = File::openW(imageName.c_str());
-            f.write(tga.data(), tga.size());
-             */
         }
         else
         {
             SDL_Delay(250);
         }
 
+        wasTracing = updateScene;
         updateScene = engine.isTracing();
-        if (updateMouse || updateScene)
+
+        if (!engine.isTracing() && wasTracing)
+        {
+            renderTime = SDL_GetTicks() - renderStart;
+            auto tga = targa::encode(engine.getCanvas());
+            File f = File::openW(imageName.c_str());
+            f.write(tga.data(), tga.size());
+        }
+
+        if (updateMouse || updateScene || wasTracing)
         {
             {
                 const auto& canvas = engine.getCanvas();
@@ -175,28 +180,27 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
                 }
             }
 
-            // Display rendertime
-            {
-                char renderTimeStr[50];
-                sprintf(renderTimeStr, "%d ms", renderTime);
-                font->blitString(fb, renderTimeStr, 0, 0);
-            }
 
             // Display mouse x, y
             {
                 char renderMouseStr[50];
                 sprintf(renderMouseStr, "%d, %d", mouseX, mouseY);
-                font->blitString(fb, renderMouseStr, 0, 10);
+                font->blitString(fb, renderMouseStr, 0, 0);
                 updateMouse = false;
             }
 
             // Display progress
+            char renderProgressStr[50];
+            if (engine.isTracing())
             {
                 int percentage = engine.getProgress() * 100;
-                char renderProgressStr[50];
                 sprintf(renderProgressStr, "%d%%", percentage);
-                font->blitString(fb, renderProgressStr, 0, 20);
             }
+            else
+            {
+                sprintf(renderProgressStr, "%d ms", renderTime);
+            }
+            font->blitString(fb, renderProgressStr, 0, 10);
         }
 
         fb->flip();
