@@ -13,12 +13,12 @@ struct RayInput
 
 struct RayContext
 {
-    int canvasWidth, canvasHeight;
+    Image* canvas;
     const RayTracer& engine;
     const Scene& scene;
     const std::vector<math::Vec2f>& sampleOffsets;
 
-    const Color process(RayInput in) const;
+    void process(RayInput in) const;
 };
 
 const Image RayTracer::trace(const Scene& scene) const
@@ -48,9 +48,8 @@ void RayTracer::trace(const Scene& scene, Image* canvas) const
     }
     const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
 
-    RayContext context = {canvas->width, canvas->height, *this, scene, sampleOffsets};
+    RayContext context = {canvas, *this, scene, sampleOffsets};
 
-    uint8_t* pixels = canvas->pixels.data();
     std::vector<RayInput> input;
     for (int x = canvas->width - 1; x >= 0; --x)
     {
@@ -62,17 +61,10 @@ void RayTracer::trace(const Scene& scene, Image* canvas) const
     }
 
     Scheduler scheduler(config.threads);
-    auto output = scheduler.schedule<RayInput, Color, RayContext>(input, context);
-    for (int ii = util::lastIndex(output); ii >= 0; --ii)
-    {
-        const auto& color = output[ii];
-        const int pixelIdx = input[ii].pixelIdx;
-        uint32_t* pixel = reinterpret_cast<uint32_t*>(&pixels[pixelIdx]);
-        *pixel = Color::asARGB(color);
-    }
+    scheduler.schedule<RayInput, RayContext>(input, context);
 }
 
-const Color RayContext::process(RayInput in) const
+void RayContext::process(RayInput in) const
 {
     if (in.breakDebugger)
     {
@@ -85,12 +77,14 @@ const Color RayContext::process(RayInput in) const
     {
         const float sampleX = in.x + sampleOffsets[ii].x;
         const float sampleY = in.y + sampleOffsets[ii].y;
-        const float normX = (sampleX / static_cast<float>(canvasWidth) - 0.5f) * 2.0f;
-        const float normY = (sampleY / static_cast<float>(canvasHeight) - 0.5f) * -2.0f;
+        const float normX = (sampleX / static_cast<float>(canvas->width) - 0.5f) * 2.0f;
+        const float normY = (sampleY / static_cast<float>(canvas->height) - 0.5f) * -2.0f;
         Color color = engine.renderPixel(scene, normX, normY);
         aggregate += color / static_cast<float>(sampleOffsets.size());
     }
-    return aggregate;
+
+    uint32_t* pixel = reinterpret_cast<uint32_t*>(canvas->pixels.data() + in.pixelIdx);
+    *pixel = Color::asARGB(aggregate);
 }
 
 const Color RayTracer::renderPixel(const Scene& scene, float x, float y) const

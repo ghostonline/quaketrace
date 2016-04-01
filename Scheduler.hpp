@@ -31,20 +31,18 @@ class Scheduler
         int getRemainingJobs() const { return remainingJobs; }
     };
 
-    template<typename Input, typename Output, typename Context>
+    template<typename Input, typename Context>
     class TaskImpl : public Task
     {
         size_t idx;
         const Input* input;
-        Output* output;
         size_t size;
         const Context& context;
 
     public:
-        TaskImpl(const Input* input, Output* output, size_t size, const Context& context)
+        TaskImpl(const Input* input, size_t size, const Context& context)
         : idx(0)
         , input(input)
-        , output(output)
         , size(size)
         , context(context)
         {}
@@ -52,13 +50,13 @@ class Scheduler
         virtual void processNext()
         {
             ASSERT(!finished());
-            output[idx] = context.process(input[idx]);
+            context.process(input[idx]);
             ++idx;
         }
 
         virtual bool finished() const { return remaining() <= 0; }
         virtual size_t remaining() const { return size - idx; }
-
+        
     };
 
     std::vector<Worker> workers;
@@ -78,23 +76,22 @@ public:
     Scheduler(int numThreads);
     ~Scheduler();
 
-    template<typename Input, typename Output, typename Context>
-    const std::vector<Output> schedule(const std::vector<Input>& in, const Context& context);
+    template<typename Input, typename Context>
+    void schedule(const std::vector<Input>& in, const Context& context);
 
     int getTotalJobCount() const { return totalJobCount; }
 };
 
-template<typename Input, typename Output, typename Context>
-const std::vector<Output> Scheduler::schedule(const std::vector<Input>& in, const Context& context)
+template<typename Input, typename Context>
+void Scheduler::schedule(const std::vector<Input>& in, const Context& context)
 {
-    std::vector<Output> out(in.size());
     const auto taskCount = in.size();
     const auto batchCount = taskCount / workers.size();
     {
         ScopedLock lock(taskLock);
         for (int ii = 0; ii < taskCount; ii += batchCount)
         {
-            tasks.emplace_back(new TaskImpl<Input, Output, Context>(in.data() + ii, out.data() + ii, batchCount, context));
+            tasks.emplace_back(new TaskImpl<Input, Context>(in.data() + ii, batchCount, context));
         }
     }
 
@@ -102,6 +99,4 @@ const std::vector<Output> Scheduler::schedule(const std::vector<Input>& in, cons
     {
         std::this_thread::yield();
     }
-
-    return out;
 }
