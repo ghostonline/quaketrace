@@ -181,14 +181,6 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
             }
 
 
-            // Display mouse x, y
-            {
-                char renderMouseStr[50];
-                sprintf(renderMouseStr, "%d, %d", mouseX, mouseY);
-                font->blitString(fb, renderMouseStr, 0, 0);
-                updateMouse = false;
-            }
-
             // Display progress
             char renderProgressStr[50];
             if (engine.isTracing())
@@ -200,7 +192,17 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
             {
                 sprintf(renderProgressStr, "%d ms", renderTime);
             }
-            font->blitString(fb, renderProgressStr, 0, 10);
+            font->blitString(fb, renderProgressStr, 0, 0);
+
+            // Display mouse x, y
+            if (!engine.isTracing())
+            {
+                char renderMouseStr[50];
+                sprintf(renderMouseStr, "%d, %d", mouseX, mouseY);
+                font->blitString(fb, renderMouseStr, 0, 10);
+                updateMouse = false;
+            }
+
         }
 
         fb->flip();
