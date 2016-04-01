@@ -1,6 +1,5 @@
 #include "Scheduler.hpp"
 #include "Util.hpp"
-#include <chrono>
 
 void Scheduler::Worker::threadedRun(Worker* work) { work->run(); }
 
@@ -44,7 +43,7 @@ void Scheduler::Worker::take(TaskPtr&& task)
 {
     ScopedLock lock(stateLock);
     ASSERT(!this->task);
-    this->task = std::move(task);
+    this->task.swap(task);
     remainingJobs = this->task->remaining();
 }
 
