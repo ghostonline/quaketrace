@@ -21,15 +21,16 @@ struct RayContext
     void process(RayInput in) const;
 };
 
-const Image RayTracer::trace(const Scene& scene) const
+const Image RayTracer::trace(const Scene& scene)
 {
     Image canvas(config.width, config.height, Image::FORMAT_ARGB);
     trace(scene, &canvas);
     return canvas;
 }
 
-void RayTracer::trace(const Scene& scene, Image* canvas) const
+void RayTracer::trace(const Scene& scene, Image* canvas)
 {
+    progress = 0.0f;
     const float sampleWidth = 1.0f / config.detail;
     const float sampleHeight = 1.0f / config.detail;
     const float halfSampleWidth = sampleWidth / 2.0f;
@@ -61,7 +62,15 @@ void RayTracer::trace(const Scene& scene, Image* canvas) const
     }
 
     Scheduler scheduler(config.threads);
-    scheduler.schedule<RayInput, RayContext>(input, context);
+    scheduler.scheduleAsync<RayInput, RayContext>(input, context);
+
+    while (!scheduler.isFinished())
+    {
+        progress = 1.0f - scheduler.getTotalJobCount() / static_cast<float>(input.size());
+        std::this_thread::yield();
+    }
+
+    progress = 1.0f;
 }
 
 void RayContext::process(RayInput in) const

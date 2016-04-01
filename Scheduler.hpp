@@ -68,7 +68,6 @@ class Scheduler
     int totalJobCount;
     bool active;
 
-    bool isFinished() const { return tasks.empty() && activeWorkers.empty(); }
     static void doMonitorTasks(Scheduler* scheduler);
     void monitorTasks();
 
@@ -79,11 +78,27 @@ public:
     template<typename Input, typename Context>
     void schedule(const std::vector<Input>& in, const Context& context);
 
+    template<typename Input, typename Context>
+    void scheduleAsync(const std::vector<Input>& in, const Context& context);
+
     int getTotalJobCount() const { return totalJobCount; }
+    bool isFinished() const { return tasks.empty() && activeWorkers.empty(); }
 };
 
 template<typename Input, typename Context>
 void Scheduler::schedule(const std::vector<Input>& in, const Context& context)
+{
+    scheduleAsync<Input, Context>(in, context);
+
+    while (!isFinished())
+    {
+        std::this_thread::yield();
+    }
+}
+
+
+template<typename Input, typename Context>
+void Scheduler::scheduleAsync(const std::vector<Input>& in, const Context& context)
 {
     const auto taskCount = in.size();
     const auto batchCount = taskCount / workers.size();
@@ -93,10 +108,5 @@ void Scheduler::schedule(const std::vector<Input>& in, const Context& context)
         {
             tasks.emplace_back(new TaskImpl<Input, Context>(in.data() + ii, batchCount, context));
         }
-    }
-
-    while (!isFinished())
-    {
-        std::this_thread::yield();
     }
 }

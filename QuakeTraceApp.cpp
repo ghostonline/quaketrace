@@ -189,6 +189,14 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
                 font->blitString(fb, renderMouseStr, 0, 10);
                 updateMouse = false;
             }
+
+            // Display progress
+            {
+                int percentage = engine.getProgress() * 100;
+                char renderProgressStr[50];
+                sprintf(renderProgressStr, "%d%%", percentage);
+                font->blitString(fb, renderProgressStr, 0, 20);
+            }
         }
 
         fb->flip();

@@ -11,7 +11,7 @@ public:
     ~BackgroundTracer();
 
     void startTrace(const Scene& scene);
-    float getProgress() { return 0; }
+    float getProgress() { return engine.getProgress(); }
     const Image& getCanvas() const { return canvas; }
     bool isTracing() const { return running; }
 

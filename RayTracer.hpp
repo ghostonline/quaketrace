@@ -24,17 +24,20 @@ public:
     : config(config)
     , breakX(-1)
     , breakY(-1)
+    , progress(0.0f)
     {}
 
     void setBreakPoint(int x, int y) { breakX = x; breakY = y; }
     void resetBreakPoint() { breakX = breakY = -1; }
-    
-    const Image trace(const Scene& scene) const;
-    void trace(const Scene& scene, Image* target) const;
+
+    float getProgress() const { return progress; }
+    const Image trace(const Scene& scene);
+    void trace(const Scene& scene, Image* target);
 
 private:
     const Color renderPixel(const Scene& scene, float x, float y) const;
 
     Config config;
     int breakX, breakY;
+    float progress;
 };
