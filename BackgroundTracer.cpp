@@ -22,6 +22,7 @@ void BackgroundTracer::startTrace(const Scene& scene)
 
     if (!running)
     {
+        if (thread.joinable()) { thread.join(); }
         running = true;
         thread = std::thread(threadRunner, this);
     }

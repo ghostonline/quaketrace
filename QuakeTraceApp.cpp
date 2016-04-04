@@ -127,10 +127,10 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
                 updateMouse = true;
             }
 
-            if (event.type == SDL_MOUSEBUTTONDOWN && event.button.clicks == 2)
+            if (event.type == SDL_MOUSEBUTTONDOWN && event.button.clicks == 2 && !updateScene)
             {
-                //engine.setBreakPoint(mouseX, mouseY);
-                //refreshCanvas = true;
+                engine.setBreakPoint(mouseX, mouseY);
+                refreshCanvas = true;
             }
         }
 

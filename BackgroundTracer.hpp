@@ -14,6 +14,8 @@ public:
     float getProgress() { return engine.getProgress(); }
     const Image& getCanvas() const { return canvas; }
     bool isTracing() const { return running; }
+    void setBreakPoint(int x, int y) { engine.setBreakPoint(x, y); }
+    void resetBreakPoint() { engine.resetBreakPoint(); }
 
 private:
     static void threadRunner(BackgroundTracer* self) { self->traceAsync(); }
