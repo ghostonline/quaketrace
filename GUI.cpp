@@ -11,14 +11,8 @@
 #include "BspLoader.hpp"
 #include "Targa.hpp"
 #include "File.hpp"
-#include "CommandLine.hpp"
 #include "BackgroundTracer.hpp"
-
-const int DEFAULT_SCREEN_WIDTH = 640;
-const int DEFAULT_SCREEN_HEIGHT = 480;
-const int DEFAULT_DETAIL_LEVEL = 1;
-const int DEFAULT_SOFT_SHADOW_RAYS = 10;
-const int DEFAULT_OCCLUSION_RAYS = 32;
+#include "AppConfig.hpp"
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
 
@@ -49,26 +43,15 @@ void GUI::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
 
 int GUI::runUntilFinished(int argc, char const * const * const argv)
 {
-    util::CommandLine cmd(argc, argv);
-    std::string mapName;
-    std::string imageName;
-    if (!cmd.parse(&mapName, "input", 'i'))
+    AppConfig config;
     {
-        SDL_Log("No input map file found");
-        return EXIT_FAILURE;
+        auto parseResult = config.parse(argc, argv);
+        if (parseResult.success)
+        {
+            SDL_Log("Parse failed: %s", parseResult.error.c_str());
+            return EXIT_FAILURE;
+        }
     }
-    if (!cmd.parse(&imageName, "output", 'o'))
-    {
-        SDL_Log("No output tga file found");
-        return EXIT_FAILURE;
-    }
-    RayTracer::Config config;
-    if (!cmd.parse(&config.width, "width", 'w')) { config.width = DEFAULT_SCREEN_WIDTH; }
-    if (!cmd.parse(&config.height, "height", 'h')) { config.height = DEFAULT_SCREEN_HEIGHT; }
-    if (!cmd.parse(&config.detail, "detail", 'd')) { config.detail = DEFAULT_DETAIL_LEVEL; }
-    if (!cmd.parse(&config.occlusionRayCount, "occlusion")) { config.occlusionRayCount = DEFAULT_OCCLUSION_RAYS; }
-    if (!cmd.parse(&config.softshadowRayCount, "shadows")) { config.softshadowRayCount = DEFAULT_SOFT_SHADOW_RAYS; }
-    if (!cmd.parse(&config.threads, "threads", 'j')) { config.threads = 4; }
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -96,7 +79,14 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
     // Correct for aspect ratio
     scene.camera.halfViewAngles.y *= config.height / static_cast<float>(config.width);
 
-    BackgroundTracer engine(config);
+    RayTracer::Config traceConfig;
+    traceConfig.detail = config.detail;
+    traceConfig.occlusionRayCount = config.occlusionRayCount;
+    traceConfig.softshadowRayCount = config.softshadowRayCount;
+    traceConfig.threads = config.threads;
+    traceConfig.width = config.width;
+    traceConfig.height = config.height;
+    BackgroundTracer engine(traceConfig);
 
     bool finished = false;
     int mouseX = 0, mouseY = 0;

@@ -110,6 +110,8 @@ set (MATH_SOURCE_FILES
 set (FRONTEND_SOURCE_FILES
     GUI.hpp
     GUI.cpp
+    AppConfig.hpp
+    AppConfig.cpp
 )
 
 source_group("Source" FILES ${BASE_SOURCE_FILES})
