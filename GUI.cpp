@@ -69,8 +69,12 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
     Scene scene;
     Scene::initDefault(&scene);
 #else
-    File mapFile = File::open(mapName.c_str());
-    ASSERT(mapFile.isValid());
+    File mapFile = File::open(config.mapFile.c_str());
+    if (!mapFile.isValid())
+    {
+        SDL_Log("Could not open map file: %s", config.mapFile.c_str());
+        return EXIT_FAILURE;
+    }
     size_t mapDataSize = mapFile.size();
     std::vector<std::uint8_t> mapData(mapDataSize);
     mapFile.read(mapData.data(), mapDataSize);
@@ -143,7 +147,12 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
         {
             renderTime = SDL_GetTicks() - renderStart;
             auto tga = targa::encode(engine.getCanvas());
-            File f = File::openW(imageName.c_str());
+            File f = File::openW(config.imageFile.c_str());
+            if (!f.isValid())
+            {
+                SDL_Log("Could not write to file: %s", config.imageFile.c_str());
+                return EXIT_FAILURE;
+            }
             f.write(tga.data(), tga.size());
         }
 
