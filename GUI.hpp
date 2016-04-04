@@ -4,7 +4,7 @@
 
 struct SDL_Window;
 
-class QuakeTraceApp
+class GUI
 {
 public:
     static int runUntilFinished(int argc, char const * const * const argv);

@@ -42,8 +42,6 @@ set(ASSETS
 # Generate source files
 set (BASE_SOURCE_FILES
 	main.cpp
-	QuakeTraceApp.cpp
-	QuakeTraceApp.hpp
 	FrameBuffer.cpp
 	FrameBuffer.hpp
 	Texture.cpp
@@ -111,11 +109,18 @@ set (MATH_SOURCE_FILES
 	Mat33.hpp
 	Mat44.hpp
 )
+
+set (FRONTEND_SOURCE_FILES
+    GUI.hpp
+    GUI.cpp
+)
+
 source_group("Source" FILES ${BASE_SOURCE_FILES})
 source_group("Source\\Math" FILES ${MATH_SOURCE_FILES})
 source_group("Source\\Util" FILES ${UTIL_SOURCE_FILES})
 source_group("Source\\Threading" FILES ${THREADING_SOURCE_FILES})
 source_group("Source\\Image" FILES ${IMAGE_SOURCE_FILES})
+source_group("Source\\Frontend" FILES ${FRONTEND_SOURCE_FILES})
 
 set (APP_SOURCE_FILES
 	${BASE_SOURCE_FILES}
@@ -123,6 +128,7 @@ set (APP_SOURCE_FILES
     ${UTIL_SOURCE_FILES}
     ${THREADING_SOURCE_FILES}
     ${IMAGE_SOURCE_FILES}
+    ${FRONTEND_SOURCE_FILES}
 )
 
 foreach(f IN ITEMS ${APP_SOURCE_FILES})

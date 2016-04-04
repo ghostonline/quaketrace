@@ -1,4 +1,4 @@
-#include "QuakeTraceApp.hpp"
+#include "GUI.hpp"
 #include "SDL.h"
 #include "FrameBuffer.hpp"
 #include <cstdint>
@@ -26,7 +26,7 @@ using namespace std;
 
 #define DEFAULT_SCENE 0
 
-void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
+void GUI::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
 {
     auto iconSrc = AssetHelper::loadSurface(id);
     auto icon = SDL_ConvertSurfaceFormat(iconSrc, SDL_PIXELFORMAT_ARGB8888, 0);
@@ -47,7 +47,7 @@ void QuakeTraceApp::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
     SDL_FreeSurface(icon);
 }
 
-int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
+int GUI::runUntilFinished(int argc, char const * const * const argv)
 {
     util::CommandLine cmd(argc, argv);
     std::string mapName;
@@ -113,8 +113,8 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
         while (SDL_PollEvent(&event))
         {
             const bool quitEvent =
-                (event.type == SDL_QUIT) || // Window close or ALT+F4
-                (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE); // Esc KEY
+            (event.type == SDL_QUIT) || // Window close or ALT+F4
+            (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE); // Esc KEY
             if (quitEvent)
             {
                 finished = true;
@@ -202,14 +202,14 @@ int QuakeTraceApp::runUntilFinished(int argc, char const * const * const argv)
                 font->blitString(fb, renderMouseStr, 0, 10);
                 updateMouse = false;
             }
-
+            
         }
-
+        
         fb->flip();
     }
-
+    
     SDL_DestroyWindow(window);
     SDL_Quit();
-
+    
     return EXIT_SUCCESS;
 }
