@@ -21,6 +21,29 @@ struct RayContext
     void process(RayInput in) const;
 };
 
+void RayContext::process(RayInput in) const
+{
+    if (in.breakDebugger)
+    {
+        SDL_TriggerBreakpoint();
+    }
+
+    Color aggregate(0.0f);
+
+    for (int ii = util::lastIndex(sampleOffsets); ii >= 0; --ii)
+    {
+        const float sampleX = in.x + sampleOffsets[ii].x;
+        const float sampleY = in.y + sampleOffsets[ii].y;
+        const float normX = (sampleX / static_cast<float>(canvas->width) - 0.5f) * 2.0f;
+        const float normY = (sampleY / static_cast<float>(canvas->height) - 0.5f) * -2.0f;
+        Color color = engine.renderPixel(scene, normX, normY);
+        aggregate += color / static_cast<float>(sampleOffsets.size());
+    }
+
+    uint32_t* pixel = reinterpret_cast<uint32_t*>(canvas->pixels.data() + in.pixelIdx);
+    *pixel = Color::asARGB(aggregate);
+}
+
 const Image RayTracer::trace(const Scene& scene)
 {
     Image canvas(config.width, config.height, Image::FORMAT_ARGB);
@@ -71,29 +94,6 @@ void RayTracer::trace(const Scene& scene, Image* canvas)
     }
 
     progress = 1.0f;
-}
-
-void RayContext::process(RayInput in) const
-{
-    if (in.breakDebugger)
-    {
-        SDL_TriggerBreakpoint();
-    }
-
-    Color aggregate(0.0f);
-
-    for (int ii = util::lastIndex(sampleOffsets); ii >= 0; --ii)
-    {
-        const float sampleX = in.x + sampleOffsets[ii].x;
-        const float sampleY = in.y + sampleOffsets[ii].y;
-        const float normX = (sampleX / static_cast<float>(canvas->width) - 0.5f) * 2.0f;
-        const float normY = (sampleY / static_cast<float>(canvas->height) - 0.5f) * -2.0f;
-        Color color = engine.renderPixel(scene, normX, normY);
-        aggregate += color / static_cast<float>(sampleOffsets.size());
-    }
-
-    uint32_t* pixel = reinterpret_cast<uint32_t*>(canvas->pixels.data() + in.pixelIdx);
-    *pixel = Color::asARGB(aggregate);
 }
 
 const Color RayTracer::renderPixel(const Scene& scene, float x, float y) const
