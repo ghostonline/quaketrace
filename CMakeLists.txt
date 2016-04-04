@@ -34,9 +34,6 @@ set(ASSETS
 	assets/palette.lmp
 	assets/font.bmp
 	assets/icon.bmp
-	assets/testmap.bsp
-	assets/testmap2.bsp
-	assets/e1m1.bsp
 )
 
 # Generate source files
