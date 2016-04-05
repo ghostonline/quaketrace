@@ -89,14 +89,14 @@ namespace math
             };
         }
 
-        inline bool operator==(const Vec3& rhs)
+        inline bool operator==(const Vec3& rhs) const
         {
             return this->x == rhs.x
                 && this->y == rhs.y
                 && this->z == rhs.z;
         }
 
-        inline bool operator!=(const Vec3& rhs)
+        inline bool operator!=(const Vec3& rhs) const
         {
             return this->x != rhs.x
                 || this->y != rhs.y

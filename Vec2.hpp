@@ -68,12 +68,12 @@ namespace math
             return{ this->x / factor, this->y / factor };
         }
 
-        inline bool operator==(const Vec2& rhs)
+        inline bool operator==(const Vec2& rhs) const
         {
             return this->x == rhs.x && this->y == rhs.y;
         }
 
-        inline bool operator!=(const Vec2& rhs)
+        inline bool operator!=(const Vec2& rhs) const
         {
             return this->x != rhs.x || this->y != rhs.y;
         }
