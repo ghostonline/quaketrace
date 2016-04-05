@@ -20,9 +20,10 @@ void Scene::initDefault(Scene* scene)
 {
     ASSERT(scene != nullptr);
 
-    pointCamera(&scene->camera, {-30, 0, 0}, {1, 0, 0}, {0, 0, 1});
+    scene->cameras.resize(1);
+    scene->cameras[0].setPosition({-30, 0, 0}, {1, 0, 0}, {0, 0, 1});
     const float fov = 60;
-    scene->camera.halfViewAngles.set(
+    scene->cameras[0].halfViewAngles.set(
                                std::tan(math::deg2rad(fov)) / 2.0f,
                                std::tan(math::deg2rad(fov)) / 2.0f
                                );
@@ -58,23 +59,6 @@ void Scene::initDefault(Scene* scene)
     scene->lighting.add({ math::Vec3f(0, 0, -1), 0.3f});
 
     scene->lighting.ambient = 0.3f;
-}
-
-void Scene::pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3f& forward, const math::Vec3f& up)
-{
-    camera->origin = pos;
-    camera->direction = forward;
-    camera->up = up; // General up direction
-    ASSERT(camera->up != camera->direction);
-    camera->right = math::cross(camera->direction, camera->up);
-    camera->up = math::cross(camera->right, camera->direction);
-
-    math::normalize(&camera->direction);
-    math::normalize(&camera->up);
-    math::normalize(&camera->right);
-
-    camera->near = 10.0f;
-    camera->far = 10000.0f;
 }
 
 const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Material& material)
@@ -130,7 +114,7 @@ Scene::TexturePixel Scene::getTexturePixel(const Scene::Material& mat, const mat
     }
 }
 
-Scene::TexturePixel Scene::getSkyPixel(const Material& mat, const Ray& ray, const math::Vec2i& screen) const
+Scene::TexturePixel Scene::getSkyPixel(const Material& mat, const Ray& ray, const Camera& camera, const math::Vec2i& screen) const
 {
     auto skyDir = ray.dir;
     skyDir += camera.direction * 4096;

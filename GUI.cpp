@@ -81,7 +81,10 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
     Scene scene = BspLoader::createSceneFromBsp(mapData.data(), mapDataSize);
 #endif
     // Correct for aspect ratio
-    scene.camera.halfViewAngles.y *= config.height / static_cast<float>(config.width);
+    for (int ii = util::lastIndex(scene.cameras); ii >= 0; --ii)
+    {
+        scene.cameras[ii].halfViewAngles.y *= config.height / static_cast<float>(config.width);
+    }
 
     RayTracer::Config traceConfig;
     traceConfig.detail = config.detail;
@@ -131,7 +134,7 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
         if (refreshCanvas)
         {
             renderStart = SDL_GetTicks();
-            engine.startTrace(scene);
+            engine.startTrace(scene, scene.cameras.front());
 
             refreshCanvas = false;
         }

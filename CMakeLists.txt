@@ -64,6 +64,8 @@ set (BASE_SOURCE_FILES
     Logger.hpp
     Lighting.hpp
     Lighting.cpp
+    Camera.hpp
+    Camera.cpp
     RayTracer.hpp
     RayTracer.cpp
     BackgroundTracer.hpp

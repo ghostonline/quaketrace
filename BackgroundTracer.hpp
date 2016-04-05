@@ -10,7 +10,7 @@ public:
     BackgroundTracer(const RayTracer::Config& config);
     ~BackgroundTracer();
 
-    void startTrace(const Scene& scene);
+    void startTrace(const Scene& scene, const Camera& camera);
     float getProgress() { return engine.getProgress(); }
     const Image& getCanvas() const { return canvas; }
     bool isTracing() const { return running; }
@@ -24,6 +24,7 @@ private:
     bool running;
     RayTracer engine;
     std::unique_ptr<Scene> scene;
+    std::unique_ptr<Camera> camera;
     Image canvas;
 
     std::thread thread;

@@ -16,6 +16,7 @@ struct RayContext
     Image* canvas;
     const RayTracer& engine;
     const Scene& scene;
+    const Camera& camera;
     const std::vector<math::Vec2f>& sampleOffsets;
 
     void process(RayInput in) const;
@@ -36,7 +37,7 @@ void RayContext::process(RayInput in) const
         const float sampleY = in.y + sampleOffsets[ii].y;
         const float normX = (sampleX / static_cast<float>(canvas->width) - 0.5f) * 2.0f;
         const float normY = (sampleY / static_cast<float>(canvas->height) - 0.5f) * -2.0f;
-        Color color = engine.renderPixel(scene, normX, normY);
+        Color color = engine.renderPixel(scene, camera, normX, normY);
         aggregate += color / static_cast<float>(sampleOffsets.size());
     }
 
@@ -44,14 +45,14 @@ void RayContext::process(RayInput in) const
     *pixel = Color::asARGB(aggregate);
 }
 
-const Image RayTracer::trace(const Scene& scene)
+const Image RayTracer::trace(const Scene& scene, const Camera& camera)
 {
     Image canvas(config.width, config.height, Image::FORMAT_ARGB);
-    trace(scene, &canvas);
+    trace(scene, camera, &canvas);
     return canvas;
 }
 
-void RayTracer::trace(const Scene& scene, Image* canvas)
+void RayTracer::trace(const Scene& scene, const Camera& camera, Image* canvas)
 {
     progress = 0.0f;
     const float sampleWidth = 1.0f / config.detail;
@@ -72,7 +73,7 @@ void RayTracer::trace(const Scene& scene, Image* canvas)
     }
     const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
 
-    RayContext context = {canvas, *this, scene, sampleOffsets};
+    RayContext context = {canvas, *this, scene, camera, sampleOffsets};
 
     std::vector<RayInput> input;
     for (int x = canvas->width - 1; x >= 0; --x)
@@ -96,12 +97,10 @@ void RayTracer::trace(const Scene& scene, Image* canvas)
     progress = 1.0f;
 }
 
-const Color RayTracer::renderPixel(const Scene& scene, float x, float y) const
+const Color RayTracer::renderPixel(const Scene& scene, const Camera& camera, float x, float y) const
 {
     Ray pixelRay;
     {
-        const Scene::Camera& camera = scene.camera;
-
         math::Vec3f dir = camera.direction;
         dir += camera.right * (x * camera.halfViewAngles.x);
         dir += camera.up * (y * camera.halfViewAngles.y);
@@ -112,7 +111,7 @@ const Color RayTracer::renderPixel(const Scene& scene, float x, float y) const
     }
 
     collision3d::Hit infoSphere, infoPlane, infoTriangle, infoPolygon;
-    infoSphere.t = scene.camera.far;
+    infoSphere.t = camera.far;
     int sphereHitIdx = collision3d::raycastSpheres(pixelRay, infoSphere.t, scene.spheres, &infoSphere);
     infoPlane.t = infoSphere.t;
     int planeHitIdx = collision3d::raycastPlanes(pixelRay, infoSphere.t, scene.planes, &infoPlane);
@@ -143,7 +142,7 @@ const Color RayTracer::renderPixel(const Scene& scene, float x, float y) const
         Scene::TexturePixel pixel;
         if (mat.useSkyShader)
         {
-            pixel = scene.getSkyPixel(mat, pixelRay, {config.width, config.height});
+            pixel = scene.getSkyPixel(mat, pixelRay, camera, {config.width, config.height});
         }
         else
         {

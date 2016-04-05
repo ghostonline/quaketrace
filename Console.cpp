@@ -5,6 +5,7 @@
 #include "BspLoader.hpp"
 #include "BackgroundTracer.hpp"
 #include "Targa.hpp"
+#include "Util.hpp"
 #include <cstdio>
 #include <cstdlib>
 
@@ -32,7 +33,10 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
     Scene scene = BspLoader::createSceneFromBsp(mapData.data(), mapDataSize);
 
     // Correct for aspect ratio
-    scene.camera.halfViewAngles.y *= config.height / static_cast<float>(config.width);
+    for (int ii = util::lastIndex(scene.cameras); ii >= 0; --ii)
+    {
+        scene.cameras[ii].halfViewAngles.y *= config.height / static_cast<float>(config.width);
+    }
 
     RayTracer::Config traceConfig;
     traceConfig.detail = config.detail;
@@ -43,7 +47,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
     traceConfig.height = config.height;
     BackgroundTracer engine(traceConfig);
 
-    engine.startTrace(scene);
+    engine.startTrace(scene, scene.cameras.front());
 
     std::printf("Starting tracing scene\n");
     int percentage = 0;

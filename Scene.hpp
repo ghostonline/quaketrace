@@ -4,6 +4,7 @@
 #include "Color.hpp"
 #include "Texture.hpp"
 #include "Lighting.hpp"
+#include "Camera.hpp"
 #include <vector>
 
 class FrameBuffer;
@@ -68,19 +69,7 @@ struct Scene
         ConvexPolygon() {}
     };
 
-    struct Camera
-    {
-        math::Vec3f origin;
-        math::Vec3f direction;
-        math::Vec3f up;
-        math::Vec3f right;
-        math::Vec2f halfViewAngles;
-
-        float near;
-        float far;
-    };
-
-    Camera camera;
+    std::vector<Camera> cameras;
     std::vector<Sphere> spheres;
     std::vector<Plane> planes;
     std::vector<Triangle> triangles;
@@ -100,17 +89,10 @@ struct Scene
         bool fullbright;
     };
     TexturePixel getTexturePixel(const Material& mat, const math::Vec3f& pos) const;
-    TexturePixel getSkyPixel(const Material& mat, const Ray& ray, const math::Vec2i& screen) const;
+    TexturePixel getSkyPixel(const Material& mat, const Ray& ray, const Camera& camera, const math::Vec2i& screen) const;
 
     static void initDefault(Scene* scene);
-    static void pointCamera(Camera* camera, const math::Vec3f& pos, const math::Vec3f& forward, const math::Vec3f& up);
-    static void pointCameraAt(Camera* camera, const math::Vec3f& pos, const math::Vec3f& focus, const math::Vec3f& up);
 };
-
-inline void Scene::pointCameraAt(Camera* camera, const math::Vec3f& pos, const math::Vec3f& focus, const math::Vec3f& up)
-{
-    pointCamera(camera, pos, math::normalized(focus - pos), up);
-}
 
 inline math::Vec2f Scene::Material::positionToUV(const math::Vec3f& pos) const
 {

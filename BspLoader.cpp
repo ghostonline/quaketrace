@@ -364,13 +364,16 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     }
 
     const float fov = 60;
-    const auto& camera = cameras.front();
-    Scene::pointCamera(&scene.camera, camera.origin, camera.direction, {0, 0, 1});
-    scene.camera.halfViewAngles.set(
-                                     std::tan(math::deg2rad(fov)) / 2.0f,
-                                     std::tan(math::deg2rad(fov)) / 2.0f
-                                     );
-
+    scene.cameras.resize(cameras.size());
+    for (int ii = util::lastIndex(cameras); ii >= 0; --ii)
+    {
+        const auto& camera = cameras[ii];
+        scene.cameras[ii].setPosition(camera.origin, camera.direction, {0, 0, 1});
+        scene.cameras[ii].halfViewAngles.set(
+                                         std::tan(math::deg2rad(fov)) / 2.0f,
+                                         std::tan(math::deg2rad(fov)) / 2.0f
+                                         );
+    }
     return scene;
 }
 

@@ -2,6 +2,7 @@
 #include "Color.hpp"
 
 struct Scene;
+struct Camera;
 
 class RayTracer
 {
@@ -31,11 +32,11 @@ public:
     void resetBreakPoint() { breakX = breakY = -1; }
 
     float getProgress() const { return progress; }
-    const Image trace(const Scene& scene);
-    void trace(const Scene& scene, Image* target);
+    const Image trace(const Scene& scene, const Camera& camera);
+    void trace(const Scene& scene, const Camera& camera, Image* target);
 
 private:
-    const Color renderPixel(const Scene& scene, float x, float y) const;
+    const Color renderPixel(const Scene& scene, const Camera& camera, float x, float y) const;
 
     Config config;
     int breakX, breakY;
