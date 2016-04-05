@@ -108,6 +108,8 @@ set (MATH_SOURCE_FILES
 )
 
 set (FRONTEND_SOURCE_FILES
+    Console.hpp
+    Console.cpp
     GUI.hpp
     GUI.cpp
     AppConfig.hpp
