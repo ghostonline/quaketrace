@@ -108,5 +108,6 @@ void Scheduler::scheduleAsync(const std::vector<Input>& in, const Context& conte
         {
             tasks.emplace_back(new TaskImpl<Input, Context>(in.data() + ii, batchCount, context));
         }
+        totalJobCount += taskCount;
     }
 }

@@ -80,11 +80,11 @@ void Scheduler::monitorTasks()
     while(active)
     {
         std::this_thread::yield();
-        totalJobCount = 0;
+        size_t jobs = 0;
         for (int ii = util::lastIndex(activeWorkers); ii >= 0; --ii)
         {
             auto worker = activeWorkers[ii];
-            totalJobCount += worker->getRemainingJobs();
+            jobs += worker->getRemainingJobs();
             if (worker->isIdle())
             {
                 std::swap(activeWorkers[ii], activeWorkers.back());
@@ -104,7 +104,15 @@ void Scheduler::monitorTasks()
                 worker->take(std::move(tasks.back()));
                 ASSERT(tasks.back() == nullptr);
                 tasks.pop_back();
+                jobs += worker->getRemainingJobs();
+            }
+
+            for (int ii = util::lastIndex(tasks); ii >= 0; --ii)
+            {
+                jobs += tasks[ii]->remaining();
             }
         }
+
+        totalJobCount = jobs;
     }
 }
