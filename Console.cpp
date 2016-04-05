@@ -54,13 +54,14 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
             percentage = newPercentage;
             if ((percentage % 10) == 0)
             {
-                std::printf("%d%%", percentage);
+                std::printf("%d%%\n", percentage);
             }
             else
             {
                 std::printf(".");
             }
         }
+        std::this_thread::yield();
     } while (engine.isTracing());
 
     std::printf("\n");
