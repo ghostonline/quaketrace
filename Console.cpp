@@ -45,6 +45,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
 
     engine.startTrace(scene);
 
+    std::printf("Starting tracing scene\n");
     int percentage = 0;
     do
     {
@@ -54,7 +55,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
             percentage = newPercentage;
             if ((percentage % 10) == 0)
             {
-                std::printf("%d%%\n", percentage);
+                std::printf("%3d%%\n", percentage);
             }
             else
             {
@@ -64,7 +65,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
         std::this_thread::yield();
     } while (engine.isTracing());
 
-    std::printf("\n");
+    std::printf("Trace complete\n");
 
     auto tga = targa::encode(engine.getCanvas());
     File f = File::openW(config.imageFile.c_str());
