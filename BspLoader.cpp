@@ -12,6 +12,7 @@
 using namespace std;
 
 #define COLOR_DEBUG 0
+#define BSP2OBJ_DEBUG 0
 
 namespace {
     static const float PLAYER_EYE_HEIGHT = 56.0f;
@@ -249,7 +250,9 @@ namespace {
 
 const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 {
+#if BSP2OBJ_DEBUG
     printBspAsObj(data, size);
+#endif
 
     Scene scene;
 
