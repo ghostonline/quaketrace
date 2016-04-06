@@ -80,6 +80,13 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
     mapFile.read(mapData.data(), mapDataSize);
     Scene scene = BspLoader::createSceneFromBsp(mapData.data(), mapDataSize);
 #endif
+
+    if (config.cameraList)
+    {
+        SDL_Log("%lu", scene.cameras.size());
+        return EXIT_SUCCESS;
+    }
+
     // Correct for aspect ratio
     for (int ii = util::lastIndex(scene.cameras); ii >= 0; --ii)
     {

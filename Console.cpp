@@ -33,6 +33,12 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
     mapFile.read(mapData.data(), mapDataSize);
     Scene scene = BspLoader::createSceneFromBsp(mapData.data(), mapDataSize);
 
+    if (config.cameraList)
+    {
+        std::printf("%lu\n", scene.cameras.size());
+        return EXIT_SUCCESS;
+    }
+
     // Correct for aspect ratio
     for (int ii = util::lastIndex(scene.cameras); ii >= 0; --ii)
     {

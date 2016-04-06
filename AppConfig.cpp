@@ -35,6 +35,7 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     if (!cmd.parse(&softshadowRayCount, "shadows")) { softshadowRayCount = DEFAULT_SOFT_SHADOW_RAYS; }
     if (!cmd.parse(&threads, "threads", 'j')) { threads = DEFAULT_THREAD_COUNT; }
     if (!cmd.parse(&cameraIdx, "camera", 'c')) { cameraIdx = 0; }
+    if (!cmd.parse(&cameraList, "camera-list", 'l')) { cameraList = false; }
 
     result.success = true;
     return result;

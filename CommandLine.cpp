@@ -30,3 +30,19 @@ bool util::CommandLine::parse(int* value, const std::string& flag) const
 
     return false;
 }
+
+template<>
+bool util::CommandLine::parse(bool* value, const std::string& flag) const
+{
+    for (int ii = 0; ii < argc - 1; ++ii)
+    {
+        if (isFlag[ii] && !isFlag[ii + 1] && !flag.compare(argv[ii] + 1))
+        {
+            *value = true;
+            return true;
+        }
+    }
+    *value = false;
+    
+    return false;
+}
