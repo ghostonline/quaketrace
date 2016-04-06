@@ -2,7 +2,12 @@ cmake_minimum_required (VERSION 3.1)
 project (Quaketrace)
 string(TOLOWER ${CMAKE_PROJECT_NAME} EXEC_FILE)
 
-set(CMAKE_C_FLAGS_DEBUG "-D_DEBUG")
+set(SHOW_GUI 0 CACHE BOOL "Show output on screen while rendering")
+if (${SHOW_GUI})
+    add_definitions(-DSHOW_GUI=1)
+else()
+    add_definitions(-DSHOW_GUI=0)
+endif()
 
 if (WIN32)
 	set(SDL2_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/sdl-win")
