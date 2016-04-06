@@ -116,6 +116,8 @@ set (FRONTEND_SOURCE_FILES
     GUI.cpp
     AppConfig.hpp
     AppConfig.cpp
+    Common.hpp
+    Common.cpp
 )
 
 source_group("Source" FILES ${BASE_SOURCE_FILES})

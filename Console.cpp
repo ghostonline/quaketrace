@@ -7,6 +7,7 @@
 #include "Targa.hpp"
 #include "Util.hpp"
 #include "Math.hpp"
+#include "Common.hpp"
 #include <cstdio>
 #include <cstdlib>
 
@@ -22,16 +23,12 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
         }
     }
 
-    File mapFile = File::open(config.mapFile.c_str());
-    if (!mapFile.isValid())
+    Scene scene;
+    if (!common::loadBSP(config.mapFile.c_str(), &scene, config.width, config.height))
     {
         std::printf("Could not open map file: %s\n", config.mapFile.c_str());
         return EXIT_FAILURE;
     }
-    size_t mapDataSize = mapFile.size();
-    std::vector<std::uint8_t> mapData(mapDataSize);
-    mapFile.read(mapData.data(), mapDataSize);
-    Scene scene = BspLoader::createSceneFromBsp(mapData.data(), mapDataSize);
 
     if (config.cameraList)
     {
@@ -39,19 +36,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
         return EXIT_SUCCESS;
     }
 
-    // Correct for aspect ratio
-    for (int ii = util::lastIndex(scene.cameras); ii >= 0; --ii)
-    {
-        scene.cameras[ii].halfViewAngles.y *= config.height / static_cast<float>(config.width);
-    }
-
-    RayTracer::Config traceConfig;
-    traceConfig.detail = config.detail;
-    traceConfig.occlusionRayCount = config.occlusionRayCount;
-    traceConfig.softshadowRayCount = config.softshadowRayCount;
-    traceConfig.threads = config.threads;
-    traceConfig.width = config.width;
-    traceConfig.height = config.height;
+    RayTracer::Config traceConfig = common::parseRayTracerConfig(config);
     BackgroundTracer engine(traceConfig);
 
     size_t cameraIdx = math::clamp<size_t>(config.cameraIdx, 0, scene.cameras.size());
@@ -79,14 +64,11 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
 
     std::printf("Trace complete\n");
 
-    auto tga = targa::encode(engine.getCanvas());
-    File f = File::openW(config.imageFile.c_str());
-    if (!f.isValid())
+    if (!common::writeToTGA(engine.getCanvas(), config.imageFile.c_str()))
     {
         std::printf("Could not write to file: %s\n", config.imageFile.c_str());
         return EXIT_FAILURE;
     }
-    f.write(tga.data(), tga.size());
 
     return EXIT_SUCCESS;
 }

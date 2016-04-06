@@ -13,6 +13,7 @@
 #include "File.hpp"
 #include "BackgroundTracer.hpp"
 #include "AppConfig.hpp"
+#include "Common.hpp"
 
 const std::uint32_t COLOR_TRANSPARENT = 0xFF980088;
 
@@ -65,20 +66,15 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
     auto fb = FrameBuffer::createFromWindow(window);
 
     auto font = Font::create();
-#if DEFAULT_SCENE
     Scene scene;
+#if DEFAULT_SCENE
     Scene::initDefault(&scene);
 #else
-    File mapFile = File::open(config.mapFile.c_str());
-    if (!mapFile.isValid())
+    if (!common::loadBSP(config.mapFile.c_str(), &scene, config.width, config.height))
     {
         SDL_Log("Could not open map file: %s", config.mapFile.c_str());
         return EXIT_FAILURE;
     }
-    size_t mapDataSize = mapFile.size();
-    std::vector<std::uint8_t> mapData(mapDataSize);
-    mapFile.read(mapData.data(), mapDataSize);
-    Scene scene = BspLoader::createSceneFromBsp(mapData.data(), mapDataSize);
 #endif
 
     if (config.cameraList)
@@ -87,19 +83,7 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
         return EXIT_SUCCESS;
     }
 
-    // Correct for aspect ratio
-    for (int ii = util::lastIndex(scene.cameras); ii >= 0; --ii)
-    {
-        scene.cameras[ii].halfViewAngles.y *= config.height / static_cast<float>(config.width);
-    }
-
-    RayTracer::Config traceConfig;
-    traceConfig.detail = config.detail;
-    traceConfig.occlusionRayCount = config.occlusionRayCount;
-    traceConfig.softshadowRayCount = config.softshadowRayCount;
-    traceConfig.threads = config.threads;
-    traceConfig.width = config.width;
-    traceConfig.height = config.height;
+    RayTracer::Config traceConfig = common::parseRayTracerConfig(config);
     BackgroundTracer engine(traceConfig);
 
     bool finished = false;
@@ -157,14 +141,11 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
         if (!engine.isTracing() && wasTracing)
         {
             renderTime = SDL_GetTicks() - renderStart;
-            auto tga = targa::encode(engine.getCanvas());
-            File f = File::openW(config.imageFile.c_str());
-            if (!f.isValid())
+            if (!common::writeToTGA(engine.getCanvas(), config.imageFile.c_str()))
             {
                 SDL_Log("Could not write to file: %s", config.imageFile.c_str());
                 return EXIT_FAILURE;
             }
-            f.write(tga.data(), tga.size());
         }
 
         if (updateMouse || updateScene || wasTracing)
