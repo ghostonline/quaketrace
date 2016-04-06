@@ -14,6 +14,7 @@ struct AppConfig
 
     std::string mapFile;
     std::string imageFile;
+    int cameraIdx;
     
     int width;
     int height;

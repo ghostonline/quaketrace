@@ -6,6 +6,7 @@
 #include "BackgroundTracer.hpp"
 #include "Targa.hpp"
 #include "Util.hpp"
+#include "Math.hpp"
 #include <cstdio>
 #include <cstdlib>
 
@@ -47,7 +48,8 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
     traceConfig.height = config.height;
     BackgroundTracer engine(traceConfig);
 
-    engine.startTrace(scene, scene.cameras.front());
+    size_t cameraIdx = math::clamp<size_t>(config.cameraIdx, 0, scene.cameras.size());
+    engine.startTrace(scene, scene.cameras[cameraIdx]);
 
     std::printf("Starting tracing scene\n");
     int percentage = 0;
