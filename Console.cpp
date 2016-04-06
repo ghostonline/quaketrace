@@ -17,7 +17,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
         auto parseResult = config.parse(argc, argv);
         if (!parseResult.success)
         {
-            std::printf("Parse failed: %s", parseResult.error.c_str());
+            std::printf("Parse failed: %s\n", parseResult.error.c_str());
             return EXIT_FAILURE;
         }
     }
@@ -25,7 +25,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
     File mapFile = File::open(config.mapFile.c_str());
     if (!mapFile.isValid())
     {
-        std::printf("Could not open map file: %s", config.mapFile.c_str());
+        std::printf("Could not open map file: %s\n", config.mapFile.c_str());
         return EXIT_FAILURE;
     }
     size_t mapDataSize = mapFile.size();
@@ -83,7 +83,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
     File f = File::openW(config.imageFile.c_str());
     if (!f.isValid())
     {
-        std::printf("Could not write to file: %s", config.imageFile.c_str());
+        std::printf("Could not write to file: %s\n", config.imageFile.c_str());
         return EXIT_FAILURE;
     }
     f.write(tga.data(), tga.size());
