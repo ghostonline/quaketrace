@@ -4,12 +4,9 @@
 #include <cstdint>
 #include "Color.hpp"
 
-struct SDL_Surface;
-
 class Texture
 {
 public:
-    static Texture createFromSDL(SDL_Surface* surface);
     static Texture createFromIndexedRGB(int width, int height, const void* indices, const void* palette);
 
     Texture(int width, int height, int channels);

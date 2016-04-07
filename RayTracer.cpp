@@ -4,6 +4,7 @@
 #include "Ray.hpp"
 #include "Collision3D.hpp"
 #include "Scene.hpp"
+#include "BreakPoint.hpp"
 
 struct RayInput
 {
@@ -26,7 +27,7 @@ void RayContext::process(RayInput in) const
 {
     if (in.breakDebugger)
     {
-        SDL_TriggerBreakpoint();
+        BRPT();
     }
 
     Color aggregate(0.0f);

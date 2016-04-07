@@ -3,34 +3,40 @@ project (Quaketrace)
 string(TOLOWER ${CMAKE_PROJECT_NAME} EXEC_FILE)
 
 set(SHOW_GUI 0 CACHE BOOL "Show output on screen while rendering")
-if (${SHOW_GUI})
+if (SHOW_GUI)
     add_definitions(-DSHOW_GUI=1)
+
+    if (WIN32)
+        set(SDL2_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/sdl-win")
+        set(SDL2_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sdl-win/include")
+        if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+            set(SDL2_LIBRARY_PATH "${SDL2_ROOT}/lib/x86")
+        else ()
+            set(SDL2_LIBRARY_PATH "${SDL2_ROOT}/lib/x64")
+        endif ()
+        set(SDL2_SHARED_DLL "${SDL2_LIBRARY_PATH}/SDL2.dll")
+        find_library(SDL2_LIBRARY_MAIN NAMES SDL2main PATHS "${SDL2_LIBRARY_PATH}")
+        find_library(SDL2_LIBRARY NAMES SDL2 PATHS "${SDL2_LIBRARY_PATH}")
+        file(COPY ${SDL2_SHARED_DLL} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" NO_SOURCE_PERMISSIONS)
+    else()
+        set(SDL2_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/sdl-osx")
+        set(SDL2_LIBRARY_PATH ${SDL2_ROOT})
+        find_library(COCOA_LIBRARY Cocoa)
+        find_library(OPENGL_LIBRARY OpenGL)
+        find_library(SDL2_LIBRARY SDL2)
+        find_path(SDL2_INCLUDE_DIR "SDL.h" PATHS ${SDL2_LIBRARY})
+    endif()
+    include_directories (${SDL2_INCLUDE_DIR})
 else()
     add_definitions(-DSHOW_GUI=0)
 endif()
 
-if (WIN32)
-	set(SDL2_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/sdl-win")
-	set(SDL2_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sdl-win/include")
-	if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
-		set(SDL2_LIBRARY_PATH "${SDL2_ROOT}/lib/x86")
-	else ()
-		set(SDL2_LIBRARY_PATH "${SDL2_ROOT}/lib/x64")
-	endif ()
-	set(SDL2_SHARED_DLL "${SDL2_LIBRARY_PATH}/SDL2.dll")
-	find_library(SDL2_LIBRARY_MAIN NAMES SDL2main PATHS "${SDL2_LIBRARY_PATH}")
-	find_library(SDL2_LIBRARY NAMES SDL2 PATHS "${SDL2_LIBRARY_PATH}")
-	file(COPY ${SDL2_SHARED_DLL} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" NO_SOURCE_PERMISSIONS)
+if(WIN32)
+    add_definitions(-DTARGET_WIN32=1)
 else()
-	set(SDL2_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/sdl-osx")
-	set(SDL2_LIBRARY_PATH ${SDL2_ROOT})
-	find_library(COCOA_LIBRARY Cocoa)
-	find_library(OPENGL_LIBRARY OpenGL)
-	find_library(SDL2_LIBRARY SDL2)
-	find_path(SDL2_INCLUDE_DIR "SDL.h" PATHS ${SDL2_LIBRARY})
+    add_definitions(-DTARGET_WIN32=0)
 endif()
 
-include_directories (${SDL2_INCLUDE_DIR})
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 
@@ -44,14 +50,8 @@ set(ASSETS
 # Generate source files
 set (BASE_SOURCE_FILES
 	main.cpp
-	FrameBuffer.cpp
-	FrameBuffer.hpp
-	Texture.cpp
-	Texture.hpp
-	Font.cpp
-	Font.hpp
-	GraphicTool.cpp
-	GraphicTool.hpp
+    Texture.hpp
+    Texture.cpp
 	Geometry.hpp
 	AssetHelper.hpp
 	AssetHelper.cpp
@@ -88,6 +88,7 @@ set(UTIL_SOURCE_FILES
     File.hpp
     CommandLine.cpp
     CommandLine.hpp
+    BreakPoint.hpp
 )
 
 set(IMAGE_SOURCE_FILES
@@ -115,14 +116,26 @@ set (MATH_SOURCE_FILES
 )
 
 set (FRONTEND_SOURCE_FILES
-    Console.hpp
-    Console.cpp
-    GUI.hpp
-    GUI.cpp
     AppConfig.hpp
     AppConfig.cpp
     Common.hpp
     Common.cpp
+)
+
+set (CONSOLE_SOURCE_FILES
+    Console.hpp
+    Console.cpp
+)
+
+set (GUI_SOURCE_FILES
+    GUI.hpp
+    GUI.cpp
+    Font.cpp
+    Font.hpp
+    FrameBuffer.cpp
+    FrameBuffer.hpp
+    GraphicTool.cpp
+    GraphicTool.hpp
 )
 
 source_group("Source" FILES ${BASE_SOURCE_FILES})
@@ -130,7 +143,7 @@ source_group("Source\\Math" FILES ${MATH_SOURCE_FILES})
 source_group("Source\\Util" FILES ${UTIL_SOURCE_FILES})
 source_group("Source\\Threading" FILES ${THREADING_SOURCE_FILES})
 source_group("Source\\Image" FILES ${IMAGE_SOURCE_FILES})
-source_group("Source\\Frontend" FILES ${FRONTEND_SOURCE_FILES})
+source_group("Source\\Frontend" FILES ${FRONTEND_SOURCE_FILES} ${GUI_SOURCE_FILES} ${CONSOLE_SOURCE_FILES})
 
 set (APP_SOURCE_FILES
 	${BASE_SOURCE_FILES}
@@ -140,6 +153,12 @@ set (APP_SOURCE_FILES
     ${IMAGE_SOURCE_FILES}
     ${FRONTEND_SOURCE_FILES}
 )
+
+if (SHOW_GUI)
+    list(APPEND APP_SOURCE_FILES ${GUI_SOURCE_FILES})
+else()
+    list(APPEND APP_SOURCE_FILES ${CONSOLE_SOURCE_FILES})
+endif()
 
 foreach(f IN ITEMS ${APP_SOURCE_FILES})
 	set(SOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${f}")
@@ -151,10 +170,15 @@ endforeach()
 
 add_executable (${EXEC_FILE} WIN32 ${APP_SOURCE_FILES})
 if (WIN32)
-	target_link_libraries(${EXEC_FILE} ${SDL2_LIBRARY} ${SDL2_LIBRARY_MAIN})
+	target_link_libraries(${EXEC_FILE} ${SDL2_LIBRARY_MAIN})
+    if (SHOW_GUI)
+        target_link_libraries(${EXEC_FILE} ${SDL2_LIBRARY})
+    endif()
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 else()
-	target_link_libraries(${EXEC_FILE} ${SDL2_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+    if (SHOW_GUI)
+        target_link_libraries(${EXEC_FILE} ${SDL2_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+    endif()
 endif()
 
 set_property(TARGET ${EXEC_FILE} PROPERTY CXX_STANDARD 11)

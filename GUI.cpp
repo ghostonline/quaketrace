@@ -23,7 +23,10 @@ using namespace std;
 
 void GUI::setIconFromAsset(SDL_Window* window, AssetHelper::ID id)
 {
-    auto iconSrc = AssetHelper::loadSurface(id);
+    int size = 0;
+    auto buffer = AssetHelper::getRaw(id, &size);
+    auto src = SDL_RWFromConstMem(buffer, size);
+    auto iconSrc = SDL_LoadBMP_RW(src, 1);
     auto icon = SDL_ConvertSurfaceFormat(iconSrc, SDL_PIXELFORMAT_ARGB8888, 0);
     SDL_FreeSurface(iconSrc);
     uint32_t* pixels = reinterpret_cast<uint32_t*>(icon->pixels);

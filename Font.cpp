@@ -15,11 +15,40 @@ const int GLYPH_HEIGHT = 9;
 const char GLYPH_CHARS[] = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 const int COLOR_TRANSPARENT = 0xFF000000;
 
+Texture loadFontTexture()
+{
+    int size = 0;
+    auto buffer = AssetHelper::getRaw(FONT, &size);
+    auto src = SDL_RWFromConstMem(buffer, size);
+    auto bmpImage = SDL_LoadBMP_RW(src, 1);
+
+    auto rgbaSurface = SDL_ConvertSurfaceFormat(bmpImage, SDL_PIXELFORMAT_ARGB8888, 0);
+
+    const int pixelWidth = rgbaSurface->format->BitsPerPixel / 8;
+    Texture texture(rgbaSurface->w, rgbaSurface->h, pixelWidth);
+
+    auto sourcePixels = reinterpret_cast<const std::uint8_t*>(rgbaSurface->pixels);
+    auto dstPixels = texture.getPixels();
+    for (int ii = 0; ii < texture.getWidth() * texture.getHeight(); ++ii)
+    {
+        int pixelIdx = ii * pixelWidth;
+        for (int channel = 0; channel < pixelWidth; ++channel)
+        {
+            const int pixelChannelIdx = pixelIdx + channel;
+            dstPixels[pixelChannelIdx] = sourcePixels[pixelChannelIdx];
+        }
+    }
+
+    SDL_FreeSurface(rgbaSurface);
+
+    return texture;
+}
+
 Font* Font::create()
 {
     vector<Glyph> index;
 
-    auto tex = AssetHelper::loadTexture(FONT);
+    auto tex = loadFontTexture();
     int glyphsPerRow = tex.getWidth() / GLYPH_WIDTH;
 
     // Build index
