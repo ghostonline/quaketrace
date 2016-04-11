@@ -46,6 +46,18 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     cameraIdx = cameraArg.getValue();
     cameraList = cameraListArg.getValue();
 
+    if (mapFile.empty())
+    {
+        result.error = "No map file specified";
+        return result;
+    }
+
+    if (imageFile.empty())
+    {
+        result.error = "No image file specified";
+        return result;
+    }
+
     result.success = true;
     return result;
 }

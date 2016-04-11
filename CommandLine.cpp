@@ -76,7 +76,9 @@ const util::Arg::ParseResult util::ValueArg<std::string>::parse(int argc, char c
 
     if (argc < 2 || isFlag(argv[1]))
     {
-        return "Requires argument";
+        std::string error = "Flag requires an argument: ";
+        error += argv[0];
+        return error.c_str();
     }
 
     value = argv[1];
@@ -94,12 +96,14 @@ const util::Arg::ParseResult util::ValueArg<int>::parse(int argc, char const * c
 
     if (argc < 2)
     {
-        return "Requires argument";
+        std::string error = "Flag requires an argument: ";
+        error += argv[0];
+        return error.c_str();
     }
 
     if (!util::StringTool::parseInteger(argv[1], &value))
     {
-        std::string error = "No valid integer argument for flag ";
+        std::string error = "No valid integer argument for flag: ";
         error += argv[0];
         return error.c_str();
     }
