@@ -1,16 +1,19 @@
 #include "StringTool.hpp"
 #include <string>
 
-const math::Vec3f util::StringTool::parseVec3f(const char* str)
+const bool util::StringTool::parseVec3f(const char* str, math::Vec3f* vec)
 {
     float axis[3];
-    axis[0] = parseFloat(str);
+    parseFloat(str, &axis[0]);
     for (int components = 2; components > 0;)
     {
         switch (*str)
         {
         case ' ':
-            axis[3 - components] = parseFloat(str);
+            if (!parseFloat(str, &axis[3 - components]))
+            {
+                return false;
+            }
             --components;
             break;
         case 0:
@@ -19,15 +22,33 @@ const math::Vec3f util::StringTool::parseVec3f(const char* str)
         }
         ++str;
     }
-    return {axis[0], axis[1], axis[2]};
+
+    *vec = {axis[0], axis[1], axis[2]};
+    return true;
 }
 
-const float util::StringTool::parseFloat(const char* str)
+const bool util::StringTool::parseFloat(const char* str, float* number)
 {
-    return std::stof(str);
+    try
+    {
+        *number = std::stof(str);
+    }
+    catch (std::invalid_argument a)
+    {
+        return false;
+    }
+    return true;
 }
 
-const int util::StringTool::parseInteger(const char* str)
+const bool util::StringTool::parseInteger(const char* str, int* integer)
 {
-    return std::stoi(str);
+    try
+    {
+        *integer = std::stoi(str);
+    }
+    catch (std::invalid_argument a)
+    {
+        return false;
+    }
+    return true;
 }

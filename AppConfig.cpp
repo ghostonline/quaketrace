@@ -3,8 +3,8 @@
 
 namespace {
 
-const int DEFAULT_SCREEN_WIDTH = 640;
-const int DEFAULT_SCREEN_HEIGHT = 480;
+const int DEFAULT_SCREEN_WIDTH = 320;
+const int DEFAULT_SCREEN_HEIGHT = 240;
 const int DEFAULT_DETAIL_LEVEL = 1;
 const int DEFAULT_SOFT_SHADOW_RAYS = 10;
 const int DEFAULT_OCCLUSION_RAYS = 32;
@@ -14,28 +14,37 @@ const int DEFAULT_THREAD_COUNT = 4;
 
 AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const argv)
 {
-    ParseResult result{false, "Parsing failed"};
+    ParseResult result{false, "failed"};
     
-    util::CommandLine cmd(argc, argv);
-    if (!cmd.parse(&mapFile, "input", 'i'))
+    util::CommandLine cmd;
+    auto mapArg = cmd.add<std::string>("input", 'i');
+    auto imageArg = cmd.add<std::string>("output", 'o');
+    auto widthArg = cmd.add<int>("width", 'w', DEFAULT_SCREEN_WIDTH);
+    auto heightArg = cmd.add<int>("height", 'h', DEFAULT_SCREEN_HEIGHT);
+    auto detailArg = cmd.add<int>("detail", 'd', DEFAULT_DETAIL_LEVEL);
+    auto occlusionArg = cmd.add<int>("occlusion", DEFAULT_OCCLUSION_RAYS);
+    auto shadowsArg = cmd.add<int>("shadows", DEFAULT_SOFT_SHADOW_RAYS);
+    auto threadsArg = cmd.add<int>("threads", 'j', DEFAULT_THREAD_COUNT);
+    auto cameraArg = cmd.add<int>("camera", 'c', 0);
+    auto cameraListArg = cmd.add<bool>("camera-list", 'l', false);
+
+    auto cmdResult = cmd.parse(argc, argv);
+    if (!cmdResult.success)
     {
-        result.error = "No input map file found";
-        return result;
-    }
-    if (!cmd.parse(&imageFile, "output", 'o'))
-    {
-        result.error = "No output tga file found";
+        result.error = cmdResult.error;
         return result;
     }
 
-    if (!cmd.parse(&width, "width", 'w')) { width = DEFAULT_SCREEN_WIDTH; }
-    if (!cmd.parse(&height, "height", 'h')) { height = DEFAULT_SCREEN_HEIGHT; }
-    if (!cmd.parse(&detail, "detail", 'd')) { detail = DEFAULT_DETAIL_LEVEL; }
-    if (!cmd.parse(&occlusionRayCount, "occlusion")) { occlusionRayCount = DEFAULT_OCCLUSION_RAYS; }
-    if (!cmd.parse(&softshadowRayCount, "shadows")) { softshadowRayCount = DEFAULT_SOFT_SHADOW_RAYS; }
-    if (!cmd.parse(&threads, "threads", 'j')) { threads = DEFAULT_THREAD_COUNT; }
-    if (!cmd.parse(&cameraIdx, "camera", 'c')) { cameraIdx = 0; }
-    if (!cmd.parse(&cameraList, "camera-list", 'l')) { cameraList = false; }
+    mapFile = mapArg.getValue();
+    imageFile = imageArg.getValue();
+    width = widthArg.getValue();
+    height = heightArg.getValue();
+    detail = detailArg.getValue();
+    occlusionRayCount = occlusionArg.getValue();
+    softshadowRayCount = shadowsArg.getValue();
+    threads = threadsArg.getValue();
+    cameraIdx = cameraArg.getValue();
+    cameraList = cameraListArg.getValue();
 
     result.success = true;
     return result;

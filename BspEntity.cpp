@@ -164,17 +164,17 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
         switch(keyData.type)
         {
             case TYPE_VEC:
-                property.vec = util::StringTool::parseVec3f(property.value.c_str());
+                util::StringTool::parseVec3f(property.value.c_str(), &property.vec);
                 break;
             case TYPE_NUMBER:
-                property.number = util::StringTool::parseFloat(property.value.c_str());
+                util::StringTool::parseFloat(property.value.c_str(), &property.number);
                 break;
             case TYPE_INTEGER:
-                property.integer = util::StringTool::parseInteger(property.value.c_str());
+                util::StringTool::parseInteger(property.value.c_str(), &property.integer);
                 break;
             case TYPE_BRUSH:
                 ASSERT(property.value[0] == '*');
-                property.integer = util::StringTool::parseInteger(property.value.c_str() + 1);
+                util::StringTool::parseInteger(property.value.c_str(), &property.integer);
                 break;
             default:
                 break;
