@@ -14,8 +14,6 @@ const int DEFAULT_THREAD_COUNT = 4;
 
 AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const argv)
 {
-    ParseResult result{ParseResult::PARSE_FAILED, "failed"};
-    
     util::CommandLine cmd;
     auto mapArg = cmd.add<std::string>("input", 'i');
     auto imageArg = cmd.add<std::string>("output", 'o');
@@ -32,15 +30,13 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     auto cmdResult = cmd.parse(argc, argv);
     if (!cmdResult.success)
     {
-        result.error = cmdResult.error;
-        return result;
+        return ParseResult::CreateFailed(cmdResult.error);
     }
 
     if (showHelp.getValue())
     {
-        result.result = ParseResult::SHOW_HELP;
-        result.help = cmd.createHelpString(argv[0]);
-        return result;
+        auto help = cmd.createHelpString(argv[0]);
+        return ParseResult::CreateHelp(help);
     }
 
     mapFile = mapArg.getValue();
@@ -56,16 +52,13 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
 
     if (mapFile.empty())
     {
-        result.error = "No map file specified";
-        return result;
+        return ParseResult::CreateFailed("No map file specified");
     }
 
     if (imageFile.empty())
     {
-        result.error = "No image file specified";
-        return result;
+        return ParseResult::CreateFailed("No image file specified");
     }
 
-    result.result = ParseResult::PARSE_SUCCESS;
-    return result;
+    return ParseResult::CreateSuccess();
 }
