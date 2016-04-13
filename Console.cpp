@@ -16,10 +16,16 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
     AppConfig config;
     {
         auto parseResult = config.parse(argc, argv);
-        if (!parseResult.success)
+        if (parseResult.result == AppConfig::ParseResult::PARSE_FAILED)
         {
             std::printf("Parse failed: %s\n", parseResult.error.c_str());
             return EXIT_FAILURE;
+        }
+
+        if (parseResult.result == AppConfig::ParseResult::SHOW_HELP)
+        {
+            std::printf("%s\n", parseResult.help.c_str());
+            return EXIT_SUCCESS;
         }
     }
 

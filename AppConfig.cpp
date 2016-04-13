@@ -14,7 +14,7 @@ const int DEFAULT_THREAD_COUNT = 4;
 
 AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const argv)
 {
-    ParseResult result{false, "failed"};
+    ParseResult result{ParseResult::PARSE_FAILED, "failed"};
     
     util::CommandLine cmd;
     auto mapArg = cmd.add<std::string>("input", 'i');
@@ -27,7 +27,7 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     auto threadsArg = cmd.add<int>("threads", 'j', DEFAULT_THREAD_COUNT);
     auto cameraArg = cmd.add<int>("camera", 'c', 0);
     auto cameraListArg = cmd.add<bool>("camera-list", 'l', false);
-    auto helpArg = cmd.add<bool>("help", false);
+    auto showHelp = cmd.add<bool>("help", false);
 
     auto cmdResult = cmd.parse(argc, argv);
     if (!cmdResult.success)
@@ -36,9 +36,10 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
         return result;
     }
 
-    if (helpArg.getValue())
+    if (showHelp.getValue())
     {
-        result.error = cmd.createHelpString(argv[0]);
+        result.result = ParseResult::SHOW_HELP;
+        result.help = cmd.createHelpString(argv[0]);
         return result;
     }
 
@@ -65,6 +66,6 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
         return result;
     }
 
-    result.success = true;
+    result.result = ParseResult::PARSE_SUCCESS;
     return result;
 }
