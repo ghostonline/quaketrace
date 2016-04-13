@@ -20,27 +20,32 @@ public:
 
     virtual const ParseResult parse(int argc, char const * const * argv) = 0;
     virtual void reset() = 0;
+    virtual std::string getParameterStr() const = 0;
 
 protected:
-    Arg(const char* flag, char shorthand)
+    Arg(const char* flag, char shorthand, bool required)
     : flag(flag)
     , shorthand(shorthand)
+    , required(required)
     {}
 
     bool matchFlag(const char* arg) const;
     bool isFlag(const char* arg) const;
+    void appendFlag(std::vector<char>* buffer) const;
+    bool isRequired() const { return required; }
 
 private:
     std::string flag;
     char shorthand;
+    bool required;
 };
 
 template<typename T>
 class ValueArg : public Arg
 {
 public:
-    ValueArg(const char* flag, char shorthand = 0, const T& resetValue = T())
-    : Arg(flag, shorthand)
+    ValueArg(const char* flag, char shorthand, const T& resetValue, bool required)
+    : Arg(flag, shorthand, required)
     , resetValue(resetValue)
     {}
 
@@ -48,6 +53,7 @@ public:
 
     const ParseResult parse(int argc, char const * const * argv);
     void reset() { value = resetValue; }
+    std::string getParameterStr() const;
 
 private:
     T value;
@@ -71,20 +77,29 @@ public:
     CommandLine() {}
 
     template<typename T>
-    ValueArg<T> add(const char* flag, char shorthand = 0, const T& resetValue = T());
+    ValueArg<T> add(const char* flag) { return add(flag, 0, T(), true); }
     template<typename T>
-    ValueArg<T> add(const char* flag, const T& resetValue) { return add(flag, 0, resetValue); }
+    ValueArg<T> add(const char* flag, const T& resetValue) { return add(flag, 0, resetValue, false); }
+    template<typename T>
+    ValueArg<T> add(const char* flag, char shorthand) { return add(flag, shorthand, T(), true); }
+    template<typename T>
+    ValueArg<T> add(const char* flag, char shorthand, const T& resetValue)  { return add(flag, shorthand, resetValue, false); }
 
     const ParseResult parse(int argc, char const * const * argv) const;
 
+    std::string createHelpString(const char* arg0) const;
+
 private:
+    template<typename T>
+    ValueArg<T> add(const char* flag, char shorthand, const T& resetValue, bool required);
+
     std::vector<Arg*> parsers;
 };
 
 template<typename T>
-inline ValueArg<T> CommandLine::add(const char* flag, char shorthand, const T& resetValue)
+inline ValueArg<T> CommandLine::add(const char* flag, char shorthand, const T& resetValue, bool required)
 {
-    ValueArg<T> arg(flag, shorthand, resetValue);
+    ValueArg<T> arg(flag, shorthand, resetValue, required);
     parsers.push_back(&arg);
     return arg;
 }

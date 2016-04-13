@@ -52,3 +52,19 @@ const bool util::StringTool::parseInteger(const char* str, int* integer)
     }
     return true;
 }
+
+void util::StringTool::append(std::vector<char>* buffer, const char* text)
+{
+    auto size = strlen(text);
+    auto bufferSize = buffer->size();
+    buffer->reserve(bufferSize + size);
+    buffer->insert(buffer->end(), text, text + size);
+}
+
+void util::StringTool::append(std::vector<char>* buffer, const std::string& text)
+{
+    auto size = text.length();
+    auto bufferSize = buffer->size();
+    buffer->reserve(bufferSize + size);
+    buffer->insert(buffer->end(), text.begin(), text.end());
+}

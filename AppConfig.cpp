@@ -27,11 +27,18 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     auto threadsArg = cmd.add<int>("threads", 'j', DEFAULT_THREAD_COUNT);
     auto cameraArg = cmd.add<int>("camera", 'c', 0);
     auto cameraListArg = cmd.add<bool>("camera-list", 'l', false);
+    auto helpArg = cmd.add<bool>("help", false);
 
     auto cmdResult = cmd.parse(argc, argv);
     if (!cmdResult.success)
     {
         result.error = cmdResult.error;
+        return result;
+    }
+
+    if (helpArg.getValue())
+    {
+        result.error = cmd.createHelpString(argv[0]);
         return result;
     }
 

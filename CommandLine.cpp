@@ -41,6 +41,21 @@ const util::CommandLine::ParseResult util::CommandLine::parse(int argc, char con
     return true;
 }
 
+std::string util::CommandLine::createHelpString(const char* arg0) const
+{
+    std::vector<char> buffer;
+    util::StringTool::append(&buffer, arg0);
+    for (int ii = 0; ii < parsers.size(); ++ii)
+    {
+        util::StringTool::append(&buffer, " ");
+        auto parameter = parsers[ii]->getParameterStr();
+        util::StringTool::append(&buffer, parameter);
+    }
+    std::string help(buffer.begin(), buffer.end());
+    return help;
+}
+
+
 bool util::Arg::matchFlag(const char* arg) const
 {
     if (!isFlag(arg)) { return false; }
@@ -48,10 +63,23 @@ bool util::Arg::matchFlag(const char* arg) const
     {
         return arg[1] == shorthand && arg[2] == '\0';
     }
-    return arg[2] == COMMANDLINE_ARGUMENT_PREFIX && !flag.compare(&arg[3]);
+    return arg[1] == COMMANDLINE_ARGUMENT_PREFIX && !flag.compare(&arg[2]);
 }
 
 bool util::Arg::isFlag(const char* arg) const { return arg[0] == COMMANDLINE_ARGUMENT_PREFIX; }
+
+void util::Arg::appendFlag(std::vector<char>* buffer) const
+{
+    if (shorthand)
+    {
+        buffer->push_back(COMMANDLINE_ARGUMENT_PREFIX);
+        buffer->push_back(shorthand);
+        buffer->push_back('|');
+    }
+    buffer->push_back(COMMANDLINE_ARGUMENT_PREFIX);
+    buffer->push_back(COMMANDLINE_ARGUMENT_PREFIX);
+    util::StringTool::append(buffer, flag);
+}
 
 template<>
 const util::Arg::ParseResult util::ValueArg<bool>::parse(int argc, char const * const * argv)
@@ -64,6 +92,16 @@ const util::Arg::ParseResult util::ValueArg<bool>::parse(int argc, char const * 
     value = true;
 
     return 1;
+}
+
+template<>
+std::string util::ValueArg<bool>::getParameterStr() const
+{
+    std::vector<char> buffer;
+    buffer.push_back(isRequired() ? '(' : '[');
+    appendFlag(&buffer);
+    buffer.push_back(isRequired() ? ')' : ']');
+    return std::string(buffer.begin(), buffer.end());
 }
 
 template<>
@@ -84,6 +122,20 @@ const util::Arg::ParseResult util::ValueArg<std::string>::parse(int argc, char c
     value = argv[1];
 
     return 2;
+}
+
+template<>
+std::string util::ValueArg<std::string>::getParameterStr() const
+{
+    std::vector<char> buffer;
+    if (isRequired()) { buffer.push_back('('); }
+    else { buffer.push_back('['); }
+    appendFlag(&buffer);
+    if (isRequired()) { buffer.push_back(')'); }
+    buffer.push_back(' ');
+    util::StringTool::append(&buffer, "<string>");
+    if (!isRequired()) { buffer.push_back(']'); }
+    return std::string(buffer.begin(), buffer.end());
 }
 
 template<>
@@ -109,4 +161,18 @@ const util::Arg::ParseResult util::ValueArg<int>::parse(int argc, char const * c
     }
 
     return 2;
+}
+
+template<>
+std::string util::ValueArg<int>::getParameterStr() const
+{
+    std::vector<char> buffer;
+    if (isRequired()) { buffer.push_back('('); }
+    else { buffer.push_back('['); }
+    appendFlag(&buffer);
+    if (isRequired()) { buffer.push_back(')'); }
+    buffer.push_back(' ');
+    util::StringTool::append(&buffer, "<number>");
+    if (!isRequired()) { buffer.push_back(']'); }
+    return std::string(buffer.begin(), buffer.end());
 }
