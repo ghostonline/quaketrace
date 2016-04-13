@@ -63,6 +63,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
             else
             {
                 std::printf(".");
+                std::fflush(stdout);
             }
         }
         std::this_thread::yield();
