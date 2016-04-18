@@ -98,8 +98,14 @@
 {
  "classname" "light"
  "light" "300"
- "angle" "360"
  "origin" "128 0 -24"
+ "target" "weapon"
+}
+{
+ "spawnflags" "0"
+ "classname" "weapon_lightning"
+ "origin" "128 0 -72"
+ "targetname" "weapon"
 }
 {
  "classname" "trigger_changelevel"
