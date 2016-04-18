@@ -35,23 +35,21 @@ enum KeyType
 struct
 {
     const char* keyName;
+    BspEntity::Property::Key key;
     KeyType type;
 } ENTITY_PROPERTY_KEY_DATA[] = {
-    { "classname",	TYPE_UNKNOWN,},
-    { "origin",		TYPE_VEC,    },
-    { "mangle",		TYPE_VEC,    },
-    { "angle",		TYPE_NUMBER, },
-    { "light",		TYPE_NUMBER, },
-    { "wait",		TYPE_NUMBER, },
-    { "delay",		TYPE_INTEGER,},
-    { "color",		TYPE_VEC,    },
-    { "model",		TYPE_BRUSH,  },
-    { "target",		TYPE_STRING,  },
-    { "targetname",	TYPE_STRING,  },
+    { "classname",      BspEntity::Property::KEY_CLASSNAME,  TYPE_UNKNOWN,},
+    { "origin",         BspEntity::Property::KEY_ORIGIN,     TYPE_VEC,    },
+    { "mangle",         BspEntity::Property::KEY_MANGLE,     TYPE_VEC,    },
+    { "angle",          BspEntity::Property::KEY_ANGLE,      TYPE_NUMBER, },
+    { "_light",         BspEntity::Property::KEY_LIGHT,      TYPE_NUMBER, },
+    { "wait",           BspEntity::Property::KEY_WAIT,       TYPE_NUMBER, },
+    { "delay",          BspEntity::Property::KEY_DELAY,      TYPE_INTEGER,},
+    { "color",          BspEntity::Property::KEY_COLOR,      TYPE_VEC,    },
+    { "model",          BspEntity::Property::KEY_MODEL,      TYPE_BRUSH,  },
+    { "target",         BspEntity::Property::KEY_TARGET,     TYPE_STRING, },
+    { "targetname",     BspEntity::Property::KEY_TARGETNAME, TYPE_STRING, },
 };
-
-
-STATIC_ASSERT_ARRAY_SIZE(ENTITY_PROPERTY_KEY_DATA, BspEntity::Property::NUM_KEYS);
 
 static const std::vector<std::string> extractKeyNames()
 {
@@ -159,7 +157,14 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
 
     const util::ArrayView<std::string> view = { KEY_NAMES.data(), static_cast<int>(KEY_NAMES.size()) };
     int idx = util::findItemInArray(view, property.keyName);
-    property.key = static_cast<Key>(idx);
+    if (idx > -1)
+    {
+        property.key = ENTITY_PROPERTY_KEY_DATA[idx].key;
+    }
+    else
+    {
+        property.key = KEY_OTHER;
+    }
 
     if (property.key != KEY_OTHER)
     {
