@@ -41,7 +41,32 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
         for (int ii = util::lastIndex(lightRays); ii >= 0; --ii )
         {
             auto lightOrigin = lightRays[ii];
-            if (Point::isShiningAtPoint(origin, hitNormal, lightOrigin, light.range))
+            if (PositionedLight::isShiningAtPoint(origin, hitNormal, lightOrigin, light.range))
+            {
+                Ray lightRay{ origin, lightOrigin - origin };
+                float rayLength = math::length(lightRay.dir);
+                lightRay.dir /= rayLength;
+                if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
+                {
+                    const float totalLightLevel = light.calcLightAtDistance(rayLength);
+                    const float factor = light.calcContribution(hitNormal, lightRay.dir);
+                    lightLevel += totalLightLevel * applyAngleScale(factor) * rayContribution;
+                }
+            }
+        }
+    }
+
+    for (int ii = util::lastIndex(spots); ii >= 0; --ii)
+    {
+        const auto& light = spots[ii];
+        auto castRay = math::normalized(light.origin - origin);
+        auto lightRays = light.getRandomLightPoints(castRay, softShadowRays);
+        lightRays.push_back(light.origin);
+        const float rayContribution = 1.0f / lightRays.size();
+        for (int ii = util::lastIndex(lightRays); ii >= 0; --ii )
+        {
+            auto lightOrigin = lightRays[ii];
+            if (light.isShiningAtPoint(origin, hitNormal, lightOrigin))
             {
                 Ray lightRay{ origin, lightOrigin - origin };
                 float rayLength = math::length(lightRay.dir);
@@ -77,29 +102,6 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
     return lightLevel;
 }
 
-const std::vector<math::Vec3f> Lighting::Point::getRandomLightPoints(const math::Vec3f& castNormal, int count) const
-{
-    std::vector<math::Vec3f> points(count);
-    static const math::Vec3f kindaUp = {0.0f, 0.0f, 1.0f};
-    auto right = math::cross(castNormal, kindaUp);
-    if (math::length2(right) < math::APPROXIMATE_ZERO)
-    {
-        static const math::Vec3f kindaUp = {0.0f, 1.0f, 0.0f};
-        right = math::cross(castNormal, kindaUp);
-    }
-    const auto up = math::cross(castNormal, right);
-    float radiusSqrt = std::sqrt(sourceRadius);
-    for (int ii = count - 1; ii >= 0; --ii)
-    {
-        auto point = origin;
-        float theta = util::Random::rand(0, math::PI2);
-        point += up * std::sin(theta) * radiusSqrt;
-        point += right * std::cos(theta) * radiusSqrt;
-        points[ii] = point;
-    }
-    return points;
-}
-
 const std::vector<math::Vec3f> Lighting::getPointsOnUnitSphere(int count) const
 {
     std::vector<math::Vec3f> directions(count);
@@ -112,4 +114,27 @@ const std::vector<math::Vec3f> Lighting::getPointsOnUnitSphere(int count) const
         directions[ii].z = std::cos(zenith);
     }
     return directions;
+}
+
+const std::vector<math::Vec3f> Lighting::getPointsOnDisk(int count, const math::Vec3f& origin, const math::Vec3f& normal, float radius)
+{
+    std::vector<math::Vec3f> points(count);
+    static const math::Vec3f kindaUp = {0.0f, 0.0f, 1.0f};
+    auto right = math::cross(normal, kindaUp);
+    if (math::length2(right) < math::APPROXIMATE_ZERO)
+    {
+        static const math::Vec3f kindaUp = {0.0f, 1.0f, 0.0f};
+        right = math::cross(normal, kindaUp);
+    }
+    const auto up = math::cross(normal, right);
+    float radiusSqrt = std::sqrt(radius);
+    for (int ii = count - 1; ii >= 0; --ii)
+    {
+        auto point = origin;
+        float theta = util::Random::rand(0, math::PI2);
+        point += up * std::sin(theta) * radiusSqrt;
+        point += right * std::cos(theta) * radiusSqrt;
+        points[ii] = point;
+    }
+    return points;
 }

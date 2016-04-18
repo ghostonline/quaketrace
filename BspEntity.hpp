@@ -32,6 +32,8 @@ struct BspEntity
             KEY_DELAY,
             KEY_COLOR,
             KEY_MODEL,
+            KEY_TARGET,
+            KEY_TARGETNAME,
             NUM_KEYS,
         };
 

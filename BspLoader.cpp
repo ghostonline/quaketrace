@@ -8,6 +8,7 @@
 #include "ArrayView.hpp"
 #include <cstdint>
 #include <cstdlib>
+#include <unordered_map>
 
 using namespace std;
 
@@ -18,6 +19,7 @@ namespace {
     static const float PLAYER_EYE_HEIGHT = 56.0f;
     static const float LIGHT_SOURCE_RADIUS = 16;
     static const float DEFAULT_LIGHT_LEVEL = 300;
+    static const float DEFAULT_SPOTLIGHT_ANGLE = 40;
 
     enum Lumps
     {
@@ -270,6 +272,8 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     std::vector<CameraDefinition> cameras;
     std::vector<int> modelIndices;
     CameraDefinition startCamera;
+    std::unordered_map<std::string, math::Vec3f> targetPositions;
+    std::vector<const BspEntity*> spotLights;
     for (int ii = 0; ii < static_cast<int>(entities.size()); ++ii)
     {
         const BspEntity& entity = entities[ii];
@@ -286,8 +290,15 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
                 break;
             case BspEntity::TYPE_LIGHT:
                 {
-                    const auto light = parseLight(entity);
-                    scene.lighting.add(light);
+                    if (entity.hasProperty(BspEntity::Property::KEY_TARGET))
+                    {
+                        spotLights.push_back(&entity);
+                    }
+                    else
+                    {
+                        const auto light = parsePointLight(entity);
+                        scene.lighting.add(light);
+                    }
                 }
                 break;
             case BspEntity::TYPE_WORLD_SPAWN:
@@ -300,6 +311,30 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         if (entity.hasProperty(BspEntity::Property::KEY_MODEL) && isRenderable(entity))
         {
             modelIndices.push_back(entity.getProperty(BspEntity::Property::KEY_MODEL).integer);
+        }
+
+        if (entity.hasProperty(BspEntity::Property::KEY_TARGETNAME) && entity.hasProperty(BspEntity::Property::KEY_ORIGIN))
+        {
+            auto name = entity.getProperty(BspEntity::Property::KEY_TARGETNAME).value;
+            auto origin = entity.getProperty(BspEntity::Property::KEY_ORIGIN).vec;
+            targetPositions.emplace(name, origin);
+        }
+    }
+
+    for (int ii = util::lastIndex(spotLights); ii >= 0; --ii)
+    {
+        const BspEntity& entity = *spotLights[ii];
+        auto target = entity.getProperty(BspEntity::Property::KEY_TARGET).value;
+        if (targetPositions.count(target))
+        {
+            auto origin = targetPositions[target];
+            const auto light = parseSpotLight(entity, origin);
+            scene.lighting.add(light);
+        }
+        else
+        {
+            const auto light = parsePointLight(entity);
+            scene.lighting.add(light);
         }
     }
 
@@ -450,7 +485,7 @@ void BspLoader::printBspAsObj(const void* data, int size)
     }
 }
 
-const Lighting::Point BspLoader::parseLight(const BspEntity& entity)
+const Lighting::Point BspLoader::parsePointLight(const BspEntity& entity)
 {
     ASSERT(entity.type == BspEntity::TYPE_LIGHT);
     auto origin = entity.getProperty(BspEntity::Property::KEY_ORIGIN).vec;
@@ -460,5 +495,25 @@ const Lighting::Point BspLoader::parseLight(const BspEntity& entity)
         strength = DEFAULT_LIGHT_LEVEL;
     }
     Lighting::Point light(origin, strength, LIGHT_SOURCE_RADIUS);
+    return light;
+}
+
+const Lighting::Spot BspLoader::parseSpotLight(const BspEntity& entity, const math::Vec3f& targetOrigin)
+{
+    ASSERT(entity.type == BspEntity::TYPE_LIGHT);
+    auto origin = entity.getProperty(BspEntity::Property::KEY_ORIGIN).vec;
+    auto strength = entity.getProperty(BspEntity::Property::KEY_LIGHT).number;
+    if (!strength)
+    {
+        strength = DEFAULT_LIGHT_LEVEL;
+    }
+    auto angle = entity.getProperty(BspEntity::Property::KEY_ANGLE).number;
+    if (!angle)
+    {
+        angle = DEFAULT_SPOTLIGHT_ANGLE;
+    }
+    float falloff = -std::cosf(angle / 2.0f * math::PI / 180);
+    auto direction = math::normalized(targetOrigin - origin);
+    Lighting::Spot light(origin, strength, LIGHT_SOURCE_RADIUS, direction, falloff);
     return light;
 }
