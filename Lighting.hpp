@@ -36,6 +36,7 @@ struct Lighting
         : PositionedLight(origin, strength, sourceRadius)
         {}
 
+        const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin) const;
         const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal) const;
         const float calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const;
         const std::vector<math::Vec3f> getRandomLightPoints(const math::Vec3f& castNormal, int count) const;
@@ -96,6 +97,11 @@ inline const float Lighting::PositionedLight::calcLightAtDistance(float dist) co
 inline const float Lighting::Point::calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const
 {
     return math::max(0.0f, math::dot(rayNormal, planeNormal));
+}
+
+inline const bool Lighting::Point::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin) const
+{
+    return PositionedLight::isShiningAtPoint(planeOrigin, planeNormal, lightOrigin, range);
 }
 
 inline const bool Lighting::Point::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal) const

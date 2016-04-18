@@ -14,51 +14,13 @@ inline float applyAngleScale(float value)
     return (1.0f - anglescale) + anglescale * value;
 }
 
-const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays, int occlusionRays) const
+template<typename T>
+int calcLightingForLightType(const std::vector<T>& lights, const Scene& scene, const math::Vec3f& origin, const math::Vec3f& hitNormal, int softShadowRays)
 {
-    float lightLevel = ambient;
-    for (int ii = util::lastIndex(directional); ii >= 0; --ii)
+    float lightLevel = 0.0f;
+    for (int ii = util::lastIndex(lights); ii >= 0; --ii)
     {
-        const Directional& light = directional[ii];
-        if (light.isShiningAtPoint(hitNormal))
-        {
-            Ray lightRay{ origin, -light.normal };
-            if (!collision3d::raySceneCollision(lightRay, DIRECTIONAL_RAY_LENGTH, scene))
-            {
-                const float factor = light.calcContribution(hitNormal, lightRay.dir);
-                lightLevel += applyAngleScale(factor) * light.intensity;
-            }
-        }
-    }
-
-    for (int ii = util::lastIndex(points); ii >= 0; --ii)
-    {
-        const auto& light = points[ii];
-        auto castRay = math::normalized(light.origin - origin);
-        auto lightRays = light.getRandomLightPoints(castRay, softShadowRays);
-        lightRays.push_back(light.origin);
-        const float rayContribution = 1.0f / lightRays.size();
-        for (int ii = util::lastIndex(lightRays); ii >= 0; --ii )
-        {
-            auto lightOrigin = lightRays[ii];
-            if (PositionedLight::isShiningAtPoint(origin, hitNormal, lightOrigin, light.range))
-            {
-                Ray lightRay{ origin, lightOrigin - origin };
-                float rayLength = math::length(lightRay.dir);
-                lightRay.dir /= rayLength;
-                if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
-                {
-                    const float totalLightLevel = light.calcLightAtDistance(rayLength);
-                    const float factor = light.calcContribution(hitNormal, lightRay.dir);
-                    lightLevel += totalLightLevel * applyAngleScale(factor) * rayContribution;
-                }
-            }
-        }
-    }
-
-    for (int ii = util::lastIndex(spots); ii >= 0; --ii)
-    {
-        const auto& light = spots[ii];
+        const auto& light = lights[ii];
         auto castRay = math::normalized(light.origin - origin);
         auto lightRays = light.getRandomLightPoints(castRay, softShadowRays);
         lightRays.push_back(light.origin);
@@ -80,6 +42,28 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
             }
         }
     }
+    return lightLevel;
+}
+
+const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays, int occlusionRays) const
+{
+    float lightLevel = ambient;
+    for (int ii = util::lastIndex(directional); ii >= 0; --ii)
+    {
+        const Directional& light = directional[ii];
+        if (light.isShiningAtPoint(hitNormal))
+        {
+            Ray lightRay{ origin, -light.normal };
+            if (!collision3d::raySceneCollision(lightRay, DIRECTIONAL_RAY_LENGTH, scene))
+            {
+                const float factor = light.calcContribution(hitNormal, lightRay.dir);
+                lightLevel += applyAngleScale(factor) * light.intensity;
+            }
+        }
+    }
+
+    lightLevel += calcLightingForLightType<Point>(points, scene, origin, hitNormal, softShadowRays);
+    lightLevel += calcLightingForLightType<Spot>(spots, scene, origin, hitNormal, softShadowRays);
     lightLevel = math::clamp01(lightLevel);
 
     if (lightLevel > 0.0f && occlusionRays > 0)
