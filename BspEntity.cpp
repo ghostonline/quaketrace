@@ -164,6 +164,13 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
     else
     {
         property.key = KEY_OTHER;
+        
+        // Needed for some custom lights
+        if (!std::strncmp(property.keyName.c_str(), "light", 5))
+        {
+            property.key = KEY_LIGHT;
+        }
+
     }
 
     if (property.key != KEY_OTHER)
