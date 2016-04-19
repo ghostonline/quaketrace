@@ -15,7 +15,7 @@ inline float applyAngleScale(float value)
 }
 
 template<typename T>
-int calcLightingForLightType(const std::vector<T>& lights, const Scene& scene, const math::Vec3f& origin, const math::Vec3f& hitNormal, int softShadowRays)
+float calcLightingForLightType(const std::vector<T>& lights, const Scene& scene, const math::Vec3f& origin, const math::Vec3f& hitNormal, int softShadowRays)
 {
     float lightLevel = 0.0f;
     for (int ii = util::lastIndex(lights); ii >= 0; --ii)
