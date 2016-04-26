@@ -8,6 +8,7 @@ class Texture
 {
 public:
     static Texture createFromIndexedRGB(int width, int height, const void* indices, const void* palette);
+    static Texture createCheckerBoard(int width, int height, int checkerSize, const Color& a, const Color& b);
 
     Texture(int width, int height, int channels);
 

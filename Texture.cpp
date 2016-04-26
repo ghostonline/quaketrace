@@ -24,6 +24,33 @@ Texture Texture::createFromIndexedRGB(int width, int height, const void *indices
     return texture;
 }
 
+Texture Texture::createCheckerBoard(int width, int height, int checkerSize, const Color& a, const Color& b)
+{
+    static const int PIXEL_WIDTH = 4;
+    const std::uint32_t argbA = Color::asARGB(a);
+    const std::uint32_t argbB = Color::asARGB(b);
+
+    Texture texture(width, height, PIXEL_WIDTH);
+    int cellX = 0;
+    int cellY = 0;
+    for (int x = 0; x < width; ++x)
+    {
+        cellY = 0;
+        for (int y = 0; y < height; ++y)
+        {
+            const std::uint32_t argb = (cellX & 1) ^ (cellY & 1) ? argbA : argbB;
+            int pixelIdx = (x + (y * width)) * PIXEL_WIDTH;
+            texture.pixels[pixelIdx + 3] = (argb >> 24) & 0xFF;
+            texture.pixels[pixelIdx + 2] = (argb >> 16) & 0xFF;
+            texture.pixels[pixelIdx + 1] = (argb >> 8) & 0xFF;
+            texture.pixels[pixelIdx + 0] = (argb >> 0) & 0xFF;
+            if (y % checkerSize == 0) { cellY += 1; }
+        }
+        if (x % checkerSize == 0) { cellX += 1; }
+    }
+    return texture;
+}
+
 Texture::Texture(int width, int height, int channels)
     : width(width)
     , height(height)

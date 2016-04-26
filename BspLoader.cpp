@@ -350,8 +350,17 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     int textureCount = textureOffsets[0];
     scene.textures.reserve(textureCount);
     std::vector<bool> skyTexture;
+    auto dummyTexture = Texture::createCheckerBoard(64, 64, 16, Color(1.0f, 0.0f, 1.0f), Color(0.0f, 0.0f, 1.0f));
+    std::vector<bool> dummyTextureFullbright(dummyTexture.getWidth() * dummyTexture.getHeight(), true);
     for (int ii = 1; ii <= textureCount; ++ii)
     {
+        if (textureOffsets[ii] == -1)
+        {
+            // Texture not found
+            scene.textures.push_back({dummyTexture, dummyTextureFullbright});
+            skyTexture.push_back(false);
+            continue;
+        }
         int offset = header.lumps[LUMP_TEXTURES].offset + textureOffsets[ii];
         auto def = util::castFromMemory<MipsTexture>(data, offset);
         auto indices = util::castFromMemory<uint8_t>(data, offset + def->offset[MipsTexture::MIP_1X1]);
