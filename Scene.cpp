@@ -61,6 +61,26 @@ void Scene::initDefault(Scene* scene)
     scene->lighting.ambient = 0.3f;
 }
 
+Scene Scene::createShadowScene(const Scene& scene)
+{
+    Scene shadowScene;
+    shadowScene.lighting = scene.lighting;
+    shadowScene.cameras = scene.cameras;
+    shadowScene.spheres = scene.spheres;
+    shadowScene.planes = scene.planes;
+    shadowScene.triangles = scene.triangles;
+    shadowScene.polygons.reserve(scene.polygons.size());
+    for (int ii = util::lastIndex(scene.polygons); ii >= 0; --ii)
+    {
+        const auto& poly = scene.polygons[ii];
+        if (poly.flags[Scene::ConvexPolygon::FLAG_SHADOWCAST])
+        {
+            shadowScene.polygons.push_back(poly);
+        }
+    }
+    return shadowScene;
+}
+
 const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Material& material)
 {
     ASSERT(vertices.size() > 2);

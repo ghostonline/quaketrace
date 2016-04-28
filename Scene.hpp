@@ -14,14 +14,21 @@ struct Scene
 {
     struct Material
     {
-        Material() : texture(-1), color(0.0f, 0.0f, 0.0f), useSkyShader(false) {}
+        Material() : texture(-1), color(0.0f, 0.0f, 0.0f), flags(NUM_FLAGS) {}
 
         int texture;
         math::Vec3f u;
         math::Vec3f v;
         math::Vec2f offset;
         Color color;
-        bool useSkyShader;
+
+        // Flags
+        enum Flag
+        {
+            FLAG_SKYSHADER,
+            NUM_FLAGS,
+        };
+        std::vector<bool> flags;
 
         math::Vec2f positionToUV(const math::Vec3f& pos) const;
     };
@@ -65,8 +72,17 @@ struct Scene
 
         Material material;
 
+        // Flags
+        enum Flag
+        {
+            FLAG_TWOSIDED,
+            FLAG_SHADOWCAST,
+            NUM_FLAGS,
+        };
+        std::vector<bool> flags;
+
     private:
-        ConvexPolygon() {}
+        ConvexPolygon() : flags(NUM_FLAGS) {}
     };
 
     std::vector<Camera> cameras;
@@ -92,6 +108,7 @@ struct Scene
     TexturePixel getSkyPixel(const Material& mat, const Ray& ray, const Camera& camera, const math::Vec2i& screen) const;
 
     static void initDefault(Scene* scene);
+    static Scene createShadowScene(const Scene& scene);
 };
 
 inline math::Vec2f Scene::Material::positionToUV(const math::Vec3f& pos) const

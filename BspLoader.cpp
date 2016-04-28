@@ -233,6 +233,11 @@ namespace {
         return !std::strncmp(name, "sky", 3);
     }
 
+    static inline bool isWaterTexture(const char* name)
+    {
+        return name[0] == '*';
+    }
+
     static inline float getNormalizedLightValue(const BspEntity& entity)
     {
         float value = 0.0f;
@@ -350,6 +355,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     int textureCount = textureOffsets[0];
     scene.textures.reserve(textureCount);
     std::vector<bool> skyTexture;
+    std::vector<bool> waterTexture;
     auto dummyTexture = Texture::createCheckerBoard(64, 64, 16, Color(1.0f, 0.0f, 1.0f), Color(0.0f, 0.0f, 1.0f));
     std::vector<bool> dummyTextureFullbright(dummyTexture.getWidth() * dummyTexture.getHeight(), true);
     for (int ii = 1; ii <= textureCount; ++ii)
@@ -359,6 +365,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             // Texture not found
             scene.textures.push_back({dummyTexture, dummyTextureFullbright});
             skyTexture.push_back(false);
+            waterTexture.push_back(false);
             continue;
         }
         int offset = header.lumps[LUMP_TEXTURES].offset + textureOffsets[ii];
@@ -372,6 +379,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         }
         scene.textures.push_back({Texture::createFromIndexedRGB(def->width, def->height, indices, palette), fullbright});
         skyTexture.push_back(isSky);
+        waterTexture.push_back(isWaterTexture(def->name));
     }
 
     for (int ii = util::lastIndex(modelIndices); ii >= 0; --ii)
@@ -401,8 +409,9 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 #else
             auto mat = info2material(texture, Color(0.0f, 0.0f, 0.0f));
 #endif
-            mat.useSkyShader = skyTexture[texture.texture_id];
-            const auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
+            mat.flags[Scene::Material::FLAG_SKYSHADER] = skyTexture[texture.texture_id];
+            auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
+            poly.flags[Scene::ConvexPolygon::FLAG_SHADOWCAST] = !waterTexture[texture.texture_id];
             scene.polygons.push_back(poly);
         }
     }

@@ -17,6 +17,7 @@ struct RayContext
     Image* canvas;
     const RayTracer& engine;
     const Scene& scene;
+    const Scene& shadowScene;
     const Camera& camera;
     const std::vector<math::Vec2f>& sampleOffsets;
 
@@ -38,7 +39,7 @@ void RayContext::process(RayInput in) const
         const float sampleY = in.y + sampleOffsets[ii].y;
         const float normX = (sampleX / static_cast<float>(canvas->width) - 0.5f) * 2.0f;
         const float normY = (sampleY / static_cast<float>(canvas->height) - 0.5f) * -2.0f;
-        Color color = engine.renderPixel(scene, camera, normX, normY);
+        Color color = engine.renderPixel(scene, shadowScene, camera, normX, normY);
         aggregate += color / static_cast<float>(sampleOffsets.size());
     }
 
@@ -74,7 +75,9 @@ void RayTracer::trace(const Scene& scene, const Camera& camera, Image* canvas)
     }
     const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
 
-    RayContext context = {canvas, *this, scene, camera, sampleOffsets};
+    Scene shadowScene = Scene::createShadowScene(scene);
+
+    RayContext context = {canvas, *this, scene, shadowScene, camera, sampleOffsets};
 
     std::vector<RayInput> input;
     for (int x = canvas->width - 1; x >= 0; --x)
@@ -98,7 +101,7 @@ void RayTracer::trace(const Scene& scene, const Camera& camera, Image* canvas)
     progress = 1.0f;
 }
 
-const Color RayTracer::renderPixel(const Scene& scene, const Camera& camera, float x, float y) const
+const Color RayTracer::renderPixel(const Scene& scene, const Scene& shadowScene, const Camera& camera, float x, float y) const
 {
     Ray pixelRay;
     {
@@ -141,7 +144,7 @@ const Color RayTracer::renderPixel(const Scene& scene, const Camera& camera, flo
     {
         const Scene::Material& mat = scene.polygons[polygonHitIdx].material;
         Scene::TexturePixel pixel;
-        if (mat.useSkyShader)
+        if (mat.flags[Scene::Material::FLAG_SKYSHADER])
         {
             pixel = scene.getSkyPixel(mat, pixelRay, camera, {config.width, config.height});
         }
@@ -157,7 +160,7 @@ const Color RayTracer::renderPixel(const Scene& scene, const Camera& camera, flo
     float lightLevel = 0.0f;
     if (lighted)
     {
-        lightLevel = scene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, scene, config.softshadowRayCount, config.occlusionRayCount);
+        lightLevel = shadowScene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, shadowScene, config.softshadowRayCount, config.occlusionRayCount);
     }
     else
     {

@@ -153,6 +153,10 @@ int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std:
         // Perform plane intersection
         float dist = 0.0f;
         bool intersects = rayPlaneIntersection(ray, poly.plane.origin, poly.plane.normal, &dist);
+        if (!intersects && poly.flags[Scene::ConvexPolygon::FLAG_TWOSIDED])
+        {
+            intersects = rayPlaneIntersection(ray, poly.plane.origin, -poly.plane.normal, &dist);
+        }
         if (!intersects || dist < 0 || dist > minDist) { continue; }
 
         math::Vec3f intersection = ray.dir * dist + ray.origin;

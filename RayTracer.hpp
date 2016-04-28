@@ -37,7 +37,7 @@ public:
     void trace(const Scene& scene, const Camera& camera, Image* target);
 
 private:
-    const Color renderPixel(const Scene& scene, const Camera& camera, float x, float y) const;
+    const Color renderPixel(const Scene& scene, const Scene& shadowScene, const Camera& camera, float x, float y) const;
 
     Config config;
     int breakX, breakY;
