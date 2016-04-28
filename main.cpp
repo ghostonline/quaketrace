@@ -1,7 +1,7 @@
 #include "GUI.hpp"
 #include "Console.hpp"
 
-#if TARGET_WIN32
+#if SHOW_GUI
 #include "SDL.h" // Convert main into winmain if necessary
 #endif
 
