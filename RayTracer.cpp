@@ -147,13 +147,14 @@ const Color RayTracer::renderPixel(const Scene& scene, const Scene& shadowScene,
         if (mat.flags[Scene::Material::FLAG_SKYSHADER])
         {
             pixel = scene.getSkyPixel(mat, pixelRay, camera, {config.width, config.height});
+            lighted = false;
         }
         else
         {
             pixel = scene.getTexturePixel(mat, infoPolygon.pos);
+            lighted = !pixel.fullbright;
         }
         color = pixel.color;
-        lighted = !pixel.fullbright;
         hitInfo = infoPolygon;
     }
 

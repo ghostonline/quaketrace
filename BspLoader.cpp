@@ -372,10 +372,9 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
         auto def = util::castFromMemory<MipsTexture>(data, offset);
         auto indices = util::castFromMemory<uint8_t>(data, offset + def->offset[MipsTexture::MIP_1X1]);
         std::vector<bool> fullbright(def->width * def->height);
-        const bool isSky = isSkyTexture(def->name);
         for (int ii = util::lastIndex(fullbright); ii >= 0; --ii)
         {
-            fullbright[ii] = isFullBright(indices[ii]) || isSky;
+            fullbright[ii] = isFullBright(indices[ii]);
         }
         scene.textures.push_back({Texture::createFromIndexedRGB(def->width, def->height, indices, palette), fullbright});
         skyTexture.push_back(isSky);
