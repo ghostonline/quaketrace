@@ -354,18 +354,16 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
     const int32_t* textureOffsets = util::castFromMemory<int32_t>(data, header.lumps[LUMP_TEXTURES].offset);
     int textureCount = textureOffsets[0];
     scene.textures.reserve(textureCount);
-    std::vector<bool> skyTexture;
-    std::vector<bool> waterTexture;
     auto dummyTexture = Texture::createCheckerBoard(64, 64, 16, Color(1.0f, 0.0f, 1.0f), Color(0.0f, 0.0f, 1.0f));
     std::vector<bool> dummyTextureFullbright(dummyTexture.getWidth() * dummyTexture.getHeight(), true);
+    std::vector<const MipsTexture*> mipTextures;
     for (int ii = 1; ii <= textureCount; ++ii)
     {
         if (textureOffsets[ii] == -1)
         {
             // Texture not found
             scene.textures.push_back({dummyTexture, dummyTextureFullbright});
-            skyTexture.push_back(false);
-            waterTexture.push_back(false);
+            mipTextures.push_back(nullptr);
             continue;
         }
         int offset = header.lumps[LUMP_TEXTURES].offset + textureOffsets[ii];
@@ -377,8 +375,7 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
             fullbright[ii] = isFullBright(indices[ii]);
         }
         scene.textures.push_back({Texture::createFromIndexedRGB(def->width, def->height, indices, palette), fullbright});
-        skyTexture.push_back(isSky);
-        waterTexture.push_back(isWaterTexture(def->name));
+        mipTextures.push_back(def);
     }
 
     for (int ii = util::lastIndex(modelIndices); ii >= 0; --ii)
@@ -408,9 +405,18 @@ const Scene BspLoader::createSceneFromBsp(const void* data, int size)
 #else
             auto mat = info2material(texture, Color(0.0f, 0.0f, 0.0f));
 #endif
-            mat.flags[Scene::Material::FLAG_SKYSHADER] = skyTexture[texture.texture_id];
+            bool skyTexture = false;
+            bool waterTexture = false;
+            auto mipTexture = mipTextures[texture.texture_id];
+            if (mipTexture)
+            {
+                skyTexture = isSkyTexture(mipTexture->name);
+                waterTexture = isWaterTexture(mipTexture->name);
+            }
+
+            mat.flags[Scene::Material::FLAG_SKYSHADER] = skyTexture;
             auto poly = Scene::ConvexPolygon::create(polyVertices, normal, mat);
-            poly.flags[Scene::ConvexPolygon::FLAG_SHADOWCAST] = !waterTexture[texture.texture_id];
+            poly.flags[Scene::ConvexPolygon::FLAG_SHADOWCAST] = !waterTexture;
             scene.polygons.push_back(poly);
         }
     }
