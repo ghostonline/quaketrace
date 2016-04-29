@@ -92,7 +92,8 @@ void RayTracer::trace(const Scene& scene, const Camera& camera, Image* canvas)
     Scheduler scheduler(config.threads);
     scheduler.scheduleAsync<RayInput, RayContext>(input, context);
 
-    while (!scheduler.isFinished())
+    abortTrace = false;
+    while (!scheduler.isFinished() && !abortTrace)
     {
         progress = 1.0f - scheduler.getTotalJobCount() / static_cast<float>(input.size());
         std::this_thread::yield();

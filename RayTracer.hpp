@@ -35,6 +35,7 @@ public:
     float getProgress() const { return progress; }
     const Image trace(const Scene& scene, const Camera& camera);
     void trace(const Scene& scene, const Camera& camera, Image* target);
+    void cancel() { abortTrace = true; }
 
 private:
     const Color renderPixel(const Scene& scene, const Scene& shadowScene, const Camera& camera, float x, float y) const;
@@ -42,4 +43,5 @@ private:
     Config config;
     int breakX, breakY;
     float progress;
+    bool abortTrace;
 };

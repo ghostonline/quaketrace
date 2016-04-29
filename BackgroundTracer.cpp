@@ -12,6 +12,7 @@ BackgroundTracer::BackgroundTracer(const RayTracer::Config& config)
 BackgroundTracer::~BackgroundTracer()
 {
     running = false;
+    engine.cancel();
     if (thread.joinable()) { thread.join(); }
 }
 
