@@ -13,6 +13,73 @@ namespace {
         if (normalized < 0) { normalized += max; }
         return normalized;
     }
+
+    template<typename T>
+    inline bool isInFrontOfPlane(const Scene::Plane& plane, const T& geometry);
+
+    template<>
+    inline bool isInFrontOfPlane<math::Vec3f>(const Scene::Plane& plane, const math::Vec3f& point)
+    {
+        auto diff = point - plane.origin;
+        return math::dot(diff, plane.normal) >= 0;
+    }
+
+    template<>
+    inline bool isInFrontOfPlane<Scene::Sphere>(const Scene::Plane& plane, const Scene::Sphere& sphere)
+    {
+        auto nearest = sphere.origin + plane.normal * sphere.radius;
+        return isInFrontOfPlane(plane, sphere.origin) || isInFrontOfPlane(plane, nearest);
+    }
+
+    template<>
+    inline bool isInFrontOfPlane<Scene::Triangle>(const Scene::Plane& plane, const Scene::Triangle& triangle)
+    {
+        return isInFrontOfPlane(plane, triangle.a) || isInFrontOfPlane(plane, triangle.b) || isInFrontOfPlane(plane, triangle.c);
+    }
+
+    template<>
+    inline bool isInFrontOfPlane<Scene::ConvexPolygon>(const Scene::Plane& plane, const Scene::ConvexPolygon& poly)
+    {
+        for (int ii = util::lastIndex(poly.vertices); ii >= 0; --ii)
+        {
+            if (isInFrontOfPlane(plane, poly.vertices[ii]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template<>
+    inline bool isInFrontOfPlane<Scene::Plane>(const Scene::Plane& plane, const Scene::Plane& poly)
+    {
+        return true;
+    }
+
+    template<typename T>
+    const std::vector<T> testCulling(const std::vector<T>& geometryList, const Scene::Plane frustum[4])
+    {
+        std::vector<T> optimized;
+        optimized.reserve(geometryList.size());
+        for (int ii = util::lastIndex(geometryList); ii >= 0; --ii)
+        {
+            auto& geometry = geometryList[ii];
+            for (int jj = 0; jj < 4; ++jj)
+            {
+                if (!isInFrontOfPlane(frustum[jj], geometry))
+                {
+                    goto reject;
+                    break;
+                }
+            }
+            optimized.push_back(geometry);
+
+        reject:
+            ;
+        }
+        return optimized;
+    }
+
 }
 
 
@@ -81,6 +148,30 @@ Scene Scene::createShadowScene(const Scene& scene)
     return shadowScene;
 }
 
+Scene Scene::cullGeometry(const Scene& scene, const Camera& camera)
+{
+    Scene optimized;
+    math::Vec3f up = math::normalized(camera.direction + camera.up * camera.halfViewAngles.y);
+    math::Vec3f down = math::normalized(camera.direction - camera.up * camera.halfViewAngles.y);
+    math::Vec3f left = math::normalized(camera.direction - camera.right * camera.halfViewAngles.x);
+    math::Vec3f right = math::normalized(camera.direction + camera.right * camera.halfViewAngles.x);
+    math::Vec3f topNormal = math::cross(up, camera.right);
+    math::Vec3f bottomNormal = math::cross(down, -camera.right);
+    math::Vec3f leftNormal = math::cross(left, camera.up);
+    math::Vec3f rightNormal = math::cross(right, -camera.up);
+    Plane cullPlanes[4];
+    cullPlanes[0] = {camera.origin, topNormal, Color()};
+    cullPlanes[1] = {camera.origin, bottomNormal, Color()};
+    cullPlanes[2] = {camera.origin, leftNormal, Color()};
+    cullPlanes[3] = {camera.origin, rightNormal, Color()};
+    optimized.spheres = testCulling<Sphere>(scene.spheres, cullPlanes);
+    optimized.planes = testCulling<Plane>(scene.planes, cullPlanes);
+    optimized.triangles = testCulling<Triangle>(scene.triangles, cullPlanes);
+    optimized.polygons = testCulling<ConvexPolygon>(scene.polygons, cullPlanes);
+    optimized.textures = scene.textures;
+    return optimized;
+}
+
 const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::Vec3f>& vertices, const math::Vec3f& normal, const Material& material)
 {
     ASSERT(vertices.size() > 2);
@@ -89,6 +180,7 @@ const Scene::ConvexPolygon Scene::ConvexPolygon::create(const std::vector<math::
     poly.material = material;
     poly.plane.normal = normal;
     poly.plane.origin = vertices[0];
+    poly.vertices = vertices;
 
     // Create edge normals
     poly.edgeNormals.resize(vertices.size());

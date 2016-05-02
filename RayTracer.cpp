@@ -76,8 +76,9 @@ void RayTracer::trace(const Scene& scene, const Camera& camera, Image* canvas)
     const math::Vec2f fbSize(static_cast<float>(canvas->width), static_cast<float>(canvas->height));
 
     Scene shadowScene = Scene::createShadowScene(scene);
+    Scene optimized = Scene::cullGeometry(scene, camera);
 
-    RayContext context = {canvas, *this, scene, shadowScene, camera, sampleOffsets};
+    RayContext context = {canvas, *this, optimized, shadowScene, camera, sampleOffsets};
 
     std::vector<RayInput> input;
     for (int x = canvas->width - 1; x >= 0; --x)

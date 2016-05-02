@@ -109,6 +109,7 @@ struct Scene
 
     static void initDefault(Scene* scene);
     static Scene createShadowScene(const Scene& scene);
+    static Scene cullGeometry(const Scene& scene, const Camera& camera);
 };
 
 inline math::Vec2f Scene::Material::positionToUV(const math::Vec3f& pos) const
