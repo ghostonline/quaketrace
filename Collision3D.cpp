@@ -162,7 +162,6 @@ int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std:
         math::Vec3f intersection = ray.dir * dist + ray.origin;
 
         // Detect whether intersection point lies in front of each edge plane
-        bool insidePolygon = true;
         for (int jj = util::lastIndex(poly.edgePlanes); jj >= 0; --jj)
         {
             const auto& plane = poly.edgePlanes[jj];
@@ -170,16 +169,15 @@ int collision3d::raycastConvexPolygons(const Ray& ray, float maxDist, const std:
             if (math::dot(relative, plane.normal) < 0)
             {
                 // behind plane
-                insidePolygon = false;
-                break;
+                goto poly_end;
             }
         }
-
-        if (!insidePolygon) { continue; }
 
         minDist = dist;
         minIndex = ii;
         minNormal = poly.plane.normal;
+poly_end:
+        ;
     }
 
     if (minIndex > -1 && hitResult)
