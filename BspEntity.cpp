@@ -189,7 +189,7 @@ const BspEntity::Property BspEntity::Property::parse(const util::ArrayView<char>
                 break;
             case TYPE_BRUSH:
                 ASSERT(property.value[0] == '*');
-                util::StringTool::parseInteger(property.value.c_str(), &property.integer);
+                util::StringTool::parseInteger(property.value.c_str() + 1, &property.integer);
                 break;
             case TYPE_STRING:
                 // fallthrough
