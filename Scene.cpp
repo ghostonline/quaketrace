@@ -151,19 +151,20 @@ Scene Scene::createShadowScene(const Scene& scene)
 Scene Scene::cullGeometry(const Scene& scene, const Camera& camera)
 {
     Scene optimized;
-    math::Vec3f up = math::normalized(camera.direction + camera.up * camera.halfViewAngles.y);
-    math::Vec3f down = math::normalized(camera.direction - camera.up * camera.halfViewAngles.y);
-    math::Vec3f left = math::normalized(camera.direction - camera.right * camera.halfViewAngles.x);
-    math::Vec3f right = math::normalized(camera.direction + camera.right * camera.halfViewAngles.x);
-    math::Vec3f topNormal = math::cross(up, camera.right);
-    math::Vec3f bottomNormal = math::cross(down, -camera.right);
-    math::Vec3f leftNormal = math::cross(left, camera.up);
-    math::Vec3f rightNormal = math::cross(right, -camera.up);
-    Plane cullPlanes[4];
-    cullPlanes[0] = {camera.origin, topNormal, Color()};
-    cullPlanes[1] = {camera.origin, bottomNormal, Color()};
-    cullPlanes[2] = {camera.origin, leftNormal, Color()};
-    cullPlanes[3] = {camera.origin, rightNormal, Color()};
+    const math::Vec3f up = math::normalized(camera.direction + camera.up * camera.halfViewAngles.y);
+    const math::Vec3f down = math::normalized(camera.direction - camera.up * camera.halfViewAngles.y);
+    const math::Vec3f left = math::normalized(camera.direction - camera.right * camera.halfViewAngles.x);
+    const math::Vec3f right = math::normalized(camera.direction + camera.right * camera.halfViewAngles.x);
+    const math::Vec3f topNormal = math::cross(up, camera.right);
+    const math::Vec3f bottomNormal = math::cross(down, -camera.right);
+    const math::Vec3f leftNormal = math::cross(left, camera.up);
+    const math::Vec3f rightNormal = math::cross(right, -camera.up);
+    Plane cullPlanes[4] = {
+        {camera.origin, topNormal, Color()},
+        {camera.origin, bottomNormal, Color()},
+        {camera.origin, leftNormal, Color()},
+        {camera.origin, rightNormal, Color()},
+    };
     optimized.spheres = testCulling<Sphere>(scene.spheres, cullPlanes);
     optimized.planes = testCulling<Plane>(scene.planes, cullPlanes);
     optimized.triangles = testCulling<Triangle>(scene.triangles, cullPlanes);
