@@ -45,7 +45,7 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
     RayTracer::Config traceConfig = common::parseRayTracerConfig(config);
     BackgroundTracer engine(traceConfig);
 
-    size_t cameraIdx = math::clamp<size_t>(config.cameraIdx, 0, scene.cameras.size());
+    size_t cameraIdx = math::clamp<size_t>(config.cameraIdx, 0, scene.cameras.size() - 1);
     engine.startTrace(scene, scene.cameras[cameraIdx]);
 
     std::printf("Starting tracing scene\n");

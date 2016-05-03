@@ -134,7 +134,7 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
         if (refreshCanvas)
         {
             renderStart = SDL_GetTicks();
-            size_t cameraIdx = math::clamp<size_t>(config.cameraIdx, 0, scene.cameras.size());
+            size_t cameraIdx = math::clamp<size_t>(config.cameraIdx, 0, scene.cameras.size() - 1);
             engine.startTrace(scene, scene.cameras[cameraIdx]);
 
             refreshCanvas = false;
