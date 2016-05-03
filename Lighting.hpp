@@ -26,7 +26,7 @@ struct Lighting
         float sourceRadius;     // radius used for soft shadowing
         Color color;
 
-        static const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin, float range);
+        static const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& lightOrigin, float range);
         const float calcLightAtDistance(float dist) const;
     };
 
@@ -36,8 +36,8 @@ struct Lighting
         : PositionedLight(origin, strength, sourceRadius)
         {}
 
-        const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin) const;
-        const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal) const;
+        const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& lightOrigin) const;
+        const bool isShiningAtPoint(const math::Vec3f& planeOrigin) const;
         const float calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const;
         const std::vector<math::Vec3f> getRandomLightPoints(const math::Vec3f& castNormal, int count) const;
     };
@@ -47,7 +47,6 @@ struct Lighting
         math::Vec3f normal;
         float intensity;
 
-        const bool isShiningAtPoint(const math::Vec3f& planeNormal) const;
         const float calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const;
     };
 
@@ -62,8 +61,8 @@ struct Lighting
         math::Vec3f normal;
         float angleFalloff;
 
-        const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin) const;
-        const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal) const;
+        const bool isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& lightOrigin) const;
+        const bool isShiningAtPoint(const math::Vec3f& planeOrigin) const;
         const float calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const;
         const std::vector<math::Vec3f> getRandomLightPoints(const math::Vec3f& castNormal, int count) const;
     };
@@ -83,10 +82,10 @@ struct Lighting
     void add(const Spot& light) { spots.push_back(light); }
 };
 
-inline const bool Lighting::PositionedLight::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin, float lightRange)
+inline const bool Lighting::PositionedLight::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& lightOrigin, float lightRange)
 {
     const auto lightBeam = planeOrigin - lightOrigin;
-    return math::length(lightBeam) < lightRange && math::dot(planeNormal, lightBeam) < 0;
+    return math::length(lightBeam) < lightRange;
 }
 
 inline const float Lighting::PositionedLight::calcLightAtDistance(float dist) const
@@ -99,14 +98,14 @@ inline const float Lighting::Point::calcContribution(const math::Vec3f& planeNor
     return math::max(0.0f, math::dot(rayNormal, planeNormal));
 }
 
-inline const bool Lighting::Point::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin) const
+inline const bool Lighting::Point::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& lightOrigin) const
 {
-    return PositionedLight::isShiningAtPoint(planeOrigin, planeNormal, lightOrigin, range);
+    return PositionedLight::isShiningAtPoint(planeOrigin, lightOrigin, range);
 }
 
-inline const bool Lighting::Point::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal) const
+inline const bool Lighting::Point::isShiningAtPoint(const math::Vec3f& planeOrigin) const
 {
-    return PositionedLight::isShiningAtPoint(planeOrigin, planeNormal, origin, range);
+    return PositionedLight::isShiningAtPoint(planeOrigin, origin, range);
 }
 
 inline const std::vector<math::Vec3f> Lighting::Point::getRandomLightPoints(const math::Vec3f& castNormal, int count) const
@@ -114,19 +113,14 @@ inline const std::vector<math::Vec3f> Lighting::Point::getRandomLightPoints(cons
     return Lighting::getPointsOnDisk(count, origin, castNormal, sourceRadius);
 }
 
-inline const bool Lighting::Directional::isShiningAtPoint(const math::Vec3f& planeNormal) const
-{
-    return math::dot(planeNormal, normal) < 0;
-}
-
 inline const float Lighting::Directional::calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const
 {
     return math::max(0.0f, math::dot(planeNormal, rayNormal));
 }
 
-inline const bool Lighting::Spot::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal, const math::Vec3f& lightOrigin) const
+inline const bool Lighting::Spot::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& lightOrigin) const
 {
-    if (!PositionedLight::isShiningAtPoint(planeOrigin, planeNormal, lightOrigin, range))
+    if (!PositionedLight::isShiningAtPoint(planeOrigin, lightOrigin, range))
     {
         return false;
     }
@@ -135,9 +129,9 @@ inline const bool Lighting::Spot::isShiningAtPoint(const math::Vec3f& planeOrigi
     return math::dot(normal, rayDir) <= angleFalloff;
 }
 
-inline const bool Lighting::Spot::isShiningAtPoint(const math::Vec3f& planeOrigin, const math::Vec3f& planeNormal) const
+inline const bool Lighting::Spot::isShiningAtPoint(const math::Vec3f& planeOrigin) const
 {
-    return isShiningAtPoint(planeOrigin, planeNormal, origin);
+    return isShiningAtPoint(planeOrigin, origin);
 }
 
 inline const float Lighting::Spot::calcContribution(const math::Vec3f& planeNormal, const math::Vec3f& rayNormal) const

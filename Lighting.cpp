@@ -28,7 +28,7 @@ float calcLightingForLightType(const std::vector<T>& lights, const Scene& scene,
         for (int ii = util::lastIndex(lightRays); ii >= 0; --ii )
         {
             auto lightOrigin = lightRays[ii];
-            if (light.isShiningAtPoint(origin, hitNormal, lightOrigin))
+            if (light.isShiningAtPoint(origin, lightOrigin))
             {
                 Ray lightRay{ origin, lightOrigin - origin };
                 float rayLength = math::length(lightRay.dir);
@@ -51,14 +51,11 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
     for (int ii = util::lastIndex(directional); ii >= 0; --ii)
     {
         const Directional& light = directional[ii];
-        if (light.isShiningAtPoint(hitNormal))
+        Ray lightRay{ origin, -light.normal };
+        if (!collision3d::raySceneCollision(lightRay, DIRECTIONAL_RAY_LENGTH, scene))
         {
-            Ray lightRay{ origin, -light.normal };
-            if (!collision3d::raySceneCollision(lightRay, DIRECTIONAL_RAY_LENGTH, scene))
-            {
-                const float factor = light.calcContribution(hitNormal, lightRay.dir);
-                lightLevel += applyAngleScale(factor) * light.intensity;
-            }
+            const float factor = light.calcContribution(hitNormal, lightRay.dir);
+            lightLevel += applyAngleScale(factor) * light.intensity;
         }
     }
 
