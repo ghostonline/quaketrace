@@ -53,6 +53,7 @@ namespace {
     template<>
     inline bool isInFrontOfPlane<Scene::Plane>(const Scene::Plane& plane, const Scene::Plane& poly)
     {
+        // TODO: test parallel planes
         return true;
     }
 
