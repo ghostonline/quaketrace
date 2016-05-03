@@ -69,7 +69,6 @@ namespace {
                 if (!isInFrontOfPlane(frustum[jj], geometry))
                 {
                     goto reject;
-                    break;
                 }
             }
             optimized.push_back(geometry);
