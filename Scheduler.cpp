@@ -1,33 +1,37 @@
 #include "Scheduler.hpp"
 #include "Util.hpp"
 
+static const std::chrono::seconds CONDITIONAL_WAIT_TIMEOUT(5);
+
 void Scheduler::Worker::threadedRun(Worker* work) { work->run(); }
 
 void Scheduler::Worker::run()
 {
+    UniqueLock lock(waitLock);
     while(running)
     {
         while (task == nullptr && running)
         {
-            std::this_thread::yield();
+            condition.wait_for(lock, CONDITIONAL_WAIT_TIMEOUT);
         }
 
         while (running && task && !task->finished())
         {
             task->processNext();
-            std::this_thread::yield();
             remainingJobs = task->remaining();
+            if (owner) { owner->wakeUp(); }
         }
 
         task = nullptr;
     }
 }
 
-void Scheduler::Worker::start()
+void Scheduler::Worker::start(Scheduler* owner)
 {
     ScopedLock lock(stateLock);
     ASSERT(!running);
     running = true;
+    this->owner = owner;
     thread = std::thread(threadedRun, this);
 }
 
@@ -45,14 +49,15 @@ void Scheduler::Worker::take(TaskPtr&& task)
     ASSERT(!this->task);
     this->task.swap(task);
     remainingJobs = this->task->remaining();
+    condition.notify_all();
 }
 
 Scheduler::Scheduler(int numThreads) : workers(numThreads), totalJobCount(0), active(true)
 {
-    for (int ii = workers.size() - 1; ii >= 0; --ii)
+    for (int ii = numThreads - 1; ii >= 0; --ii)
     {
         auto& worker = workers[ii];
-        worker.start();
+        worker.start(this);
         idleWorkers.push_back(&worker);
     }
 
@@ -61,7 +66,12 @@ Scheduler::Scheduler(int numThreads) : workers(numThreads), totalJobCount(0), ac
 
 Scheduler::~Scheduler()
 {
-    active = false;
+    {
+        // Make sure the monitor thread is waiting to be notified
+        ScopedLock lock(monitorLock);
+        active = false;
+    }
+    monitorWait.notify_all();
     if (thread.joinable()) { thread.join(); }
 
     for (int ii = workers.size() - 1; ii >= 0; --ii)
@@ -70,16 +80,12 @@ Scheduler::~Scheduler()
     }
 }
 
-void Scheduler::doMonitorTasks(Scheduler* scheduler)
-{
-    scheduler->monitorTasks();
-}
-
 void Scheduler::monitorTasks()
 {
+    UniqueLock lock(monitorLock);
     while(active)
     {
-        std::this_thread::yield();
+        monitorWait.wait_for(lock, CONDITIONAL_WAIT_TIMEOUT);
         size_t jobs = 0;
         for (int ii = util::lastIndex(activeWorkers); ii >= 0; --ii)
         {

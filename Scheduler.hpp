@@ -9,6 +9,7 @@
 class Scheduler
 {
     typedef std::lock_guard<std::mutex> ScopedLock;
+    typedef std::unique_lock<std::mutex> UniqueLock;
     
     class Worker
     {
@@ -17,13 +18,16 @@ class Scheduler
         TaskPtr task;
         std::thread thread;
         std::mutex stateLock;
+        std::mutex waitLock;
+        std::condition_variable condition;
+        Scheduler* owner;
 
         static void threadedRun(Worker* work);
         void run();
 
     public:
-        Worker() : running(false), remainingJobs(0), task(nullptr) {}
-        void start();
+        Worker() : running(false), remainingJobs(0), task(nullptr), owner(nullptr) {}
+        void start(Scheduler* owner);
         void stop();
 
         void take(TaskPtr&& task);
@@ -65,10 +69,12 @@ class Scheduler
     std::vector<TaskPtr> tasks;
     std::thread thread;
     std::mutex taskLock;
+    std::mutex monitorLock;
+    std::condition_variable monitorWait;
     int totalJobCount;
     bool active;
 
-    static void doMonitorTasks(Scheduler* scheduler);
+    static void doMonitorTasks(Scheduler* scheduler) { scheduler->monitorTasks(); }
     void monitorTasks();
 
 public:
@@ -83,6 +89,7 @@ public:
 
     int getTotalJobCount() const { return totalJobCount; }
     bool isFinished() const { return tasks.empty() && activeWorkers.empty(); }
+    void wakeUp() { monitorWait.notify_all(); }
 };
 
 template<typename Input, typename Context>
@@ -110,4 +117,5 @@ void Scheduler::scheduleAsync(const std::vector<Input>& in, const Context& conte
         }
         totalJobCount += taskCount;
     }
+    monitorWait.notify_all();
 }
