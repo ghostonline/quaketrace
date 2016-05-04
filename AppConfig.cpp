@@ -55,7 +55,7 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
         return ParseResult::CreateFailed("No map file specified");
     }
 
-    if (imageFile.empty())
+    if (imageFile.empty() && !cameraList)
     {
         return ParseResult::CreateFailed("No image file specified");
     }
