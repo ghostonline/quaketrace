@@ -32,6 +32,7 @@ RayTracer::Config common::parseRayTracerConfig(const AppConfig& config)
     RayTracer::Config traceConfig;
     traceConfig.detail = config.detail;
     traceConfig.occlusionRayCount = config.occlusionRayCount;
+    traceConfig.occlusionRayStrength = config.occlusionStrength;
     traceConfig.softshadowRayCount = config.softshadowRayCount;
     traceConfig.threads = config.threads;
     traceConfig.width = config.width;

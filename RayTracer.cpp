@@ -166,7 +166,7 @@ const Color RayTracer::renderPixel(const Scene& scene, const Scene& shadowScene,
     if (lighted)
     {
         int occlusionRays = ambientOcclusion ? config.occlusionRayCount : 0;
-        lightLevel = shadowScene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, shadowScene, config.softshadowRayCount, occlusionRays);
+        lightLevel = shadowScene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, shadowScene, config.softshadowRayCount, occlusionRays, config.occlusionRayStrength);
     }
     else
     {

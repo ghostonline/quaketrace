@@ -45,7 +45,7 @@ float calcLightingForLightType(const std::vector<T>& lights, const Scene& scene,
     return lightLevel;
 }
 
-const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays, int occlusionRays) const
+const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays, int occlusionRays, int occlusionRayStrength) const
 {
     float lightLevel = ambient;
     for (int ii = util::lastIndex(directional); ii >= 0; --ii)
@@ -63,9 +63,8 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
     lightLevel += calcLightingForLightType<Spot>(spots, scene, origin, hitNormal, softShadowRays);
     lightLevel = math::clamp01(lightLevel);
 
-    if (lightLevel > 0.0f && occlusionRays > 0)
+    if (lightLevel > 0.0f && occlusionRays > 0 && occlusionRayStrength > 0)
     {
-        static const float AMBIENT_OCCLUSION_STRENGTH = 16;
         std::vector<math::Vec3f> occlusion = getPointsOnUnitSphere(occlusionRays);
         int occlusionHits = 0;
         for (int ii = util::lastIndex(occlusion); ii >= 0; --ii)
@@ -74,7 +73,7 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
             dir *= math::dot(hitNormal, dir);
             math::normalize(&dir);
             Ray ray = {origin, dir};
-            occlusionHits += collision3d::raySceneCollision(ray, AMBIENT_OCCLUSION_STRENGTH, scene) & 1;
+            occlusionHits += collision3d::raySceneCollision(ray, occlusionRayStrength, scene) & 1;
         }
         float occlusionFactor = 1.0f - occlusionHits / static_cast<float>(occlusionRays);
         lightLevel *= occlusionFactor;

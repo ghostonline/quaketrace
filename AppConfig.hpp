@@ -49,6 +49,7 @@ struct AppConfig
     int detail;
     int softshadowRayCount;
     int occlusionRayCount;
+    int occlusionStrength;
 
     int threads;
 };

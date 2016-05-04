@@ -18,6 +18,7 @@ public:
 
         int softshadowRayCount;
         int occlusionRayCount;
+        int occlusionRayStrength;
 
         int threads;
     };
