@@ -61,7 +61,7 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
 
     lightLevel += calcLightingForLightType<Point>(points, scene, origin, hitNormal, softShadowRays);
     lightLevel += calcLightingForLightType<Spot>(spots, scene, origin, hitNormal, softShadowRays);
-    lightLevel = math::clamp01(lightLevel);
+    lightLevel = math::clamp(lightLevel, 0.0f, 2.0f);
 
     if (lightLevel > 0.0f && occlusionRays > 0 && occlusionRayStrength > 0)
     {

@@ -44,6 +44,7 @@ void RayContext::process(RayInput in) const
     }
 
     uint32_t* pixel = reinterpret_cast<uint32_t*>(canvas->pixels.data() + in.pixelIdx);
+    Color::normalize(&aggregate);
     *pixel = Color::asARGB(aggregate);
 }
 
