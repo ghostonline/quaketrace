@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 #include "Assert.hpp"
 #include "Task.hpp"
 
