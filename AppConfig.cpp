@@ -35,23 +35,23 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
         return ParseResult::CreateFailed(cmdResult.error);
     }
 
-    if (showHelp.getValue())
+    if (showHelp->getValue())
     {
         auto help = cmd.createHelpString(argv[0]);
         return ParseResult::CreateHelp(help);
     }
 
-    mapFile = mapArg.getValue();
-    imageFile = imageArg.getValue();
-    width = widthArg.getValue();
-    height = heightArg.getValue();
-    detail = detailArg.getValue();
-    occlusionRayCount = occlusionArg.getValue();
-    occlusionStrength = occlusionStrengthArg.getValue();
-    softshadowRayCount = shadowsArg.getValue();
-    threads = threadsArg.getValue();
-    cameraIdx = cameraArg.getValue();
-    cameraList = cameraListArg.getValue();
+    mapFile = mapArg->getValue();
+    imageFile = imageArg->getValue();
+    width = widthArg->getValue();
+    height = heightArg->getValue();
+    detail = detailArg->getValue();
+    occlusionRayCount = occlusionArg->getValue();
+    occlusionStrength = occlusionStrengthArg->getValue();
+    softshadowRayCount = shadowsArg->getValue();
+    threads = threadsArg->getValue();
+    cameraIdx = cameraArg->getValue();
+    cameraList = cameraListArg->getValue();
 
     if (mapFile.empty())
     {
