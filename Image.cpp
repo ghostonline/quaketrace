@@ -15,6 +15,7 @@ Image::Image(int width, int height, Format format)
 : width(width)
 , height(height)
 , pixels(width * height * FORMAT_PIXEL_SIZE[format])
+, format(format)
 {}
 
 Image::Image(const std::vector<std::uint8_t>& pixels, int width, int height, Format format)
