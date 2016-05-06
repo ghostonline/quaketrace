@@ -43,7 +43,7 @@ RayTracer::Config common::parseRayTracerConfig(const AppConfig& config)
 bool common::writeToTGA(const Image& image, const char* filename)
 {
 
-    auto tga = targa::encode(image);
+    auto tga = targa::encode(image, "Raytraced Quake Level");
     File f = File::openW(filename);
     if (f.isValid())
     {

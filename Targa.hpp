@@ -8,5 +8,5 @@ struct Image;
 namespace targa
 {
     typedef std::vector<std::uint8_t> Buffer;
-    const Buffer encode(const Image& image);
+    const Buffer encode(const Image& image, const char* identifier = "");
 };
