@@ -55,16 +55,19 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
         int newPercentage = static_cast<int>(engine.getProgress() * 100.0f);
         if (percentage != newPercentage)
         {
+            for (int step = percentage + 1; step <= newPercentage; ++step)
+            {
+                if ((step % 10) == 0)
+                {
+                    std::printf("%3d%%\n", step);
+                }
+                else
+                {
+                    std::printf(".");
+                    std::fflush(stdout);
+                }
+            }
             percentage = newPercentage;
-            if ((percentage % 10) == 0)
-            {
-                std::printf("%3d%%\n", percentage);
-            }
-            else
-            {
-                std::printf(".");
-                std::fflush(stdout);
-            }
         }
         std::this_thread::yield();
     } while (engine.isTracing());
