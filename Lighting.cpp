@@ -15,15 +15,19 @@ inline float applyAngleScale(float value)
 }
 
 template<typename T>
-float calcLightingForLightType(const std::vector<T>& lights, const Scene& scene, const math::Vec3f& origin, const math::Vec3f& hitNormal, int softShadowRays)
+float calcLightingForLightType(const std::vector<T>& lights, const Scene& scene, const math::Vec3f& origin, const math::Vec3f& hitNormal, int softShadowRays, bool selfShadow)
 {
     float lightLevel = 0.0f;
     for (int ii = util::lastIndex(lights); ii >= 0; --ii)
     {
         const auto& light = lights[ii];
-        if (!light.isShiningAtPoint(origin)) { continue; }
-
         auto castRay = math::normalized(light.origin - origin);
+
+        // NOTE: Self shadowing blocks lights shining on itself when origin is behind
+        const bool hasContribution = light.isShiningAtPoint(origin)
+                                && (!selfShadow || math::dot(hitNormal, castRay) > 0);
+        if (!hasContribution) { continue; }
+
         auto lightRays = light.getRandomLightPoints(castRay, softShadowRays);
         lightRays.push_back(light.origin);
         const float rayContribution = 1.0f / lightRays.size();
@@ -44,7 +48,7 @@ float calcLightingForLightType(const std::vector<T>& lights, const Scene& scene,
     return lightLevel;
 }
 
-const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays, int occlusionRays, int occlusionRayStrength) const
+const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3f& hitNormal, const Scene& scene, int softShadowRays, int occlusionRays, int occlusionRayStrength, bool selfShadow) const
 {
     float lightLevel = ambient;
     for (int ii = util::lastIndex(directional); ii >= 0; --ii)
@@ -58,8 +62,8 @@ const float Lighting::calcLightLevel(const math::Vec3f& origin, const math::Vec3
         }
     }
 
-    lightLevel += calcLightingForLightType<Point>(points, scene, origin, hitNormal, softShadowRays);
-    lightLevel += calcLightingForLightType<Spot>(spots, scene, origin, hitNormal, softShadowRays);
+    lightLevel += calcLightingForLightType<Point>(points, scene, origin, hitNormal, softShadowRays, selfShadow);
+    lightLevel += calcLightingForLightType<Spot>(spots, scene, origin, hitNormal, softShadowRays, selfShadow);
     lightLevel = math::clamp(lightLevel, 0.0f, 2.0f);
 
     if (lightLevel > 0.0f && occlusionRays > 0 && occlusionRayStrength > 0)

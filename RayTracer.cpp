@@ -129,6 +129,7 @@ const Color RayTracer::renderPixel(const Scene& scene, const Scene& shadowScene,
     collision3d::Hit hitInfo;
     bool lighted = true;
     bool ambientOcclusion = true;
+    bool selfShadow = true;
     if (triangleHitIdx > -1)
     {
         color = scene.triangles[triangleHitIdx].color;
@@ -157,7 +158,9 @@ const Color RayTracer::renderPixel(const Scene& scene, const Scene& shadowScene,
         {
             pixel = scene.getTexturePixel(mat, infoPolygon.pos);
             lighted = !pixel.fullbright;
-            ambientOcclusion = scene.polygons[polygonHitIdx].flags[Scene::ConvexPolygon::FLAG_SHADOWCAST];
+            const bool shadowCaster = scene.polygons[polygonHitIdx].flags[Scene::ConvexPolygon::FLAG_SHADOWCAST];
+            ambientOcclusion = shadowCaster;
+            selfShadow = shadowCaster;
         }
         color = pixel.color;
         hitInfo = infoPolygon;
@@ -167,7 +170,7 @@ const Color RayTracer::renderPixel(const Scene& scene, const Scene& shadowScene,
     if (lighted)
     {
         int occlusionRays = ambientOcclusion ? config.occlusionRayCount : 0;
-        lightLevel = shadowScene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, shadowScene, config.softshadowRayCount, occlusionRays, config.occlusionRayStrength);
+        lightLevel = shadowScene.lighting.calcLightLevel(hitInfo.pos, hitInfo.normal, shadowScene, config.softshadowRayCount, occlusionRays, config.occlusionRayStrength, selfShadow);
     }
     else
     {
