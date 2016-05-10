@@ -27,6 +27,7 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     auto threadsArg = cmd.add<int>("threads", 'j', DEFAULT_THREAD_COUNT);
     auto cameraArg = cmd.add<int>("camera", 'c', 0);
     auto cameraListArg = cmd.add<bool>("camera-list", 'l', false);
+    auto gammaArg = cmd.add<float>("gamma", 1.0f);
     auto showHelp = cmd.add<bool>("help", false);
 
     auto cmdResult = cmd.parse(argc, argv);
@@ -52,6 +53,7 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     threads = threadsArg->getValue();
     cameraIdx = cameraArg->getValue();
     cameraList = cameraListArg->getValue();
+    gamma = gammaArg->getValue();
 
     if (mapFile.empty())
     {

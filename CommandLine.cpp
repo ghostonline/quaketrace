@@ -172,6 +172,45 @@ std::string util::ValueArg<int>::getParameterStr() const
     appendFlag(&buffer);
     if (isRequired()) { buffer.push_back(')'); }
     buffer.push_back(' ');
+    util::StringTool::append(&buffer, "<integer>");
+    if (!isRequired()) { buffer.push_back(']'); }
+    return std::string(buffer.begin(), buffer.end());
+}
+
+template<>
+const util::Arg::ParseResult util::ValueArg<float>::parse(int argc, char const * const * argv)
+{
+    if (!matchFlag(argv[0]))
+    {
+        return 0;
+    }
+
+    if (argc < 2)
+    {
+        std::string error = "Flag requires an argument: ";
+        error += argv[0];
+        return error.c_str();
+    }
+
+    if (!util::StringTool::parseFloat(argv[1], &value))
+    {
+        std::string error = "No valid number argument for flag: ";
+        error += argv[0];
+        return error.c_str();
+    }
+
+    return 2;
+}
+
+template<>
+std::string util::ValueArg<float>::getParameterStr() const
+{
+    std::vector<char> buffer;
+    if (isRequired()) { buffer.push_back('('); }
+    else { buffer.push_back('['); }
+    appendFlag(&buffer);
+    if (isRequired()) { buffer.push_back(')'); }
+    buffer.push_back(' ');
     util::StringTool::append(&buffer, "<number>");
     if (!isRequired()) { buffer.push_back(']'); }
     return std::string(buffer.begin(), buffer.end());

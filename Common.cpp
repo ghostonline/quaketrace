@@ -37,6 +37,7 @@ RayTracer::Config common::parseRayTracerConfig(const AppConfig& config)
     traceConfig.threads = config.threads;
     traceConfig.width = config.width;
     traceConfig.height = config.height;
+    traceConfig.gamma = config.gamma;
     return traceConfig;
 }
 

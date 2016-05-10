@@ -102,6 +102,13 @@ struct Color
         return c.r == 0.0f && c.g == 0.0f && c.b == 0.0f;
     }
 
+    inline static void modifyGamma(Color* c, float gamma)
+    {
+        c->r = std::powf(c->r, 1.0f / gamma);
+        c->g = std::powf(c->g, 1.0f / gamma);
+        c->b = std::powf(c->b, 1.0f / gamma);
+    }
+
 private:
     static inline const std::uint32_t float2byte(float v, int lshift = 0) { return (static_cast<std::uint32_t>(v * 0xFF) & 0xFF) << lshift; }
 };

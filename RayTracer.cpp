@@ -176,6 +176,8 @@ const Color RayTracer::renderPixel(const Scene& scene, const Scene& shadowScene,
     {
         lightLevel = 1.0f;
     }
-    
-    return color * lightLevel;
+
+    color = color * lightLevel;
+    Color::modifyGamma(&color, config.gamma);
+    return color;
 }
