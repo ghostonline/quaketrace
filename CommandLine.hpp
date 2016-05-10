@@ -103,7 +103,7 @@ template<typename T>
 inline typename ValueArg<T>::Ptr CommandLine::add(const char* flag, char shorthand, const T& resetValue, bool required)
 {
     // TODO: Fix freed memory access error if arg is freed before CommandLine::parse is executed
-    ValueArg<T>::Ptr arg(new ValueArg<T>(flag, shorthand, resetValue, required));
+    typename ValueArg<T>::Ptr arg(new ValueArg<T>(flag, shorthand, resetValue, required));
     parsers.push_back(arg.get());
     return arg;
 }
