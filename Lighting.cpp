@@ -21,6 +21,8 @@ float calcLightingForLightType(const std::vector<T>& lights, const Scene& scene,
     for (int ii = util::lastIndex(lights); ii >= 0; --ii)
     {
         const auto& light = lights[ii];
+        if (!light.isShiningAtPoint(origin)) { continue; }
+
         auto castRay = math::normalized(light.origin - origin);
         auto lightRays = light.getRandomLightPoints(castRay, softShadowRays);
         lightRays.push_back(light.origin);
@@ -28,17 +30,14 @@ float calcLightingForLightType(const std::vector<T>& lights, const Scene& scene,
         for (int ii = util::lastIndex(lightRays); ii >= 0; --ii )
         {
             auto lightOrigin = lightRays[ii];
-            if (light.isShiningAtPoint(origin, lightOrigin))
+            Ray lightRay{ origin, lightOrigin - origin };
+            float rayLength = math::length(lightRay.dir);
+            lightRay.dir /= rayLength;
+            if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
             {
-                Ray lightRay{ origin, lightOrigin - origin };
-                float rayLength = math::length(lightRay.dir);
-                lightRay.dir /= rayLength;
-                if (!collision3d::raySceneCollision(lightRay, rayLength, scene))
-                {
-                    const float totalLightLevel = light.calcLightAtDistance(rayLength);
-                    const float factor = light.calcContribution(hitNormal, lightRay.dir);
-                    lightLevel += totalLightLevel * applyAngleScale(factor) * rayContribution;
-                }
+                const float totalLightLevel = light.calcLightAtDistance(rayLength);
+                const float factor = light.calcContribution(hitNormal, lightRay.dir);
+                lightLevel += totalLightLevel * applyAngleScale(factor) * rayContribution;
             }
         }
     }
