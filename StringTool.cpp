@@ -53,18 +53,51 @@ const bool util::StringTool::parseInteger(const char* str, int* integer)
     return true;
 }
 
+void util::StringTool::append(std::vector<char>* buffer, const char* start, const char* end)
+{
+    auto size = end - start;
+    auto bufferSize = buffer->size();
+    buffer->reserve(bufferSize + size);
+    buffer->insert(buffer->end(), start, end);
+}
+
 void util::StringTool::append(std::vector<char>* buffer, const char* text)
 {
     auto size = strlen(text);
-    auto bufferSize = buffer->size();
-    buffer->reserve(bufferSize + size);
-    buffer->insert(buffer->end(), text, text + size);
+    append(buffer, text, text + size);
 }
 
 void util::StringTool::append(std::vector<char>* buffer, const std::string& text)
 {
-    auto size = text.length();
-    auto bufferSize = buffer->size();
-    buffer->reserve(bufferSize + size);
-    buffer->insert(buffer->end(), text.begin(), text.end());
+    const char* cStr = text.c_str();
+    append(buffer, cStr, cStr + text.size());
+}
+
+void util::StringTool::appendWrapped(std::vector<char>* buffer, const std::string& text, int maxWidth, const char* separator)
+{
+    std::size_t length = 0;
+    std::size_t wordLength = 0;
+    const char* lastCut = text.c_str();
+    for (const char* ptr = text.c_str(); *ptr != 0; ++ptr)
+    {
+        ++length;
+        if (*ptr == ' ')
+        {
+            wordLength = length;
+            continue;
+        }
+
+        if (length == maxWidth)
+        {
+            append(buffer, lastCut, lastCut + wordLength);
+            append(buffer, separator);
+            length = length - wordLength;
+            lastCut += wordLength;
+        }
+    }
+
+    if (length)
+    {
+        append(buffer, lastCut, lastCut + length);
+    }
 }

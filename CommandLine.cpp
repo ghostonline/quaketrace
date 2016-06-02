@@ -51,10 +51,48 @@ std::string util::CommandLine::createHelpString(const char* arg0) const
         auto parameter = parsers[ii]->getParameterStr();
         util::StringTool::append(&buffer, parameter);
     }
+
+    util::StringTool::append(&buffer, "\n\n");
+    for (int ii = 0; ii < parsers.size(); ++ii)
+    {
+        parsers[ii]->appendHelp(&buffer);
+        util::StringTool::append(&buffer, "\n\n");
+    }
+
     std::string help(buffer.begin(), buffer.end());
     return help;
 }
 
+std::string util::Arg::getParameterStr() const
+{
+    std::vector<char> buffer;
+    if (isRequired()) { buffer.push_back('('); }
+    else { buffer.push_back('['); }
+    appendFlag(&buffer, "|");
+    if (isRequired()) { buffer.push_back(')'); }
+    auto argumentType = getArgumentType();
+    if (!argumentType.empty())
+    {
+        util::StringTool::append(&buffer, " <");
+        util::StringTool::append(&buffer, argumentType);
+        buffer.push_back('>');
+    }
+    if (!isRequired()) { buffer.push_back(']'); }
+    return std::string(buffer.begin(), buffer.end());
+}
+
+void util::Arg::appendHelp(std::vector<char> *buffer) const
+{
+    appendFlag(buffer, ", ");
+    if (!required && !getArgumentType().empty())
+    {
+        util::StringTool::append(buffer, " (defaults to ");
+        appendResetValue(buffer);
+        buffer->push_back(')');
+    }
+    util::StringTool::append(buffer, "\n\t");
+    util::StringTool::appendWrapped(buffer, help, 60, "\n\t");
+}
 
 bool util::Arg::matchFlag(const char* arg) const
 {
@@ -68,17 +106,17 @@ bool util::Arg::matchFlag(const char* arg) const
 
 bool util::Arg::isFlag(const char* arg) const { return arg[0] == COMMANDLINE_ARGUMENT_PREFIX; }
 
-void util::Arg::appendFlag(std::vector<char>* buffer) const
+void util::Arg::appendFlag(std::vector<char>* buffer, const char* separator) const
 {
-    if (shorthand)
-    {
-        buffer->push_back(COMMANDLINE_ARGUMENT_PREFIX);
-        buffer->push_back(shorthand);
-        buffer->push_back('|');
-    }
     buffer->push_back(COMMANDLINE_ARGUMENT_PREFIX);
     buffer->push_back(COMMANDLINE_ARGUMENT_PREFIX);
     util::StringTool::append(buffer, flag);
+    if (shorthand)
+    {
+        util::StringTool::append(buffer, separator);
+        buffer->push_back(COMMANDLINE_ARGUMENT_PREFIX);
+        buffer->push_back(shorthand);
+    }
 }
 
 template<>
@@ -95,14 +133,14 @@ const util::Arg::ParseResult util::ValueArg<bool>::parse(int argc, char const * 
 }
 
 template<>
-std::string util::ValueArg<bool>::getParameterStr() const
+std::string util::ValueArg<bool>::getArgumentType() const
 {
-    std::vector<char> buffer;
-    buffer.push_back(isRequired() ? '(' : '[');
-    appendFlag(&buffer);
-    buffer.push_back(isRequired() ? ')' : ']');
-    return std::string(buffer.begin(), buffer.end());
+    return "";
 }
+
+template<>
+void util::ValueArg<bool>::appendResetValue(std::vector<char>* buffer) const {}
+
 
 template<>
 const util::Arg::ParseResult util::ValueArg<std::string>::parse(int argc, char const * const * argv)
@@ -125,17 +163,15 @@ const util::Arg::ParseResult util::ValueArg<std::string>::parse(int argc, char c
 }
 
 template<>
-std::string util::ValueArg<std::string>::getParameterStr() const
+std::string util::ValueArg<std::string>::getArgumentType() const
 {
-    std::vector<char> buffer;
-    if (isRequired()) { buffer.push_back('('); }
-    else { buffer.push_back('['); }
-    appendFlag(&buffer);
-    if (isRequired()) { buffer.push_back(')'); }
-    buffer.push_back(' ');
-    util::StringTool::append(&buffer, "<string>");
-    if (!isRequired()) { buffer.push_back(']'); }
-    return std::string(buffer.begin(), buffer.end());
+    return "string";
+}
+
+template<>
+void util::ValueArg<std::string>::appendResetValue(std::vector<char>* buffer) const
+{
+    util::StringTool::append(buffer, resetValue);
 }
 
 template<>
@@ -164,17 +200,17 @@ const util::Arg::ParseResult util::ValueArg<int>::parse(int argc, char const * c
 }
 
 template<>
-std::string util::ValueArg<int>::getParameterStr() const
+std::string util::ValueArg<int>::getArgumentType() const
 {
-    std::vector<char> buffer;
-    if (isRequired()) { buffer.push_back('('); }
-    else { buffer.push_back('['); }
-    appendFlag(&buffer);
-    if (isRequired()) { buffer.push_back(')'); }
-    buffer.push_back(' ');
-    util::StringTool::append(&buffer, "<integer>");
-    if (!isRequired()) { buffer.push_back(']'); }
-    return std::string(buffer.begin(), buffer.end());
+    return "integer";
+}
+
+template<>
+void util::ValueArg<int>::appendResetValue(std::vector<char>* buffer) const
+{
+    std::vector<char> resetValueStr(255);
+    std::snprintf(resetValueStr.data(), resetValueStr.size(), "%d", resetValue);
+    util::StringTool::append(buffer, resetValueStr.data());
 }
 
 template<>
@@ -203,15 +239,15 @@ const util::Arg::ParseResult util::ValueArg<float>::parse(int argc, char const *
 }
 
 template<>
-std::string util::ValueArg<float>::getParameterStr() const
+std::string util::ValueArg<float>::getArgumentType() const
 {
-    std::vector<char> buffer;
-    if (isRequired()) { buffer.push_back('('); }
-    else { buffer.push_back('['); }
-    appendFlag(&buffer);
-    if (isRequired()) { buffer.push_back(')'); }
-    buffer.push_back(' ');
-    util::StringTool::append(&buffer, "<number>");
-    if (!isRequired()) { buffer.push_back(']'); }
-    return std::string(buffer.begin(), buffer.end());
+    return "number";
+}
+
+template<>
+void util::ValueArg<float>::appendResetValue(std::vector<char>* buffer) const
+{
+    std::vector<char> resetValueStr(255);
+    std::snprintf(resetValueStr.data(), resetValueStr.size(), "%.1f", resetValue);
+    util::StringTool::append(buffer, resetValueStr.data());
 }

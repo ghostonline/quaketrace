@@ -16,19 +16,19 @@ const int DEFAULT_THREAD_COUNT = 4;
 AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const argv)
 {
     util::CommandLine cmd;
-    auto mapArg = cmd.add<std::string>("input", 'i');
-    auto imageArg = cmd.add<std::string>("output", 'o');
-    auto widthArg = cmd.add<int>("width", 'w', DEFAULT_SCREEN_WIDTH);
-    auto heightArg = cmd.add<int>("height", 'h', DEFAULT_SCREEN_HEIGHT);
-    auto detailArg = cmd.add<int>("detail", 'd', DEFAULT_DETAIL_LEVEL);
-    auto occlusionArg = cmd.add<int>("occlusion", DEFAULT_OCCLUSION_RAYS);
-    auto occlusionStrengthArg = cmd.add<int>("occlusion-strength", DEFAULT_OCCLUSION_STRENGTH);
-    auto shadowsArg = cmd.add<int>("shadows", DEFAULT_SOFT_SHADOW_RAYS);
-    auto threadsArg = cmd.add<int>("threads", 'j', DEFAULT_THREAD_COUNT);
-    auto cameraArg = cmd.add<int>("camera", 'c', 0);
-    auto cameraListArg = cmd.add<bool>("camera-list", 'l', false);
-    auto gammaArg = cmd.add<float>("gamma", 1.0f);
-    auto showHelp = cmd.add<bool>("help", false);
+    auto mapArg = cmd.add<std::string>("input", 'i', "Path to a compiled Quake 1 level file");
+    auto imageArg = cmd.add<std::string>("output", 'o', "Path to the TGA file that will be written");
+    auto widthArg = cmd.add<int>("width", 'w', DEFAULT_SCREEN_WIDTH, "Width of the generated image");
+    auto heightArg = cmd.add<int>("height", 'h', DEFAULT_SCREEN_HEIGHT, "Height of the generated image");
+    auto detailArg = cmd.add<int>("detail", 'd', DEFAULT_DETAIL_LEVEL, "Supersampling factor to apply. A value of 2 results in 4 samples per pixel, 3 results in 9 samples, 4 in 16 samples etc.");
+    auto occlusionArg = cmd.add<int>("occlusion", DEFAULT_OCCLUSION_RAYS, "Number of rays to cast for ambient occlusion detection");
+    auto occlusionStrengthArg = cmd.add<int>("occlusion-strength", DEFAULT_OCCLUSION_STRENGTH, "Occlusion ray length, a higher value will grow ambient occlusion shadows");
+    auto shadowsArg = cmd.add<int>("shadows", DEFAULT_SOFT_SHADOW_RAYS, "Number of soft shadow rays");
+    auto threadsArg = cmd.add<int>("threads", 'j', DEFAULT_THREAD_COUNT, "Number of worker threads to use while raytracing, best set to the number of CPU cores");
+    auto cameraArg = cmd.add<int>("camera", 'c', 0, "Intermission camera index to use as viewpoint");
+    auto cameraListArg = cmd.add<bool>("camera-list", 'l', false, "Print the number of intermission cameras in the level file");
+    auto gammaArg = cmd.add<float>("gamma", 1.0f, "Apply gamma correction to the generated image");
+    auto showHelp = cmd.add<bool>("help", false, "Display program usage information");
 
     auto cmdResult = cmd.parse(argc, argv);
     if (!cmdResult.success)
