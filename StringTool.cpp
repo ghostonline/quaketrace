@@ -75,6 +75,8 @@ void util::StringTool::append(std::vector<char>* buffer, const std::string& text
 
 void util::StringTool::appendWrapped(std::vector<char>* buffer, const std::string& text, int maxWidth, const char* separator)
 {
+    //FIXME: Does not yet work when maxWidth < len(longest word in text)
+    //FIXME: Appends whitespace in front of the newly wrapped line
     std::size_t length = 0;
     std::size_t wordLength = 0;
     const char* lastCut = text.c_str();
