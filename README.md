@@ -70,6 +70,7 @@ After completing a level in Quake, the game shows the image from an intermission
 Limitations
 -----------
 
+- Levels appear to be darker than they should be ingame, so post processing might be required
+- Sky rendering is a rough approximation of how Quake renders it and will sometimes generate a wrong-looking skybox
 - FOV is locked to 60
 - Light sizes (used for soft shadowing) are set to 16
-- Sky rendering is a rough approximation of how Quake renders it and will sometimes generate a wrong-looking skybox
