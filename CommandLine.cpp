@@ -209,7 +209,7 @@ template<>
 void util::ValueArg<int>::appendResetValue(std::vector<char>* buffer) const
 {
     std::vector<char> resetValueStr(255);
-    std::snprintf(resetValueStr.data(), resetValueStr.size(), "%d", resetValue);
+    std::sprintf(resetValueStr.data(), "%d", resetValue);
     util::StringTool::append(buffer, resetValueStr.data());
 }
 
@@ -248,6 +248,6 @@ template<>
 void util::ValueArg<float>::appendResetValue(std::vector<char>* buffer) const
 {
     std::vector<char> resetValueStr(255);
-    std::snprintf(resetValueStr.data(), resetValueStr.size(), "%.1f", resetValue);
+    std::sprintf(resetValueStr.data(), "%.1f", resetValue);
     util::StringTool::append(buffer, resetValueStr.data());
 }
