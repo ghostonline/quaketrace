@@ -1,7 +1,7 @@
 Quake level Raytracer
 =====================
 
-Given a compiled Quake 1 level, this project generates a raytraced image from the perspective of one of the intermission cameras defined in it. 
+Given a compiled Quake 1 level, this project generates a raytraced image from the perspective of one of the intermission cameras defined in it.
 
 Usage
 -----
@@ -66,6 +66,8 @@ Background
 Quake 1 levels have the interesting property of containing all data needed for rendering its geometry. A compiled level contains the level geometry, texture mipmaps, lighting information (lightmaps and the original light defintions) and gameplay entity definitions (like monsters, player spawn points, weapons). This allows te raytracer to generate a good representation of the level, albeit without any entity models, since these are stored separately.
 
 After completing a level in Quake, the game shows the image from an intermission camera overlaid with gameplay statistics. These cameras are often pointed at interesting or memorable geometry from the level. Using these camera, the raytracer has a better chance of generating a recognisable image from the level.
+
+For some example renders, see [this webpage](http://bartveldstra.com/personal/quaketrace/).
 
 Limitations
 -----------
