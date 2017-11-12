@@ -18,7 +18,7 @@ public:
         ORIGIN_CURRENT = SEEK_CUR,
         ORIGIN_END = SEEK_END,
     };
-    ~File() { fclose(fptr); fptr = nullptr; }
+    ~File() { if (fptr) { fclose(fptr); } fptr = nullptr; }
     File(File&& other) { std::swap(this->fptr, other.fptr); }
     File(const File& other) = delete;
     File& operator=(const File& other) = delete;
