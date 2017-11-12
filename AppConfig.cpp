@@ -24,6 +24,7 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     auto occlusionArg = cmd.add<int>("occlusion", DEFAULT_OCCLUSION_RAYS, "Number of rays to cast for ambient occlusion detection");
     auto occlusionStrengthArg = cmd.add<int>("occlusion-strength", DEFAULT_OCCLUSION_STRENGTH, "Occlusion ray length, a higher value will grow ambient occlusion shadows");
     auto shadowsArg = cmd.add<int>("shadows", DEFAULT_SOFT_SHADOW_RAYS, "Number of soft shadow rays");
+    auto ambientLightArg = cmd.add<float>("ambient", 0.0f, "Ambient lighting level");
     auto threadsArg = cmd.add<int>("threads", 'j', DEFAULT_THREAD_COUNT, "Number of worker threads to use while raytracing, best set to the number of CPU cores");
     auto cameraArg = cmd.add<int>("camera", 'c', 0, "Intermission camera index to use as viewpoint");
     auto cameraListArg = cmd.add<bool>("camera-list", 'l', false, "Print the number of intermission cameras in the level file");
@@ -50,6 +51,8 @@ AppConfig::ParseResult AppConfig::parse(int argc, char const * const * const arg
     occlusionRayCount = occlusionArg->getValue();
     occlusionStrength = occlusionStrengthArg->getValue();
     softshadowRayCount = shadowsArg->getValue();
+    ambientLight = ambientLightArg->getValue();
+    overrideAmbientLight = ambientLightArg->isSet();
     threads = threadsArg->getValue();
     cameraIdx = cameraArg->getValue();
     cameraList = cameraListArg->getValue();

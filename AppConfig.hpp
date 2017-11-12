@@ -42,7 +42,7 @@ struct AppConfig
     std::string imageFile;
     int cameraIdx;
     bool cameraList;
-    
+
     int width;
     int height;
 
@@ -50,6 +50,8 @@ struct AppConfig
     int softshadowRayCount;
     int occlusionRayCount;
     int occlusionStrength;
+    float ambientLight;
+    bool overrideAmbientLight;
     float gamma;
 
     int threads;

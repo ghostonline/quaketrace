@@ -86,6 +86,11 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
     }
 #endif
 
+    if (config.overrideAmbientLight)
+    {
+        scene.lighting.ambient = config.ambientLight;
+    }
+
     if (config.cameraList)
     {
         SDL_Log("%lu", scene.cameras.size());
@@ -202,14 +207,14 @@ int GUI::runUntilFinished(int argc, char const * const * const argv)
                 font->blitString(fb, renderMouseStr, 0, 10);
                 updateMouse = false;
             }
-            
+
         }
-        
+
         fb->flip();
     }
-    
+
     SDL_DestroyWindow(window);
     SDL_Quit();
-    
+
     return EXIT_SUCCESS;
 }

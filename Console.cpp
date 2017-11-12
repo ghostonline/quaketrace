@@ -36,6 +36,11 @@ int Console::runUntilFinished(int argc, char const * const * const argv)
         return EXIT_FAILURE;
     }
 
+    if (config.overrideAmbientLight)
+    {
+        scene.lighting.ambient = config.ambientLight;
+    }
+
     if (config.cameraList)
     {
         std::printf("%lu\n", scene.cameras.size());
