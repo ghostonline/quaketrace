@@ -87,7 +87,7 @@ void util::Arg::appendHelp(std::vector<char> *buffer) const
     if (!required && !getArgumentType().empty())
     {
         util::StringTool::append(buffer, " (defaults to ");
-        appendResetValue(buffer);
+        appendDefaultValue(buffer);
         buffer->push_back(')');
     }
     util::StringTool::append(buffer, "\n\t");
@@ -120,7 +120,7 @@ void util::Arg::appendFlag(std::vector<char>* buffer, const char* separator) con
 }
 
 template<>
-const util::Arg::ParseResult util::ValueArg<bool>::parse(int argc, char const * const * argv)
+const util::Arg::ParseResult util::ValueArg<bool>::parseArgument(int argc, char const * const * argv)
 {
     if (!matchFlag(argv[0]))
     {
@@ -139,11 +139,11 @@ std::string util::ValueArg<bool>::getArgumentType() const
 }
 
 template<>
-void util::ValueArg<bool>::appendResetValue(std::vector<char>* buffer) const {}
+void util::ValueArg<bool>::appendDefaultValue(std::vector<char>* buffer) const {}
 
 
 template<>
-const util::Arg::ParseResult util::ValueArg<std::string>::parse(int argc, char const * const * argv)
+const util::Arg::ParseResult util::ValueArg<std::string>::parseArgument(int argc, char const * const * argv)
 {
     if (!matchFlag(argv[0]))
     {
@@ -169,13 +169,13 @@ std::string util::ValueArg<std::string>::getArgumentType() const
 }
 
 template<>
-void util::ValueArg<std::string>::appendResetValue(std::vector<char>* buffer) const
+void util::ValueArg<std::string>::appendDefaultValue(std::vector<char>* buffer) const
 {
-    util::StringTool::append(buffer, resetValue);
+    util::StringTool::append(buffer, defaultValue);
 }
 
 template<>
-const util::Arg::ParseResult util::ValueArg<int>::parse(int argc, char const * const * argv)
+const util::Arg::ParseResult util::ValueArg<int>::parseArgument(int argc, char const * const * argv)
 {
     if (!matchFlag(argv[0]))
     {
@@ -206,15 +206,15 @@ std::string util::ValueArg<int>::getArgumentType() const
 }
 
 template<>
-void util::ValueArg<int>::appendResetValue(std::vector<char>* buffer) const
+void util::ValueArg<int>::appendDefaultValue(std::vector<char>* buffer) const
 {
     std::vector<char> resetValueStr(255);
-    std::sprintf(resetValueStr.data(), "%d", resetValue);
+    std::sprintf(resetValueStr.data(), "%d", defaultValue);
     util::StringTool::append(buffer, resetValueStr.data());
 }
 
 template<>
-const util::Arg::ParseResult util::ValueArg<float>::parse(int argc, char const * const * argv)
+const util::Arg::ParseResult util::ValueArg<float>::parseArgument(int argc, char const * const * argv)
 {
     if (!matchFlag(argv[0]))
     {
@@ -245,9 +245,9 @@ std::string util::ValueArg<float>::getArgumentType() const
 }
 
 template<>
-void util::ValueArg<float>::appendResetValue(std::vector<char>* buffer) const
+void util::ValueArg<float>::appendDefaultValue(std::vector<char>* buffer) const
 {
     std::vector<char> resetValueStr(255);
-    std::sprintf(resetValueStr.data(), "%.1f", resetValue);
+    std::sprintf(resetValueStr.data(), "%.1f", defaultValue);
     util::StringTool::append(buffer, resetValueStr.data());
 }

@@ -19,10 +19,16 @@ public:
         std::string error;
     };
 
-    virtual const ParseResult parse(int argc, char const * const * argv) = 0;
-    virtual void reset() = 0;
+    const ParseResult parse(int argc, char const * const * argv)
+    {
+        auto result = parseArgument(argc, argv);
+        set = result.args > 0;
+        return result;
+    }
+    void reset() { set = false; resetValue(); }
     std::string getParameterStr() const;
     void appendHelp(std::vector<char>* buffer) const;
+    bool isSet() const { return set; }
 
 protected:
     Arg(const char* flag, char shorthand, bool required, const char* help)
@@ -30,6 +36,7 @@ protected:
     , help(help)
     , shorthand(shorthand)
     , required(required)
+    , set(false)
     {}
 
     bool matchFlag(const char* arg) const;
@@ -37,14 +44,17 @@ protected:
     void appendFlag(std::vector<char>* buffer, const char* separator) const;
     bool isRequired() const { return required; }
 
+    virtual void resetValue() = 0;
+    virtual const ParseResult parseArgument(int argc, char const * const * argv) = 0;
     virtual std::string getArgumentType() const = 0;
-    virtual void appendResetValue(std::vector<char>* buffer) const = 0;
+    virtual void appendDefaultValue(std::vector<char>* buffer) const = 0;
 
 private:
     std::string flag;
     std::string help;
     char shorthand;
     bool required;
+    bool set;
 };
 
 template<typename T>
@@ -53,27 +63,26 @@ class ValueArg : public Arg
 public:
     typedef std::unique_ptr<ValueArg<T>> Ptr;
 
-    ValueArg(const char* flag, char shorthand, const T& resetValue, bool required, const char* help)
+    ValueArg(const char* flag, char shorthand, const T& defaultValue, bool required, const char* help)
     : Arg(flag, shorthand, required, help)
-    , resetValue(resetValue)
+    , defaultValue(defaultValue)
     {}
 
     const T getValue() const { return value; }
 
-    const ParseResult parse(int argc, char const * const * argv);
-    void reset() { value = resetValue; }
     std::string getParameterStr() const;
 
 protected:
-    virtual std::string getArgumentType() const;
-    virtual void appendResetValue(std::vector<char>* buffer) const;
+    virtual void resetValue() override { value = defaultValue; }
+    virtual const ParseResult parseArgument(int argc, char const * const * argv) override;
+    virtual std::string getArgumentType() const override;
+    virtual void appendDefaultValue(std::vector<char>* buffer) const override;
 
 private:
     T value;
-    T resetValue;
-
+    T defaultValue;
 };
-    
+
 class CommandLine
 {
 public:
